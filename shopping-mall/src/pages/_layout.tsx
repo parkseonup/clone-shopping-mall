@@ -1,6 +1,7 @@
 import React, { Suspense } from "react";
 import { Outlet } from "react-router-dom";
 
+// TODO: Suspense란?
 const Layout: React.FC = () => {
   return (
     <div>
