@@ -1,5 +1,9 @@
 # clone-shopping-mall
 
+## 강의 원본 코드
+
+https://github.com/roy-jung/livecode-study_mall
+
 ## stack
 
 react, react-query, react-router,
@@ -22,20 +26,20 @@ https://fakeapi.platzi.com/
 - routes.tsx에서 `GlobalLayout`(=Layout)을 불러와 routes의 element로 전달하여 routes 구조를 만든다.
 - 이를 프로젝트의 진입점 파일인 app.tsx의 `App` 함수 컴포넌트에서 [`useRoutes(routes)`](https://reactrouter.com/en/6.9.0/hooks/use-routes)를 호출하여 route 경로를 지정한다.
 
-#### routes.tsx는 어디서 나타난걸까?
+### routes.tsx는 어디서 나타난걸까?
 
 - [vite-plugin-next-react-router](https://www.npmjs.com/package/vite-plugin-next-react-router)는 라우트 폴더 구조를 next와 동일하게 가져갈 수 있도록 도와주는 third-party library이다.
 - vite.config.ts 파일에서 `defineConfig` 인수로 객체를 전달할 때 plugins 프로퍼티의 배열 내부에 `reactRouterPlugin()`을 전달하면 프로젝트 root 폴더에 routes.tsx 파일을 자동 생성해주며, route 경로에 해당하는 페이지들 또한 자동으로 routes.tsx 파일에 추가해준다.
 
-#### (미작성) `React.lazy()`란?
+### (미작성) `React.lazy()`란?
 
 routes.tsx에서 route 경로에 해당하는 페이지들을 import 받아올 때 `React.lazy()`를 이용하여 컴포넌트로 불러오는데, 그렇다면 [`React.lazy()`](https://react.dev/reference/react/lazy)는 뭘까?
 
-#### (미작성) `<Suspense>`란?
+### (미작성) `<Suspense>`란?
 
 \_layout.tsx 파일에서는 React의 내장 컴포넌트인 Suspense를 import 받아서 `<Outlet />` 컴포넌트를 감싸고 있다. [`<Suspense>`](https://react.dev/reference/react/Suspense)란 뭘끼?
 
-#### (미작성) `React.lazy()`, `<Suspense>` 함께 쓰기
+### (미작성) `React.lazy()`, `<Suspense>` 함께 쓰기
 
 - [React.lazy 및 Suspense를 사용한 코드 분할 - web.dev](https://web.dev/i18n/ko/code-splitting-suspense/)
 
@@ -43,7 +47,7 @@ routes.tsx에서 route 경로에 해당하는 페이지들을 import 받아올 �
 
 - `QueryClientProvider`를 이용하여 하위 컴포넌트들에게 QueryClient 컴포넌트를 JSX로 제공할 수 있다.
 
-#### 변경된 환경 설정
+### 변경된 환경 설정
 
 [Breaking change - React Query v4](https://tanstack.com/query/v4/docs/react/guides/migrating-to-react-query-4) 참고
 
@@ -71,7 +75,7 @@ routes.tsx에서 route 경로에 해당하는 페이지들을 import 받아올 �
   import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
   ```
 
-#### QueryClient란?
+### QueryClient란?
 
 - react-query에서 제공하는 api로 캐시와 상호 작용하는 데 사용할 수 있다.
 - query를 fetch 받거나 캐시하고 업데이트 하는 등 다양한 메서드를 가진 인스턴스를 반환하는 클래스로 만들어져 있어 new 연산자와 함께 호출할 수 있다.
@@ -112,13 +116,13 @@ routes.tsx에서 route 경로에 해당하는 페이지들을 import 받아올 �
       - `onError` (기본값: error => console.error(error)): 오류가 발생했을 때 호출할 함수를 지정한다.
 - 각종 내장 메서드는 [`<QueryClient>`](https://tanstack.com/query/v4/docs/react/reference/QueryClient)에서 확인할 수 있다.
 
-#### QueryClientProvider란?
+### QueryClientProvider란?
 
 - [`<QueryClientProvider>`](https://tanstack.com/query/v4/docs/react/reference/QueryClientProvider)는 QueryClient 컴포넌트 provider로, `client`, `contextSharing`를 props로 전달할 수 있다.
   - `client` (필수): 제공할 QueryClient의 인스턴스
   - `contextSharing` (기본값: false): context를 공유할 것인지를 선택하는 옵션
 
-#### useQuery란?
+### useQuery란?
 
 - [useQuery](https://tanstack.com/query/v4/docs/react/reference/useQuery)는 react-query에서 제공하는 api로, query를 서버로부터 GET 받을 때 사용한다.
 - 작성 방법: `useQuery(queryKey, queryFunction)`
@@ -218,6 +222,31 @@ interface RequestInit {
   window?: null;
 }
 ```
+
+## Chapter 2. mock API로 데이터통신을 준비합니다.
+
+### TypeScript 환경에서 ESLint 적용하기
+
+- [JavaScript ESLint](https://eslint.org/)와 [TypeScript ESLint](https://typescript-eslint.io/)는 적용 방식이 다르다.
+  - 삭제 코드
+    ```json
+    // pakage.json devdependencies
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-config-prettier": "^8.7.0",
+    "eslint-plugin-html": "^7.1.0",
+    "eslint-plugin-import": "^2.27.5",
+    ```
+  - 추가 코드
+    ```json
+    // pakage.json devdependencies
+    "@typescript-eslint/eslint-plugin": "^5.56.0",
+    "@typescript-eslint/parser": "^5.56.0",
+    "typescript": "^4.9.5",
+    ```
+- eslint의 format을 지정할 수 있는 파일이 있는데, 형식은 상황에 따라 다양하다.
+  - .eslintrc.json: JSON 형식으로 작성한다.
+  - .eslintrc.js: JavaScript 형식으로 작성하며, ESM를 지원하지 않지 때문에 ESM 사용시 .eslintrc.cjs로 작성해야 한다.
+  - .eslintrc.cjs: JavaScript 형식으로 작성하며, ESM를 지원한다. package.json에서 `type: module`을 설정해줬다면 .cjs로 작성하자.
 
 # 잊어버린 개념 되새기기!
 
