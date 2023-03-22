@@ -1,4 +1,4 @@
-# clone-shopping-mall
+# 🧑🏻‍🏫 About clone-shopping-mall
 
 ## 강의 원본 코드
 
@@ -6,21 +6,19 @@ https://github.com/roy-jung/livecode-study_mall
 
 ## stack
 
-react, react-query, react-router,
+react, react-query, react-router
 
 ## third-party api
 
-vite-plugin-next-react-router,
+vite-plugin-next-react-router
 
 ## fetch mock api
 
 https://fakeapi.platzi.com/
 
-# 강의 외 추가로 공부한 내용
+# 🚀 React Router
 
-## Chapter 1. 무작정 시작해봅시다. 일단 클라이언트부터!
-
-### Router - 현 프로젝트의 구조
+## 현 프로젝트의 router
 
 - 하위 경로에 있는 페이지들을 router로 제공하기 위해서는 react-router에서 제공하는 [`<Outlet>`](https://reactrouter.com/en/6.9.0/components/outlet) 컴포넌트를 사용해야 한다. 때문에 \_layout.tsx에서 `<Outlet />` 컴포넌트를 사용하는 Layout 함수 컴포넌트를 만든다.
 - routes.tsx에서 `GlobalLayout`(=Layout)을 불러와 routes의 element로 전달하여 routes 구조를 만든다.
@@ -31,23 +29,78 @@ https://fakeapi.platzi.com/
 - [vite-plugin-next-react-router](https://www.npmjs.com/package/vite-plugin-next-react-router)는 라우트 폴더 구조를 next와 동일하게 가져갈 수 있도록 도와주는 third-party library이다.
 - vite.config.ts 파일에서 `defineConfig` 인수로 객체를 전달할 때 plugins 프로퍼티의 배열 내부에 `reactRouterPlugin()`을 전달하면 프로젝트 root 폴더에 routes.tsx 파일을 자동 생성해주며, route 경로에 해당하는 페이지들 또한 자동으로 routes.tsx 파일에 추가해준다.
 
-### (미작성) `React.lazy()`란?
+# 🍴 JavaScript + React
+
+### `React.lazy()`란?
 
 routes.tsx에서 route 경로에 해당하는 페이지들을 import 받아올 때 `React.lazy()`를 이용하여 컴포넌트로 불러오는데, 그렇다면 [`React.lazy()`](https://react.dev/reference/react/lazy)는 뭘까?
 
-### (미작성) `<Suspense>`란?
+- `lazy()`는 React에서 컴포넌트를 동적으로 로드하기 위해 사용하는 함수로, 코드 분할에 주로 사용된다.
+  - 코드 분할(Code Splitting): 웹 애플리케이션의 초기 로딩 속도를 향상시키기 위해 번들 파일을 작은 조각으로 분할하고 필요한 코드 조각만 필요한 시점에 동적으로 로딩하는 기술.
+  - ⚠️ ESModule에서는 코드 분할을 지원하고 있기 때문에 코드 분할을 위해서라면 lazy 함수를 사용할 필요가 없다. (때문에 추후 본 강의에서 vite-plugin-next-react-router를 사용하지 않고 route를 직접 구현할 때는 lazy 함수를 지웠다.)
+- 작성 방법: `lazy(loadFunction)`
+  - `loadFunction`: Promise 또는 thenable(Promise와 비슷한 역할을 하는 객체)를 반환하며, 매개변수는 작성할 수 없다.
+    ```js
+    // 예시
+    const ProductPage = lazy(() => import("./src/product/index"));
+    ```
+- 컴포넌트 내부에서 lazy 함수를 호출하면 안된다. 리액트는 lazy 함수를 해당 컴포넌트가 필요한 순간 초기에 한번만 렌더링을 하도록 되어 있는데, 컴포넌트 내부에서 lazy 함수를 호출하면 state가 변경될 때마다 컴포넌트가 리렌더링되므로 좋지 않은 성능을 가져온다.
+- lazy 함수를 [`<Suspense>`](https://react.dev/reference/react/Suspense)와 함께 작성하면 lazy 함수에 의해 지연 로드되는 컴포넌트가 로드되는 동안 Suspense 함수의 fallback 프로퍼티에 작성된 값을 출력해준다.
+- 네트워크 상태에 따라 지연 로드는 에러를 발생시킬 수도 있다. 이럴 경우 [Error Boundaries(에러 경계)](https://ko.reactjs.org/docs/error-boundaries.html) 컴포넌트를 작성하여 에러가 예측되는 컴포넌트를 wrapping하면 에러가 애플리케이션의 동작을 멈추게 하는 것을 방지할 수 있다.
 
-\_layout.tsx 파일에서는 React의 내장 컴포넌트인 Suspense를 import 받아서 `<Outlet />` 컴포넌트를 감싸고 있다. [`<Suspense>`](https://react.dev/reference/react/Suspense)란 뭘끼?
+### `<Suspense>` 컴포넌트란?
 
-### (미작성) `React.lazy()`, `<Suspense>` 함께 쓰기
+- [`<Suspense>`](https://react.dev/reference/react/Suspense)는 `children` 컴포넌트가 로드를 완료할 때까지 `fallback` 프로퍼티에 작성된 대체 ui를 출력한다.
+  ```js
+  <Suspense fallback={<Loading />}>/* children */</Suspense>
+  ```
+  - `children`: 하위 컴포넌트 등 지연 로드를 포함하고 있는 실제 ui.
+  - `fallback`: 로드되는 동안 대체 출력될 ui.
+- children에서 보다 빠르게 로드되는 컴포넌트가 있더라도 chilren이 모두 로드될 때까지 ui는 변경되지 않는다.
+  - 보다 빨리 로드되는 콘텐츠를 미리 공개하고, 모두 로드되어도 미리 공개되었던 콘텐츠를 숨기고 싶지 않다면 [startTransition](https://react.dev/reference/react/startTransition) 함수를 사용할 수 있다.
+- `<Suspense>`가 중첩된 구조로 작성되었다면 지연 로드되는 컴포넌트의 가장 가까운 `<Suspense>`만 동작한다.
+- fallback으로 전혀 다른 컴포넌트를 출력하는 것은 페이지가 로딩되는 중에 UI의 변경이 일어나기 때문에 사용자 경험을 떨어뜨리므로 사용을 지양해야 한다.
+- 기능
+  - 콘텐츠가 로드되는 동안 대체 표시 (스피너, 스켈레톤 등 손쉬운 구현)
+  - 콘텐츠를 한 번에 공개
+  - 로드될 때 중첩된 콘텐츠 표시
+  - 새로운 콘텐츠가 로드되는 동안 오래된 콘텐츠 표시
+  - 이미 공개된 콘텐츠가 숨겨지는 것을 방지
+  - 전환이 일어나고 있음을 나타냅니다.
+  - 내비게이션에서 서스펜스 경계 재설정
+  - 서버 오류 및 서버 전용 콘텐츠에 대한 대체 제공
 
-- [React.lazy 및 Suspense를 사용한 코드 분할 - web.dev](https://web.dev/i18n/ko/code-splitting-suspense/)
+## URLSearchParams 란?
 
-### react-query 사용 방법
+[URLSearchParams](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams) 인스턴스는 `new URLSearchParams()`의 반환값으로 URLSearchParams 호출시 인수로 전달한 key/value 쌍을 반복하여 쿼리 문자열을 쉽게 다룰 수 있도록 돕는다.
 
-- `QueryClientProvider`를 이용하여 하위 컴포넌트들에게 QueryClient 컴포넌트를 JSX로 제공할 수 있다.
+```ts
+interface URLSearchParams {
+  /** Appends a specified key/value pair as a new search parameter. */
+  append(name: string, value: string): void;
+  /** Deletes the given search parameter, and its associated value, from the list of all search parameters. */
+  delete(name: string): void;
+  /** Returns the first value associated to the given search parameter. */
+  get(name: string): string | null;
+  /** Returns all the values association with a given search parameter. */
+  getAll(name: string): string[];
+  /** Returns a Boolean indicating if such a search parameter exists. */
+  has(name: string): boolean;
+  /** Sets the value associated to a given search parameter to the given value. If there were several values, delete the others. */
+  set(name: string, value: string): void;
+  sort(): void;
+  /** Returns a string containing a query string suitable for use in a URL. Does not include the question mark. */
+  toString(): string;
+  forEach(
+    callbackfn: (value: string, key: string, parent: URLSearchParams) => void,
+    thisArg?: any
+  ): void;
+}
+```
 
-### 변경된 환경 설정
+# 📥 React Query
+
+## 변경된 환경 설정
 
 [Breaking change - React Query v4](https://tanstack.com/query/v4/docs/react/guides/migrating-to-react-query-4) 참고
 
@@ -75,7 +128,7 @@ routes.tsx에서 route 경로에 해당하는 페이지들을 import 받아올 �
   import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
   ```
 
-### QueryClient란?
+## QueryClient란?
 
 - react-query에서 제공하는 api로 캐시와 상호 작용하는 데 사용할 수 있다.
 - query를 fetch 받거나 캐시하고 업데이트 하는 등 다양한 메서드를 가진 인스턴스를 반환하는 클래스로 만들어져 있어 new 연산자와 함께 호출할 수 있다.
@@ -116,13 +169,13 @@ routes.tsx에서 route 경로에 해당하는 페이지들을 import 받아올 �
       - `onError` (기본값: error => console.error(error)): 오류가 발생했을 때 호출할 함수를 지정한다.
 - 각종 내장 메서드는 [`<QueryClient>`](https://tanstack.com/query/v4/docs/react/reference/QueryClient)에서 확인할 수 있다.
 
-### QueryClientProvider란?
+## QueryClientProvider란?
 
-- [`<QueryClientProvider>`](https://tanstack.com/query/v4/docs/react/reference/QueryClientProvider)는 QueryClient 컴포넌트 provider로, `client`, `contextSharing`를 props로 전달할 수 있다.
+- [`<QueryClientProvider>`](https://tanstack.com/query/v4/docs/react/reference/QueryClientProvider)는 QueryClient 컴포넌트 provider로, 하위 클라이언트에게 QueryClient 컴포넌트를 JSX로 제공할 수 있다.
   - `client` (필수): 제공할 QueryClient의 인스턴스
   - `contextSharing` (기본값: false): context를 공유할 것인지를 선택하는 옵션
 
-### useQuery란?
+## useQuery란?
 
 - [useQuery](https://tanstack.com/query/v4/docs/react/reference/useQuery)는 react-query에서 제공하는 api로, query를 서버로부터 GET 받을 때 사용한다.
 - 작성 방법: `useQuery(queryKey, queryFunction)`
@@ -135,45 +188,32 @@ routes.tsx에서 route 경로에 해당하는 페이지들을 import 받아올 �
 - useQuery는 비동기로 동작한다.
 - 반환값: `{ data, dataUpdatedAt, error, errorUpdateCount, errorUpdatedAt, failureCount, isError, isFetched, isFetchedAfterMount, isFetching, isIdle, isInitialLoading, isLoadingError, isPlaceholderData, isPreviousData, isRefetchError, isRefetching, isStale, isSuccess, refetch, remove, status }`
 
-### HTTP 통신에서 작성하는 `Access-Control-Allow-Origin`란?
+# 📐 TypeScript
 
-- HTTP 통신으로 웹사이트의 리소스에 접근할 때 도메인이 다를 경우 보안상의 이유로 서버 접근을 제한하는데, `Access-Control-Allow-Origin`는 이 권한을 다루는 HTTP 헤더이다.
-- 이 헤더는 서버 응답에 포함되어 해당 리소스에 접근할 수 있는 도메인을 표시한다.
-- 즉, `Access-Control-Allow-Origin` 헤더에 명시된 도메인과 웹 페이지의 호스트가 일치해야 리소스 접근이 가능하다.
-- 프로퍼티 값 해석 방법
-  - \*: 모든 도메인에서 접근 허용한다는 뜻으로, 서버는 모든 도메인에서의 요청에 대해 리소스에 대한 응답을 반환하다.
-  - 특정 도메인명: Access-Control-Allow-Origin 헤더에 해당 도메인명이 포함되어 있으면, 해당 도메인에서만 접근이 허용된다.
-  - null: 브라우저가 CORS 프로토콜을 지원하지 않는 경우, 해당 리소스에 접근할 수 있다. 이 경우, 서버는 Access-Control-Allow-Origin 헤더를 응답하지 않으며, 브라우저는 자동으로 null을 지정한다.
+## TypeScript 환경에서 ESLint 적용하기
 
-### URLSearchParams 란?
+- [JavaScript ESLint](https://eslint.org/)와 [TypeScript ESLint](https://typescript-eslint.io/)는 적용 방식이 다르다.
+  - 삭제 코드
+    ```json
+    // pakage.json devdependencies
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-config-prettier": "^8.7.0",
+    "eslint-plugin-html": "^7.1.0",
+    "eslint-plugin-import": "^2.27.5",
+    ```
+  - 추가 코드
+    ```json
+    // pakage.json devdependencies
+    "@typescript-eslint/eslint-plugin": "^5.56.0",
+    "@typescript-eslint/parser": "^5.56.0",
+    "typescript": "^4.9.5",
+    ```
+- eslint의 format을 지정할 수 있는 파일이 있는데, 형식은 상황에 따라 다양하다.
+  - .eslintrc.json: JSON 형식으로 작성한다.
+  - .eslintrc.js: JavaScript 형식으로 작성하며, ESM를 지원하지 않지 때문에 ESM 사용시 .eslintrc.cjs로 작성해야 한다.
+  - .eslintrc.cjs: JavaScript 형식으로 작성하며, ESM를 지원한다. package.json에서 `type: module`을 설정해줬다면 .cjs로 작성하자.
 
-[URLSearchParams](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams) 인스턴스는 `new URLSearchParams()`의 반환값으로 URLSearchParams 호출시 인수로 전달한 key/value 쌍을 반복하여 쿼리 문자열을 쉽게 다룰 수 있도록 돕는다.
-
-```ts
-interface URLSearchParams {
-  /** Appends a specified key/value pair as a new search parameter. */
-  append(name: string, value: string): void;
-  /** Deletes the given search parameter, and its associated value, from the list of all search parameters. */
-  delete(name: string): void;
-  /** Returns the first value associated to the given search parameter. */
-  get(name: string): string | null;
-  /** Returns all the values association with a given search parameter. */
-  getAll(name: string): string[];
-  /** Returns a Boolean indicating if such a search parameter exists. */
-  has(name: string): boolean;
-  /** Sets the value associated to a given search parameter to the given value. If there were several values, delete the others. */
-  set(name: string, value: string): void;
-  sort(): void;
-  /** Returns a string containing a query string suitable for use in a URL. Does not include the question mark. */
-  toString(): string;
-  forEach(
-    callbackfn: (value: string, key: string, parent: URLSearchParams) => void,
-    thisArg?: any
-  ): void;
-}
-```
-
-### RequestInt 타입
+## RequestInt 타입
 
 RequestInit 인터페이스는 fetch() 함수를 호출할 때 전달할 수 있는 객체의 타입을 정의한다.
 이 객체는 HTTP 요청을 구성하는 여러가지 속성을 가지고 있다.
@@ -223,34 +263,27 @@ interface RequestInit {
 }
 ```
 
-## Chapter 2. mock API로 데이터통신을 준비합니다.
+# 📫 HTTP 통신
 
-### TypeScript 환경에서 ESLint 적용하기
+## `Access-Control-Allow-Origin`란?
 
-- [JavaScript ESLint](https://eslint.org/)와 [TypeScript ESLint](https://typescript-eslint.io/)는 적용 방식이 다르다.
-  - 삭제 코드
-    ```json
-    // pakage.json devdependencies
-    "eslint-config-airbnb-base": "^15.0.0",
-    "eslint-config-prettier": "^8.7.0",
-    "eslint-plugin-html": "^7.1.0",
-    "eslint-plugin-import": "^2.27.5",
-    ```
-  - 추가 코드
-    ```json
-    // pakage.json devdependencies
-    "@typescript-eslint/eslint-plugin": "^5.56.0",
-    "@typescript-eslint/parser": "^5.56.0",
-    "typescript": "^4.9.5",
-    ```
-- eslint의 format을 지정할 수 있는 파일이 있는데, 형식은 상황에 따라 다양하다.
-  - .eslintrc.json: JSON 형식으로 작성한다.
-  - .eslintrc.js: JavaScript 형식으로 작성하며, ESM를 지원하지 않지 때문에 ESM 사용시 .eslintrc.cjs로 작성해야 한다.
-  - .eslintrc.cjs: JavaScript 형식으로 작성하며, ESM를 지원한다. package.json에서 `type: module`을 설정해줬다면 .cjs로 작성하자.
+src/queryClient.tsx에서 restfetcher 함수를 만들 때 fetchOptions의 body에 `Access-Control-Allow-Origin` 프로퍼티를 작성했다. `Access-Control-Allow-Origin`가 뭘까?
 
-# 잊어버린 개념 되새기기!
+- HTTP 통신으로 웹사이트의 리소스에 접근할 때 도메인이 다를 경우 보안상의 이유로 서버 접근을 제한하는데, `Access-Control-Allow-Origin`는 이 권한을 다루는 HTTP 헤더이다.
+- 이 헤더는 서버 응답에 포함되어 해당 리소스에 접근할 수 있는 도메인을 표시한다.
+- 즉, `Access-Control-Allow-Origin` 헤더에 명시된 도메인과 웹 페이지의 호스트가 일치해야 리소스 접근이 가능하다.
+- 프로퍼티 값 해석 방법
+  - \*: 모든 도메인에서 접근 허용한다는 뜻으로, 서버는 모든 도메인에서의 요청에 대해 리소스에 대한 응답을 반환하다.
+  - 특정 도메인명: Access-Control-Allow-Origin 헤더에 해당 도메인명이 포함되어 있으면, 해당 도메인에서만 접근이 허용된다.
+  - null: 브라우저가 CORS 프로토콜을 지원하지 않는 경우, 해당 리소스에 접근할 수 있다. 이 경우, 서버는 Access-Control-Allow-Origin 헤더를 응답하지 않으며, 브라우저는 자동으로 null을 지정한다.
+
+# 🤦🏻‍♀️ 잊어버린 개념 되새기기!
 
 ## HTTP 통신 메서드에 따른 요청 몸체(body) 유무
 
 - GET, DELETE: body를 작성해서 서버에 요청을 넣어도 body값은 무시된다.
 - POST, PUT, PATCH: body를 작성해야 하며, 값은 JSON 형태로 전달한다. (`JSON.stringify()` 사용)
+
+# 👀 함께 읽으면 좋을 문서
+
+- [New Suspense SSR Architecture in React 18](https://github.com/reactwg/react-18/discussions/37)
