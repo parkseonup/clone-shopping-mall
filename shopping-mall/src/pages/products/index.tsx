@@ -10,7 +10,7 @@ const ProductList = () => {
     () => graphqlFetcher(GET_PRODUCTS)
   );
 
-  if (!data) return;
+  if (!data) return <p>상품이 없습니다.</p>;
 
   return (
     <div>
