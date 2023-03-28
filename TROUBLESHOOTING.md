@@ -69,3 +69,79 @@ const { data } = useQuery<Promise<unknown>, Error, ProductsType>(
 queryFunction이 반환한 값의 data가 정상적으로 들어올 때도 ProductsType으로 타입 추론이 가능하다.
 
 ## (미작성) MSW 래핑을 먼저 해줬는데 왜 MSW가 연결되기 전에 컴포넌트 마운트가 발생될까?
+
+## selectorFamily와 useRecoilState에 대한 이해!
+
+이번에는 selectorFamily와 useRecoilState에 대한 이해가 부족해서 코드 로직을 잘못 생각하고 있었던 것에 대해 작성하려 한다.
+
+### 예시 코드
+
+```ts
+import { atom, selectorFamily, useRecoilState } from "recoil";
+
+/** 장바구니 목록: [[ id, 개수 ]] */
+export const cartState = atom<Map<string, number>>({
+  key: "cartState",
+  default: new Map(),
+});
+
+/**
+ * get: 제품 id를 인수로 전달하면 장바구니 목록에서 해당 제품 뽑아오기
+ * set: 제품 id를 인수로 전달하고 newValue로 장바구니에 담긴 개수 업데이트
+ */
+export const cartItemSelector = selectorFamily<number | undefined, string>({
+  key: "cartItem",
+  get:
+    (id: string) =>
+    ({ get }) => {
+      const carts = get(cartState);
+      return carts.get(id);
+    },
+  set:
+    (id: string) =>
+    ({ get, set }, newValue) => {
+      if (typeof newValue === "number") {
+        const newCart = new Map([...get(cartState)]);
+        newCart.set(id, newValue);
+        set(cartState, newCart);
+      }
+    },
+});
+
+const [cartAmount, setCartAmount] = useRecoilState(cartItemSelector(id));
+const addToCart = () => setCartAmount((prev) => (prev || 0) + 1);
+```
+
+### 문제 상황
+
+위 코드에서 useRecoilState가 useState와 비슷한 동작을 한다는 것에 매몰되어 useRecoilState가 recoil state에 접근하고 관리하는 방식에 대해 이해하지 못했다.
+처음 이해한, 즉 잘못 이해한 useRecoilState 메서드에 대한 해석은 아래와 같다.
+
+1. cartItemSelector(id)는 cartItemSelector의 get 프로퍼티에 접근하여 cartState에서 id에 해당하는 상품 정보를 가져온다.
+   - cartItemSelector(id)의 결과값: id에 해당하는 개수
+2. useRecoilState는 state와 mutator를 가진 배열을 반환하는데, 이를 [cartAmount, setCartAmount] 이렇게 명명 짓는다.
+   - cartItemSelector(id)의 결과값 대입: const [cartAmount, setCartAmount] = useRecoilState(개수)
+3. useRecoilState를 호출할 때 defaultValue를 상품 id에 해당하는 개수를 넘겨줬기 때문에 cartAmount === 개수
+4. addToCart를 호출하면 state인 cartAmount값을 변경하는 setCartAmount가 호출되어 cartAmout = cartAmount + 1이 된다.
+5. Error... cartItemSelector의 set 프로퍼티는 언제 호출되는거지?
+
+위와 같은 해석은 cartItemSelector의 set의 프로퍼티에 접근하는 로직이 존재하지 않는다. 처음에는 set 프로퍼티에 접근하지 않으면 cartState의 변경도 일어나지 않기 때문에 추가적인 코드를 작성해야 하는가 고민했다.
+그러나 그저 해석에 오류가 있다는 것을 발견했다..
+
+### 문제 원인 분석 및 해결
+
+잘못 이해한 부분을 바로 잡아보자.
+
+- cartItemSelector(id)는 cartItemSelector.get(id)가 아니다.
+  -> selector의 get 프로퍼티의 반환값을 반환하는 것이 아니라 그 반환값을 get 프로퍼티로 가진 RecoilState을 반환한다.
+- useRecoilState가 반환한 배열의 첫 번째 값인 cartAmount에는 cartState의 value에 작성된 값(원시값)이 할당되는 것이 아니라 RecoilState의 참조값을 할당한다.
+  -> 즉, cartAmount를 변경하면 cartItemSelector의 set 프로퍼티에 접근하게 된다.
+
+다시 해석해보면
+
+1. cartItemSelector(id)는 cartItemSelector의 get 프로퍼티에 접근하여 cartState에서 id에 해당하는 상품 정보를 담은 RecoilState를 반환한다.
+   - cartItemSelector(id)의 결과값: get 프로퍼티의 값이 id에 해당하는 값으로 변경된 cartItemSelector
+2. useRecoilState는 state와 mutator를 가진 배열을 반환하는데, 이를 [cartAmount, setCartAmount] 이렇게 명명 짓는다.
+   - cartItemSelector(id)의 결과값 대입: const [cartAmount, setCartAmount] = useRecoilState(cartItemSelector)
+3. addToCart를 호출하면 setCartAmount가 state인 cartAmount값을 cartAmout = cartAmount + 1로 변경한다. 이는 cartItemSelector의 set 프로퍼티에 접근하게 된다.
+   - cartAmount의 재할당된 cartAmount + 1은 set 프로퍼티의 newValue 매개변수에 할당되어 최종적으로 cartState의 값을 변경하게 된다.
