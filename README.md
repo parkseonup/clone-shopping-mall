@@ -12,11 +12,11 @@ https://github.com/roy-jung/livecode-study_mall
 
 ## third-party api
 
-vite-plugin-next-react-router
+- ~~vite-plugin-next-react-router~~ (vite-plugin-next-react-router에서 setting된 파일은 그대로 두고, react-route-dom으로 사용)
 
-## fetch mock api
+## dummy data
 
-https://fakeapi.platzi.com/
+- ~~https://fakeapi.platzi.com~~ (mocking 구현으로 dummy 사이트 사용x)
 
 # 공부한 내용
 
