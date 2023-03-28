@@ -192,9 +192,168 @@ interface URLSearchParams {
 - useQuery는 비동기로 동작한다.
 - 반환값: `{ data, dataUpdatedAt, error, errorUpdateCount, errorUpdatedAt, failureCount, isError, isFetched, isFetchedAfterMount, isFetching, isIdle, isInitialLoading, isLoadingError, isPlaceholderData, isPreviousData, isRefetchError, isRefetching, isStale, isSuccess, refetch, remove, status }`
 
-# Mocking
+# 🧶 Recoil
 
-참고 문서
+## Atom
+
+- `atom`은 전역 상태로, 어떤 컴포넌트에서든 참조하고 사용할 수 있다.
+- 컴포넌트가 `atom`을 참조하는 순간부터 컴포넌트는 `atom`을 구독하고 있는 것으로, `atom` 값이 변경되면 `atom`을 구독하고 있는 모든 컴포넌트는 리렌더링 된다.
+- `atom` 정의 코드
+
+  ```ts
+  interface AtomOptionsWithoutDefault<T> {
+    key: NodeKey;
+    effects?: ReadonlyArray<AtomEffect<T>>;
+    effects_UNSTABLE?: ReadonlyArray<AtomEffect<T>>;
+    dangerouslyAllowMutability?: boolean;
+  }
+  interface AtomOptionsWithDefault<T> extends AtomOptionsWithoutDefault<T> {
+    default: RecoilValue<T> | Promise<T> | Loadable<T> | WrappedValue<T> | T;
+  }
+  export type AtomOptions<T> =
+    | AtomOptionsWithoutDefault<T>
+    | AtomOptionsWithDefault<T>;
+
+  /** 기본 atom: RecoilState */
+  export function atom<T>(options: AtomOptions<T>): RecoilState<T>;
+
+  /** 단순히 값을 감싸는데 사용되는 atom: WrappedValue */
+  export namespace atom {
+    function value<T>(value: T): WrappedValue<T>;
+  }
+  ```
+
+- `atom`의 값은 `RecoilState`이기 때문에 컴포넌트가 `atom`을 참조할 때는 `useRecoilState` 메서드를 사용하여 인수에 `atom`으로 선언된 state를 전달해야 한다.
+  - `useRecoilState()`: 전역 상태인 `atom`에 접근하고 관리하기 위한 메서드
+- 작성 방법
+
+  ```ts
+  import { atom, useRecoilState } from "recoil";
+
+  const atomState = atom<defaultValueType>({
+    key: "uniqueKey",
+    default: "initValue",
+  });
+
+  const [state, setState] = useRecoilState(atomState);
+  ```
+
+## Selector
+
+- Derived state를 계산하는 데 사용되는 메서드로, 다른 `atom`이나 `selector`를 읽어들여 새로운 값을 계산하고 이 값을 다른 컴포넌트에서 사용할 수 있도록 해준다.
+  - [Derived state](https://legacy.reactjs.org/blog/2018/06/07/you-probably-dont-need-derived-state.html): 다른 상태(state)들로 계산해서 얻어내는 새로운 상태값으로, props와 의존성이 있는 state이다.
+- `selector` 정의 코드
+
+  ```ts
+  export interface ReadOnlySelectorOptions<T> {
+    key: string;
+    get: (opts: {
+      get: GetRecoilValue;
+      getCallback: GetCallback;
+    }) => Promise<T> | RecoilValue<T> | Loadable<T> | WrappedValue<T> | T;
+    dangerouslyAllowMutability?: boolean;
+    cachePolicy_UNSTABLE?: CachePolicyWithoutEquality;
+  }
+
+  /** 읽기 전용으로 작성되었을 때의 selector: RecoilValueReadOnly */
+  export function selector<T>(
+    options: ReadOnlySelectorOptions<T>
+  ): RecoilValueReadOnly<T>;
+
+  /** 읽기와 쓰기가 모두 허용되었을 때의 selector: RecoilState */
+  export function selector<T>(
+    options: ReadWriteSelectorOptions<T>
+  ): RecoilState<T>;
+
+  /** 단순히 값을 감싸는데 사용되는 selector: WrappedValue */
+  export namespace selector {
+    function value<T>(value: T): WrappedValue<T>;
+  }
+  ```
+
+- `selector`는 일반적인 상태값이 아닌, 읽기 전용(read-only)로 사용된다.
+- return 값이 `RecoilValueReadOnly`이기 때문에 `selector` 값을 참조하기 위해서는 `useRecoilValue` 메서드를 사용해야 한다.
+- 작성 방법
+
+  - `selector`의 인수로 `key` 프로퍼티와 `get` 메세드를 가진 객체를 전달한다.
+  - recoil의 `get` 메서드는 메서드 축약표현을 사용하지 않고 화살표 함수로 작성한다.
+  - `get` 메서드에는 `get` 매개변수를 사용하여 다른 `atom`과 `selector`를 참조할 수 있다.
+  - `selector` 값을 참조하기 위해서는 `useRecoilValue` 메서드를 사용한다.
+
+  ```js
+  import { selctor, useRecoilValue } from "recoil";
+
+  const mySelector = selector({
+    key: "mySelector",
+    get: ({ get }) => {
+      const value1 = get(myAtom1);
+      const value2 = get(myAtom2);
+
+      return value1 + value2;
+    },
+  });
+
+  export function Component() {
+    const derivedValue = useRecoilValue(mySelector);
+    return <div>derivedValue</div>;
+  }
+  ```
+
+## `selectorFamily` 메서드
+
+- `selectorFamily` 메서드는 `key` 프로퍼티와 `get`, `set` 메서드를 가진 객체를 인수로 전달하면 `selector`를 반환하는 메서드이다.
+- `selectorFamily` 함수 정의 코드
+
+  ```ts
+  export interface ReadWriteSelectorFamilyOptions<
+    T,
+    P extends SerializableParam
+  > {
+    key: string;
+    get: (
+      param: P
+    ) => (opts: {
+      get: GetRecoilValue;
+      getCallback: GetCallback;
+    }) => Promise<T> | Loadable<T> | WrappedValue<T> | RecoilValue<T> | T;
+    set: (param: P) => (
+      opts: {
+        set: SetRecoilState;
+        get: GetRecoilValue;
+        reset: ResetRecoilState;
+      },
+      newValue: T | DefaultValue
+    ) => void;
+    cachePolicy_UNSTABLE?: CachePolicyWithoutEquality;
+    dangerouslyAllowMutability?: boolean;
+  }
+
+  export function selectorFamily<T, P extends SerializableParam>(
+    options: ReadWriteSelectorFamilyOptions<T, P>
+  ): (param: P) => RecoilState<T>;
+  ```
+
+- `selectorFamily`는 결과값이 `RecoilState`이기 때문에 `useRecoilState` 메서드를 이용하여 `selector`의 값을 참조해야 한다.
+- `selectorFamily`는 인수 작성 타입이 `ReadWriteSelectorFamilyOptions`으로 `get`, `set` 프로퍼티를 작성할 때 `(param) => (options) => returnValue` 방식으로 작성한다.
+- 작성 방법
+
+  ```js
+  import { selectorFamily } from "recoil";
+
+  const mySelector = selectorFamily({
+    key: "mySelector",
+    get: ({ get }) => {
+      // ...
+    },
+    set: ({ get, set }, newValue) => {
+      // ...
+    },
+  });
+  ```
+
+# 🌌 Mocking
+
+## 참고 문서
 
 - [Mocking으로 생산성까지 챙기는 FE 개발 - Kakao Tech](https://tech.kakao.com/2021/09/29/mocking-fe/)
 - [Mocking으로 프론트엔드 DX를 높여보자 - 화해팀](https://yozm.wishket.com/magazine/detail/1711/)
