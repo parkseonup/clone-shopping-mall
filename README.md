@@ -6,7 +6,7 @@ https://github.com/roy-jung/livecode-study_mall
 
 ## stack
 
-- react, react-query, react-router
+- react, react-query, react-router, ~~recoil~~(mocking으로 서버 상태 따로 관리)
 - tools: vite
 - Mocking: MSW, GraphQL
 

@@ -423,6 +423,14 @@ interface URLSearchParams {
 
 ### (미작성) integrate를 browser로 설정할 때와 node 환경일 때의 차이
 
+### (미작성) query란?
+
+- query란 서버에 데이터를 요청하는 데 사용하는 작업으로, REST API에서의 GET 메서드에 해당한다.
+
+### (미작성) mutation이란?
+
+- [mutation](https://graphql.org/learn/queries/#mutations)이란 서버의 데이터를 수정하거나 생성하는 데 사용하는 작업으로, REST API에서의 POST, PATCH, DELETE 메서드에 해당한다.
+
 ### graphql-request 패키지의 request 메서드란?
 
 - request 메서드: GraphQL의 query나 mutation을 지정한 HTTP end point(url)로 POST 요청(변경 가능)을 보내는 메서드이다.

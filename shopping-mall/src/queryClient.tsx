@@ -77,4 +77,5 @@ export const graphqlFetcher = async (query: RequestDocument, variables = {}) =>
 /** react-query에서 unique key로 사용되는 값 */
 export const QueryKeys = {
   PRODUCTS: "PRODUCTS",
+  CART: "CART",
 };
