@@ -33,6 +33,8 @@ MSW의 application root에 browser integration을 적용할 때 예제에 작성
 - [vite-plugin-next-react-router](https://www.npmjs.com/package/vite-plugin-next-react-router)는 라우트 폴더 구조를 next와 동일하게 가져갈 수 있도록 도와주는 third-party library이다.
 - vite.config.ts 파일에서 `defineConfig` 인수로 객체를 전달할 때 plugins 프로퍼티의 배열 내부에 `reactRouterPlugin()`을 전달하면 프로젝트 root 폴더에 routes.tsx 파일을 자동 생성해주며, route 경로에 해당하는 페이지들 또한 자동으로 routes.tsx 파일에 추가해준다.
 
+## (미작성) vite-plugin-next-react-router에서 제공하는 소스 분석해보기
+
 # 🍴 JavaScript + React
 
 ### `React.lazy()`란?
@@ -581,7 +583,55 @@ query {
   request('/graphql', query, variables);
   ```
 
-# (미작성) 🪪 uuid
+# 🪪 UUID
+
+- [UUID(Universally Unique IDentifier, 범용 고유 식별자)](https://en.wikipedia.org/wiki/Universally_unique_identifier)는 네트워크 상에서 고유성을 보장하는 ID를 만들기 위한 표준 규약으로, GUID(Globally Unique IDentifier)라고도 불린다.
+- UUID는 32개의 16진수 숫자가 하이픈(`-`)으로 구분된 5개의 그룹으로 표시되며, 총 36자에 대해 `8-4-4-4-12` 형식으로 표현된다.
+  - 예시: `123e4567-e89b-12d3-a456-426614174000`
+- 노드 환경에서는 UUID를 쉽게 생성할 수 있는 라이브러리를 제공하여, 손쉽게 설치하고 사용할 수 있다.
+
+## uuid 라이브러리 설치
+
+- [uuid](https://www.npmjs.com/package/uuid) 설치
+  ```shell
+  npm i uuid
+  ```
+- TypeScript에서 uuid 라이브러리를 사용하려면 [uuid에 대한 타입 정의가 된 패키지](https://www.npmjs.com/package/@types/uuid)를 추가로 설치해야 한다.
+  ```shell
+  npm i --save @types/uuid
+  ```
+
+## uuid 라이브러리란?
+
+- UUID를 쉽게 생성할 수 있는 라이브러리이다.
+- 제공되는 API
+  ```ts
+  export const NIL: NIL;
+  export const parse: parse;
+  export const stringify: stringify;
+  export const v1: v1;
+  export const v3: v3;
+  export const v4: v4;
+  export const v5: v5;
+  export const validate: validate;
+  export const version: version;
+  ```
+  - `uuid.v1()`: 현재 시각을 기준으로 UUID를 생성하며, 이는 uuid가 생성된 시각과 MAC주소로 uuid를 유추할 수 있기 때문에 안전성이 떨어진다는 단점이 있다.
+  - `uuid.v3()`: MD5 해시 기준으로 UUID를 생성한다.
+  - `uuid.v4()`: 랜덤값을 기반으로 UUID를 생성하며, 많은 사람들이 주로 사용하는 버전이다.
+  - `uuid.v5()`: SHA-1 해시 기준으로 UUID를 생성한다.
+- 사용 방법 예시
+
+  ```js
+  import { v4 as uuidv4 } from "uuid"; // as는 import 받은 요소의 별칭을 정하는 것으로 다른 네이밍을 작성해도 된다. -> ex: { v4 as uuid }
+
+  const productItem = {
+    id: uuidv4(), // import 받은 uuidv4 메서드를 호출하면 import 받은 버전에 맞는 UUID를 생성해준다.
+  };
+  ```
+
+- 한계
+  - 컴포넌트가 마운트될 때마다 uuid가 호출되어 uuid는 늘 새로운 id값을 반환하기 때문에 기존의 id값을 유지하기 어렵다. (예시: 상품 id를 이용하여 서버에 상품 정보를 GET 요청하는 로직이라면, 해당 페이지에서 새로고침을 했을 경우 uuid가 생성한 상품 id값이 변경되기 때문에 동일한 상품 id를 서버에서 찾지 못한다.)
 
 # 📐 TypeScript
 
