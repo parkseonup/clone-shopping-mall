@@ -1,10 +1,11 @@
 import { graphql } from "msw";
+import { v4 as uuidv4 } from "uuid";
 import { ADD_CART, CartType, GET_CART } from "../graphql/cart";
 import { GET_PRODUCT, GET_PRODUCTS } from "../graphql/products";
 
 const mockProducts = (() =>
   Array.from({ length: 20 }).map((_, i) => ({
-    id: i + 1 + "",
+    id: uuidv4(),
     title: `임시제목${i + 1}`,
     imageUrl: `https://placeimg.com/200/150/nature/${i + 1}`,
     price: 50000,
