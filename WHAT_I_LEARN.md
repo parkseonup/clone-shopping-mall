@@ -33,28 +33,32 @@ MSW의 application root에 browser integration을 적용할 때 예제에 작성
 - [vite-plugin-next-react-router](https://www.npmjs.com/package/vite-plugin-next-react-router)는 라우트 폴더 구조를 next와 동일하게 가져갈 수 있도록 도와주는 third-party library이다.
 - vite.config.ts 파일에서 `defineConfig` 인수로 객체를 전달할 때 plugins 프로퍼티의 배열 내부에 `reactRouterPlugin()`을 전달하면 프로젝트 root 폴더에 routes.tsx 파일을 자동 생성해주며, route 경로에 해당하는 페이지들 또한 자동으로 routes.tsx 파일에 추가해준다.
 
-## (미작성) vite-plugin-next-react-router에서 제공하는 소스 분석해보기
+### (미작성) vite-plugin-next-react-router에서 제공하는 소스 분석해보기
 
 # 🍴 JavaScript + React
 
-### `React.lazy()`란?
+## `React.lazy()`란?
 
 routes.tsx에서 route 경로에 해당하는 페이지들을 import 받아올 때 `React.lazy()`를 이용하여 컴포넌트로 불러오는데, 그렇다면 [`React.lazy()`](https://react.dev/reference/react/lazy)는 뭘까?
 
 - `lazy()`는 React에서 컴포넌트를 동적으로 로드하기 위해 사용하는 함수로, 코드 분할에 주로 사용된다.
   - 코드 분할(Code Splitting): 웹 애플리케이션의 초기 로딩 속도를 향상시키기 위해 번들 파일을 작은 조각으로 분할하고 필요한 코드 조각만 필요한 시점에 동적으로 로딩하는 기술.
   - ⚠️ ESModule에서는 코드 분할을 지원하고 있기 때문에 코드 분할을 위해서라면 lazy 함수를 사용할 필요가 없다. (때문에 추후 본 강의에서 vite-plugin-next-react-router를 사용하지 않고 route를 직접 구현할 때는 lazy 함수를 지웠다.)
-- 작성 방법: `lazy(loadFunction)`
-  - `loadFunction`: Promise 또는 thenable(Promise와 비슷한 역할을 하는 객체)를 반환하며, 매개변수는 작성할 수 없다.
-    ```js
-    // 예시
-    const ProductPage = lazy(() => import("./src/product/index"));
-    ```
 - 컴포넌트 내부에서 lazy 함수를 호출하면 안된다. 리액트는 lazy 함수를 해당 컴포넌트가 필요한 순간 초기에 한번만 렌더링을 하도록 되어 있는데, 컴포넌트 내부에서 lazy 함수를 호출하면 state가 변경될 때마다 컴포넌트가 리렌더링되므로 좋지 않은 성능을 가져온다.
 - lazy 함수를 [`<Suspense>`](https://react.dev/reference/react/Suspense)와 함께 작성하면 lazy 함수에 의해 지연 로드되는 컴포넌트가 로드되는 동안 Suspense 함수의 fallback 프로퍼티에 작성된 값을 출력해준다.
 - 네트워크 상태에 따라 지연 로드는 에러를 발생시킬 수도 있다. 이럴 경우 [Error Boundaries(에러 경계)](https://ko.reactjs.org/docs/error-boundaries.html) 컴포넌트를 작성하여 에러가 예측되는 컴포넌트를 wrapping하면 에러가 애플리케이션의 동작을 멈추게 하는 것을 방지할 수 있다.
 
-### `<Suspense>` 컴포넌트란?
+### 작성 방법
+
+`lazy(loadFunction)`
+
+- `loadFunction`: Promise 또는 thenable(Promise와 비슷한 역할을 하는 객체)를 반환하며, 매개변수는 작성할 수 없다.
+- 예시
+  ```js
+  const ProductPage = lazy(() => import("./src/product/index"));
+  ```
+
+## `<Suspense>` 컴포넌트란?
 
 - [`<Suspense>`](https://react.dev/reference/react/Suspense)는 `children` 컴포넌트가 로드를 완료할 때까지 `fallback` 프로퍼티에 작성된 대체 ui를 출력한다.
   ```js
@@ -66,15 +70,17 @@ routes.tsx에서 route 경로에 해당하는 페이지들을 import 받아올 �
   - 보다 빨리 로드되는 콘텐츠를 미리 공개하고, 모두 로드되어도 미리 공개되었던 콘텐츠를 숨기고 싶지 않다면 [startTransition](https://react.dev/reference/react/startTransition) 함수를 사용할 수 있다.
 - `<Suspense>`가 중첩된 구조로 작성되었다면 지연 로드되는 컴포넌트의 가장 가까운 `<Suspense>`만 동작한다.
 - fallback으로 전혀 다른 컴포넌트를 출력하는 것은 페이지가 로딩되는 중에 UI의 변경이 일어나기 때문에 사용자 경험을 떨어뜨리므로 사용을 지양해야 한다.
-- 기능
-  - 콘텐츠가 로드되는 동안 대체 표시 (스피너, 스켈레톤 등 손쉬운 구현)
-  - 콘텐츠를 한 번에 공개
-  - 로드될 때 중첩된 콘텐츠 표시
-  - 새로운 콘텐츠가 로드되는 동안 오래된 콘텐츠 표시
-  - 이미 공개된 콘텐츠가 숨겨지는 것을 방지
-  - 전환이 일어나고 있음을 나타냅니다.
-  - 내비게이션에서 서스펜스 경계 재설정
-  - 서버 오류 및 서버 전용 콘텐츠에 대한 대체 제공
+
+### 기능
+
+- 콘텐츠가 로드되는 동안 대체 표시 (스피너, 스켈레톤 등 손쉬운 구현)
+- 콘텐츠를 한 번에 공개
+- 로드될 때 중첩된 콘텐츠 표시
+- 새로운 콘텐츠가 로드되는 동안 오래된 콘텐츠 표시
+- 이미 공개된 콘텐츠가 숨겨지는 것을 방지
+- 전환이 일어나고 있음을 나타냅니다.
+- 내비게이션에서 서스펜스 경계 재설정
+- 서버 오류 및 서버 전용 콘텐츠에 대한 대체 제공
 
 ## URLSearchParams 란?
 
@@ -108,12 +114,11 @@ interface URLSearchParams {
 
 ## 변경된 환경 설정
 
-[Breaking change - React Query v4](https://tanstack.com/query/v4/docs/react/guides/migrating-to-react-query-4) 참고
+참고 문서: [Breaking change - React Query v4](https://tanstack.com/query/v4/docs/react/guides/migrating-to-react-query-4)
 
-- npm 설치 방법 변경
+### npm 설치 방법 변경
 
-  - react-query package 이름이 변경되어 설치시 명령어와 import시 경로가 변경됨
-  - devtools 사용을 원하면 package 설치를 해야 할 수 있게 변경됨
+- react-query package 이름이 변경되어 설치시 명령어와 import시 경로가 변경됨
 
   ```shell
   #기존
@@ -121,16 +126,27 @@ interface URLSearchParams {
 
   #현재
   npm i @tanstack/react-query
-  npm i @tanstack/react-query-devtools
   ```
 
   ```ts
   // 기존
   import { useQuery } from "react-query";
-  import { ReactQueryDevtools } from "react-query/devtools";
 
   // 현재
   import { useQuery } from "@tanstack/react-query";
+  ```
+
+- devtools 사용을 원하면 package 설치를 해야 할 수 있게 변경됨
+
+  ```shell
+  npm i @tanstack/react-query-devtools
+  ```
+
+  ```ts
+  // 기존
+  import { ReactQueryDevtools } from "react-query/devtools";
+
+  // 현재
   import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
   ```
 
@@ -184,15 +200,19 @@ interface URLSearchParams {
 ## useQuery란?
 
 - [useQuery](https://tanstack.com/query/v4/docs/react/reference/useQuery)는 react-query에서 제공하는 api로, query를 서버로부터 GET 받을 때 사용한다.
-- 작성 방법: `useQuery(queryKey, queryFunction)`
-  - `queryKey`: query를 관리하는데 사용되는 unique key
-    - `queryKey`의 type
-      - ~~string: 하나의 string만을 작성할 수 있으며, useQuery 호출문을 해석할 때 내부적으로 인수가 하나만 담긴 배열로 해석한다. (`queryKey === ['PRODUCTS']`)~~ (v3까지는 제공했으나 쿼리 문자열은 필터 적용이 때때로 어렵기 때문에 v4에서는 배열로만 관리한다.)
-      - (string, number, object)[]: query 데이터에 유니크한 정보가 더 필요한 경우 배열로 전달한다. 배열은 index를 가지므로, 이 경우 index가 중요하다.
-      - ~~object: query 데이터에 유니크한 정보가 더 필요한 경우 배열로 전달한다. 배열과 달리 index가 없으므로, 프로퍼티의 순서는 중요하지 않다.~~
-  - `queryFunction`: api 호출을 하는 promise 함수
 - useQuery는 비동기로 동작한다.
 - 반환값: `{ data, dataUpdatedAt, error, errorUpdateCount, errorUpdatedAt, failureCount, isError, isFetched, isFetchedAfterMount, isFetching, isIdle, isInitialLoading, isLoadingError, isPlaceholderData, isPreviousData, isRefetchError, isRefetching, isStale, isSuccess, refetch, remove, status }`
+
+### 작성 방법
+
+`useQuery(queryKey, queryFunction)`
+
+- `queryKey`: query를 관리하는데 사용되는 unique key
+  - `queryKey`의 type
+    - ~~string: 하나의 string만을 작성할 수 있으며, useQuery 호출문을 해석할 때 내부적으로 인수가 하나만 담긴 배열로 해석한다. (`queryKey === ['PRODUCTS']`)~~ (v3까지는 제공했으나 쿼리 문자열은 필터 적용이 때때로 어렵기 때문에 v4에서는 배열로만 관리한다.)
+    - (string, number, object)[]: query 데이터에 유니크한 정보가 더 필요한 경우 배열로 전달한다. 배열은 index를 가지므로, 이 경우 index가 중요하다.
+    - ~~object: query 데이터에 유니크한 정보가 더 필요한 경우 배열로 전달한다. 배열과 달리 index가 없으므로, 프로퍼티의 순서는 중요하지 않다.~~
+- `queryFunction`: api 호출을 하는 promise 함수
 
 # 🧶 Recoil
 
@@ -202,158 +222,162 @@ interface URLSearchParams {
 
 - `atom`은 전역 상태로, 어떤 컴포넌트에서든 참조하고 사용할 수 있다.
 - 컴포넌트가 `atom`을 참조하는 순간부터 컴포넌트는 `atom`을 구독하고 있는 것으로, `atom` 값이 변경되면 `atom`을 구독하고 있는 모든 컴포넌트는 리렌더링 된다.
-- `atom` 정의 코드
 
-  ```ts
-  interface AtomOptionsWithoutDefault<T> {
-    key: NodeKey;
-    effects?: ReadonlyArray<AtomEffect<T>>;
-    effects_UNSTABLE?: ReadonlyArray<AtomEffect<T>>;
-    dangerouslyAllowMutability?: boolean;
-  }
-  interface AtomOptionsWithDefault<T> extends AtomOptionsWithoutDefault<T> {
-    default: RecoilValue<T> | Promise<T> | Loadable<T> | WrappedValue<T> | T;
-  }
-  export type AtomOptions<T> =
-    | AtomOptionsWithoutDefault<T>
-    | AtomOptionsWithDefault<T>;
+### `atom` 정의 코드
 
-  /** 기본 atom: RecoilState */
-  export function atom<T>(options: AtomOptions<T>): RecoilState<T>;
+```ts
+interface AtomOptionsWithoutDefault<T> {
+  key: NodeKey;
+  effects?: ReadonlyArray<AtomEffect<T>>;
+  effects_UNSTABLE?: ReadonlyArray<AtomEffect<T>>;
+  dangerouslyAllowMutability?: boolean;
+}
+interface AtomOptionsWithDefault<T> extends AtomOptionsWithoutDefault<T> {
+  default: RecoilValue<T> | Promise<T> | Loadable<T> | WrappedValue<T> | T;
+}
+export type AtomOptions<T> =
+  | AtomOptionsWithoutDefault<T>
+  | AtomOptionsWithDefault<T>;
 
-  /** 단순히 값을 감싸는데 사용되는 atom: WrappedValue */
-  export namespace atom {
-    function value<T>(value: T): WrappedValue<T>;
-  }
-  ```
+/** 기본 atom: RecoilState */
+export function atom<T>(options: AtomOptions<T>): RecoilState<T>;
+
+/** 단순히 값을 감싸는데 사용되는 atom: WrappedValue */
+export namespace atom {
+  function value<T>(value: T): WrappedValue<T>;
+}
+```
 
 - `atom`의 값은 `RecoilState`이기 때문에 컴포넌트가 `atom`을 참조할 때는 `useRecoilState` 메서드를 사용하여 인수에 `atom`으로 선언된 state를 전달해야 한다.
   - `useRecoilState()`: 전역 상태인 `atom`에 접근하고 관리하기 위한 메서드
-- 작성 방법
 
-  ```ts
-  import { atom, useRecoilState } from "recoil";
+### 작성 방법
 
-  const atomState = atom<defaultValueType>({
-    key: "uniqueKey",
-    default: "initValue",
-  });
+```ts
+import { atom, useRecoilState } from "recoil";
 
-  const [state, setState] = useRecoilState(atomState);
-  ```
+const atomState = atom<defaultValueType>({
+  key: "uniqueKey",
+  default: "initValue",
+});
+
+const [state, setState] = useRecoilState(atomState);
+```
 
 ## Selector
 
 - Derived state를 계산하는 데 사용되는 메서드로, 다른 `atom`이나 `selector`를 읽어들여 새로운 값을 계산하고 이 값을 다른 컴포넌트에서 사용할 수 있도록 해준다.
   - [Derived state](https://legacy.reactjs.org/blog/2018/06/07/you-probably-dont-need-derived-state.html): 다른 상태(state)들로 계산해서 얻어내는 새로운 상태값으로, props와 의존성이 있는 state이다.
-- `selector` 정의 코드
-
-  ```ts
-  export interface ReadOnlySelectorOptions<T> {
-    key: string;
-    get: (opts: {
-      get: GetRecoilValue;
-      getCallback: GetCallback;
-    }) => Promise<T> | RecoilValue<T> | Loadable<T> | WrappedValue<T> | T;
-    dangerouslyAllowMutability?: boolean;
-    cachePolicy_UNSTABLE?: CachePolicyWithoutEquality;
-  }
-
-  /** 읽기 전용으로 작성되었을 때의 selector: RecoilValueReadOnly */
-  export function selector<T>(
-    options: ReadOnlySelectorOptions<T>
-  ): RecoilValueReadOnly<T>;
-
-  /** 읽기와 쓰기가 모두 허용되었을 때의 selector: RecoilState */
-  export function selector<T>(
-    options: ReadWriteSelectorOptions<T>
-  ): RecoilState<T>;
-
-  /** 단순히 값을 감싸는데 사용되는 selector: WrappedValue */
-  export namespace selector {
-    function value<T>(value: T): WrappedValue<T>;
-  }
-  ```
-
 - `selector`는 일반적인 상태값이 아닌, 읽기 전용(read-only)로 사용된다.
 - return 값이 `RecoilValueReadOnly`이기 때문에 `selector` 값을 참조하기 위해서는 `useRecoilValue` 메서드를 사용해야 한다.
-- 작성 방법
 
-  - `selector`의 인수로 `key` 프로퍼티와 `get` 메세드를 가진 객체를 전달한다.
-  - recoil의 `get` 메서드는 메서드 축약표현을 사용하지 않고 화살표 함수로 작성한다.
-  - `get` 메서드에는 `get` 매개변수를 사용하여 다른 `atom`과 `selector`를 참조할 수 있다.
-  - `selector` 값을 참조하기 위해서는 `useRecoilValue` 메서드를 사용한다.
+### `selector` 정의 코드
 
-  ```js
-  import { selctor, useRecoilValue } from "recoil";
+```ts
+export interface ReadOnlySelectorOptions<T> {
+  key: string;
+  get: (opts: {
+    get: GetRecoilValue;
+    getCallback: GetCallback;
+  }) => Promise<T> | RecoilValue<T> | Loadable<T> | WrappedValue<T> | T;
+  dangerouslyAllowMutability?: boolean;
+  cachePolicy_UNSTABLE?: CachePolicyWithoutEquality;
+}
 
-  const mySelector = selector({
-    key: "mySelector",
-    get: ({ get }) => {
-      const value1 = get(myAtom1);
-      const value2 = get(myAtom2);
+/** 읽기 전용으로 작성되었을 때의 selector: RecoilValueReadOnly */
+export function selector<T>(
+  options: ReadOnlySelectorOptions<T>
+): RecoilValueReadOnly<T>;
 
-      return value1 + value2;
-    },
-  });
+/** 읽기와 쓰기가 모두 허용되었을 때의 selector: RecoilState */
+export function selector<T>(
+  options: ReadWriteSelectorOptions<T>
+): RecoilState<T>;
 
-  export function Component() {
-    const derivedValue = useRecoilValue(mySelector);
-    return <div>derivedValue</div>;
-  }
-  ```
+/** 단순히 값을 감싸는데 사용되는 selector: WrappedValue */
+export namespace selector {
+  function value<T>(value: T): WrappedValue<T>;
+}
+```
+
+### 작성 방법
+
+- `selector`의 인수로 `key` 프로퍼티와 `get` 메세드를 가진 객체를 전달한다.
+- recoil의 `get` 메서드는 메서드 축약표현을 사용하지 않고 화살표 함수로 작성한다.
+- `get` 메서드에는 `get` 매개변수를 사용하여 다른 `atom`과 `selector`를 참조할 수 있다.
+- `selector` 값을 참조하기 위해서는 `useRecoilValue` 메서드를 사용한다.
+
+```js
+import { selctor, useRecoilValue } from "recoil";
+
+const mySelector = selector({
+  key: "mySelector",
+  get: ({ get }) => {
+    const value1 = get(myAtom1);
+    const value2 = get(myAtom2);
+
+    return value1 + value2;
+  },
+});
+
+export function Component() {
+  const derivedValue = useRecoilValue(mySelector);
+  return <div>derivedValue</div>;
+}
+```
 
 ## `selectorFamily` 메서드
 
 - `selectorFamily` 메서드는 `key` 프로퍼티와 `get`, `set` 메서드를 가진 객체를 인수로 전달하면 `selector`를 반환하는 메서드이다.
-- `selectorFamily` 함수 정의 코드
-
-  ```ts
-  export interface ReadWriteSelectorFamilyOptions<
-    T,
-    P extends SerializableParam
-  > {
-    key: string;
-    get: (
-      param: P
-    ) => (opts: {
-      get: GetRecoilValue;
-      getCallback: GetCallback;
-    }) => Promise<T> | Loadable<T> | WrappedValue<T> | RecoilValue<T> | T;
-    set: (param: P) => (
-      opts: {
-        set: SetRecoilState;
-        get: GetRecoilValue;
-        reset: ResetRecoilState;
-      },
-      newValue: T | DefaultValue
-    ) => void;
-    cachePolicy_UNSTABLE?: CachePolicyWithoutEquality;
-    dangerouslyAllowMutability?: boolean;
-  }
-
-  export function selectorFamily<T, P extends SerializableParam>(
-    options: ReadWriteSelectorFamilyOptions<T, P>
-  ): (param: P) => RecoilState<T>;
-  ```
-
 - `selectorFamily`는 결과값이 `RecoilState`이기 때문에 `useRecoilState` 메서드를 이용하여 `selector`의 값을 참조해야 한다.
 - `selectorFamily`는 인수 작성 타입이 `ReadWriteSelectorFamilyOptions`으로 `get`, `set` 프로퍼티를 작성할 때 `(param) => (options) => returnValue` 방식으로 작성한다.
-- 작성 방법
 
-  ```js
-  import { selectorFamily } from "recoil";
+### `selectorFamily` 함수 정의 코드
 
-  const mySelector = selectorFamily({
-    key: "mySelector",
-    get: ({ get }) => {
-      // ...
+```ts
+export interface ReadWriteSelectorFamilyOptions<
+  T,
+  P extends SerializableParam
+> {
+  key: string;
+  get: (
+    param: P
+  ) => (opts: {
+    get: GetRecoilValue;
+    getCallback: GetCallback;
+  }) => Promise<T> | Loadable<T> | WrappedValue<T> | RecoilValue<T> | T;
+  set: (param: P) => (
+    opts: {
+      set: SetRecoilState;
+      get: GetRecoilValue;
+      reset: ResetRecoilState;
     },
-    set: ({ get, set }, newValue) => {
-      // ...
-    },
-  });
-  ```
+    newValue: T | DefaultValue
+  ) => void;
+  cachePolicy_UNSTABLE?: CachePolicyWithoutEquality;
+  dangerouslyAllowMutability?: boolean;
+}
+
+export function selectorFamily<T, P extends SerializableParam>(
+  options: ReadWriteSelectorFamilyOptions<T, P>
+): (param: P) => RecoilState<T>;
+```
+
+### 작성 방법
+
+```js
+import { selectorFamily } from "recoil";
+
+const mySelector = selectorFamily({
+  key: "mySelector",
+  get: ({ get }) => {
+    // ...
+  },
+  set: ({ get, set }, newValue) => {
+    // ...
+  },
+});
+```
 
 # 🌌 Mocking
 
@@ -381,13 +405,13 @@ interface URLSearchParams {
 
 1. 화면에 필요한 데이터 상태를 내부 로직에 직접 Mocking 작성
 
-- 장점: 구현이 쉬워 빠르게 적용할 수 있음
-- 단점: 실제 API가 들어올 때 애플리케이션의 서비스 로직을 다시 수정해야 하고, 실제 API의 흐름과 다를 경우가 있기 때문에 HTTP 메소드와 네트워크 응답 상태에 대응하기 어려움
+   - 장점: 구현이 쉬워 빠르게 적용할 수 있음
+   - 단점: 실제 API가 들어올 때 애플리케이션의 서비스 로직을 다시 수정해야 하고, 실제 API의 흐름과 다를 경우가 있기 때문에 HTTP 메소드와 네트워크 응답 상태에 대응하기 어려움
 
 2. Mock 서버를 별도로 구현
 
-- 장점: 애플리케이션의 서비스 로직을 수정하지 않아도 되고, HTTP 메소드와 네트워크 응답 상태에 대응할 수 있음
-- 단점: 서버를 구현해야 하고, 로컬이 아닌 다른 곳에 공유를 해야 한다면 추가 환경 구성 작업 등 비용과 공수가 많이 들어감.
+   - 장점: 애플리케이션의 서비스 로직을 수정하지 않아도 되고, HTTP 메소드와 네트워크 응답 상태에 대응할 수 있음
+   - 단점: 서버를 구현해야 하고, 로컬이 아닌 다른 곳에 공유를 해야 한다면 추가 환경 구성 작업 등 비용과 공수가 많이 들어감.
 
 3. Mocking 라이브러리 사용
 
@@ -433,11 +457,11 @@ interface URLSearchParams {
 - 두 패키지의 위와 같은 특징으로 `graphql-tag`와 `graphql-request`를 함께 사용하면 GraphQL 쿼리를 작성하고 서버에 요청을 보내는 데 필요한 모든 기능을 사용할 수 있다.
 - 다른 패키지를 사용하면 추가적인 설정과 구성이 필요할 수 있으며 MSW와 호환성이 보장되지 않을 수 있다.
 
-## GraphQL로 API 작성하는 방법
+### GraphQL로 API 작성하는 방법
 
 MSW는 GraphQL API에 대한 요청을 캡쳐하기 위한 Request handlers(`query`, `mutation`)와 utilities(`operation`, `link`)를 제공한다. 이를 이용하여 클라이언트에서 서버 API를 호출할 때 가짜 응답을 반환할 수 있다.
 
-### Method
+#### Method
 
 - 종류
   - `query()`: GraphQL query에 대한 가짜 응답을 반환하는 응답 핸들러로, `graphql.query(queryName, callbackFunction)`으로 작성한다.
@@ -449,7 +473,7 @@ MSW는 GraphQL API에 대한 요청을 캡쳐하기 위한 Request handlers(`que
     - `res`: 응답 객체로, 클라이언트에 반환할 데이터를 설정하는 메서드를 포함한다.
     - `ctx`: 컨텍스트 객체로, 응답 객체 및 요청 객체를 조작하는 데 사용한다.
 
-### Utility
+#### Utility
 
 - `operation()`
   - GraphQL query를 파싱하고 해당 operation 타입을 식별하여 MSW 요청 핸들러를 등록하는 역할을 한다. 즉, `query()`, `mutation()` 등 모든 operation 타입을 처리할 수 있어 유연하다.
@@ -548,40 +572,43 @@ query {
 - request 메서드: GraphQL의 query나 mutation을 지정한 HTTP EndPoint(url)로 POST 요청(변경 가능)을 보내는 메서드이다.
 - request 메서드는 Promise 객체를 반환하기 때문에 `then` 체이닝이나 `async/await`의 사용이 가능하다.
 - request 메서드가 호출될 때 GraphQL에서는 query와 variables를 모두 JSON 형태로 변환하여 전달한다.
-- 작성 방법: `request(url, query, variables)`
 
-  - `url`: GraphQL의 EndPoint === 요청이 전송될 서버
-  - `query`: 서버에서 응답할 query 형태
-  - `variables`
+### 작성 방법
 
-    - 객체 형태로, `method`, `headers`, `body`를 포함할 수 있다.
-    - `method`: 작성하지 않았을 경우 기본값은 POST이며, GET, PUT, PATCH, DELETE을 작성할 수 있다.
-    - `body`: method, headers와 달리 body라는 이름의 프로퍼티를 작성하지 않고, body로 전달할 프로퍼티 key/value 쌍의 객체로 작성한다. -> GraphQL이 서버에 요청할 때 암묵적으로 객체 내용을 HTTP 요청 바디에 담는 과정을 거친다.
-    - `variables`에 작성한 프로퍼티는 query문에서 `$`를 붙여 변수명으로 참조할 수 있다.
+`request(url, query, variables)`
 
-- 예시
+- `url`: GraphQL의 EndPoint === 요청이 전송될 서버
+- `query`: 서버에서 응답할 query 형태
+- `variables`
 
-  ```ts
-  import { gql } from 'graphql-tag';
-  import { request } from 'graphql-request';
+  - 객체 형태로, `method`, `headers`, `body`를 포함할 수 있다.
+  - `method`: 작성하지 않았을 경우 기본값은 POST이며, GET, PUT, PATCH, DELETE을 작성할 수 있다.
+  - `body`: method, headers와 달리 body라는 이름의 프로퍼티를 작성하지 않고, body로 전달할 프로퍼티 key/value 쌍의 객체로 작성한다. -> GraphQL이 서버에 요청할 때 암묵적으로 객체 내용을 HTTP 요청 바디에 담는 과정을 거친다.
+  - `variables`에 작성한 프로퍼티는 query문에서 `$`를 붙여 변수명으로 참조할 수 있다.
 
-  const query = gql`
-    query GET_VALUE($id: string) {
-      key1: value1,
-      key2: value2,
-    }
-  `;
+#### 예시
 
-  const variables = {
-    method: 'POST',
-    headers: {
-      Authorization: 'Bearer MY_TOKEN',
-    },
-    { id: 'ID' },
-  };
+```ts
+import { gql } from 'graphql-tag';
+import { request } from 'graphql-request';
 
-  request('/graphql', query, variables);
-  ```
+const query = gql`
+  query GET_VALUE($id: string) {
+    key1: value1,
+    key2: value2,
+  }
+`;
+
+const variables = {
+  method: 'POST',
+  headers: {
+    Authorization: 'Bearer MY_TOKEN',
+  },
+  { id: 'ID' },
+};
+
+request('/graphql', query, variables);
+```
 
 # 🪪 UUID
 
@@ -590,7 +617,11 @@ query {
   - 예시: `123e4567-e89b-12d3-a456-426614174000`
 - 노드 환경에서는 UUID를 쉽게 생성할 수 있는 라이브러리를 제공하여, 손쉽게 설치하고 사용할 수 있다.
 
-## uuid 라이브러리 설치
+## uuid 라이브러리란?
+
+UUID를 쉽게 생성할 수 있는 라이브러리이다.
+
+### uuid 라이브러리 설치
 
 - [uuid](https://www.npmjs.com/package/uuid) 설치
   ```shell
@@ -601,44 +632,46 @@ query {
   npm i --save @types/uuid
   ```
 
-## uuid 라이브러리란?
+### 제공되는 API
 
-- UUID를 쉽게 생성할 수 있는 라이브러리이다.
-- 제공되는 API
-  ```ts
-  export const NIL: NIL;
-  export const parse: parse;
-  export const stringify: stringify;
-  export const v1: v1;
-  export const v3: v3;
-  export const v4: v4;
-  export const v5: v5;
-  export const validate: validate;
-  export const version: version;
-  ```
-  - `uuid.v1()`: 현재 시각을 기준으로 UUID를 생성하며, 이는 uuid가 생성된 시각과 MAC주소로 uuid를 유추할 수 있기 때문에 안전성이 떨어진다는 단점이 있다.
-  - `uuid.v3()`: MD5 해시 기준으로 UUID를 생성한다.
-  - `uuid.v4()`: 랜덤값을 기반으로 UUID를 생성하며, 많은 사람들이 주로 사용하는 버전이다.
-  - `uuid.v5()`: SHA-1 해시 기준으로 UUID를 생성한다.
-- 사용 방법 예시
+```ts
+export const NIL: NIL;
+export const parse: parse;
+export const stringify: stringify;
+export const v1: v1;
+export const v3: v3;
+export const v4: v4;
+export const v5: v5;
+export const validate: validate;
+export const version: version;
+```
 
-  ```js
-  import { v4 as uuidv4 } from "uuid"; // as는 import 받은 요소의 별칭을 정하는 것으로 다른 네이밍을 작성해도 된다. -> ex: { v4 as uuid }
+- `uuid.v1()`: 현재 시각을 기준으로 UUID를 생성하며, 이는 uuid가 생성된 시각과 MAC주소로 uuid를 유추할 수 있기 때문에 안전성이 떨어진다는 단점이 있다.
+- `uuid.v3()`: MD5 해시 기준으로 UUID를 생성한다.
+- `uuid.v4()`: 랜덤값을 기반으로 UUID를 생성하며, 많은 사람들이 주로 사용하는 버전이다.
+- `uuid.v5()`: SHA-1 해시 기준으로 UUID를 생성한다.
 
-  const productItem = {
-    id: uuidv4(), // import 받은 uuidv4 메서드를 호출하면 import 받은 버전에 맞는 UUID를 생성해준다.
-  };
-  ```
+### 사용 방법 예시
 
-- 한계
-  - 컴포넌트가 마운트될 때마다 uuid가 호출되어 uuid는 늘 새로운 id값을 반환하기 때문에 기존의 id값을 유지하기 어렵다. (예시: 상품 id를 이용하여 서버에 상품 정보를 GET 요청하는 로직이라면, 해당 페이지에서 새로고침을 했을 경우 uuid가 생성한 상품 id값이 변경되기 때문에 동일한 상품 id를 서버에서 찾지 못한다.)
+```js
+import { v4 as uuidv4 } from "uuid"; // as는 import 받은 요소의 별칭을 정하는 것으로 다른 네이밍을 작성해도 된다. -> ex: { v4 as uuid }
+
+const productItem = {
+  id: uuidv4(), // import 받은 uuidv4 메서드를 호출하면 import 받은 버전에 맞는 UUID를 생성해준다.
+};
+```
+
+### 한계
+
+- 컴포넌트가 마운트될 때마다 uuid가 호출되어 uuid는 늘 새로운 id값을 반환하기 때문에 기존의 id값을 유지하기 어렵다. (예시: 상품 id를 이용하여 서버에 상품 정보를 GET 요청하는 로직이라면, 해당 페이지에서 새로고침을 했을 경우 uuid가 생성한 상품 id값이 변경되기 때문에 동일한 상품 id를 서버에서 찾지 못한다.)
 
 # 📐 TypeScript
 
 ## TypeScript 환경에서 ESLint 적용하기
 
-- [JavaScript ESLint](https://eslint.org/)와 [TypeScript ESLint](https://typescript-eslint.io/)는 적용 방식이 다르다.
-- 삭제 코드
+[JavaScript ESLint](https://eslint.org/)와 [TypeScript ESLint](https://typescript-eslint.io/)는 적용 방식이 다르다.
+
+- 수정 전 코드
   ```json
   // pakage.json devdependencies
   "eslint-config-airbnb-base": "^15.0.0",
@@ -646,14 +679,16 @@ query {
   "eslint-plugin-html": "^7.1.0",
   "eslint-plugin-import": "^2.27.5",
   ```
-- 추가 코드
+- 수정 코드
   ```json
   // pakage.json devdependencies
   "@typescript-eslint/eslint-plugin": "^5.56.0",
   "@typescript-eslint/parser": "^5.56.0",
   "typescript": "^4.9.5",
   ```
-- eslint의 format을 지정할 수 있는 파일이 있는데, 형식은 상황에 따라 다양하다.
+
+### eslint의 format을 지정할 수 있는 파일이 있는데, 형식은 상황에 따라 다양하다.
+
 - .eslintrc.json: JSON 형식으로 작성한다.
 - .eslintrc.js: JavaScript 형식으로 작성하며, ESM를 지원하지 않지 때문에 ESM 사용시 .eslintrc.cjs로 작성해야 한다.
 - .eslintrc.cjs: JavaScript 형식으로 작성하며, ESM를 지원한다. package.json에서 `type: module`을 설정해줬다면 .cjs로 작성하자.
@@ -717,10 +752,12 @@ src/queryClient.tsx에서 restfetcher 함수를 만들 때 fetchOptions의 body�
 - HTTP 통신으로 웹사이트의 리소스에 접근할 때 도메인이 다를 경우 보안상의 이유로 서버 접근을 제한하는데, `Access-Control-Allow-Origin`는 이 권한을 다루는 HTTP 헤더이다.
 - 이 헤더는 서버 응답에 포함되어 해당 리소스에 접근할 수 있는 도메인을 표시한다.
 - 즉, `Access-Control-Allow-Origin` 헤더에 명시된 도메인과 웹 페이지의 호스트가 일치해야 리소스 접근이 가능하다.
-- 프로퍼티 값 해석 방법
-  - \*: 모든 도메인에서 접근 허용한다는 뜻으로, 서버는 모든 도메인에서의 요청에 대해 리소스에 대한 응답을 반환하다.
-  - 특정 도메인명: Access-Control-Allow-Origin 헤더에 해당 도메인명이 포함되어 있으면, 해당 도메인에서만 접근이 허용된다.
-  - null: 브라우저가 CORS 프로토콜을 지원하지 않는 경우, 해당 리소스에 접근할 수 있다. 이 경우, 서버는 Access-Control-Allow-Origin 헤더를 응답하지 않으며, 브라우저는 자동으로 null을 지정한다.
+
+### 프로퍼티 값 해석 방법
+
+- \*: 모든 도메인에서 접근 허용한다는 뜻으로, 서버는 모든 도메인에서의 요청에 대해 리소스에 대한 응답을 반환하다.
+- 특정 도메인명: Access-Control-Allow-Origin 헤더에 해당 도메인명이 포함되어 있으면, 해당 도메인에서만 접근이 허용된다.
+- null: 브라우저가 CORS 프로토콜을 지원하지 않는 경우, 해당 리소스에 접근할 수 있다. 이 경우, 서버는 Access-Control-Allow-Origin 헤더를 응답하지 않으며, 브라우저는 자동으로 null을 지정한다.
 
 # 🤦🏻‍♀️ 잊어버린 개념 되새기기!
 
