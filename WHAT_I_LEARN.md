@@ -214,16 +214,76 @@ interface URLSearchParams {
     - ~~object: query 데이터에 유니크한 정보가 더 필요한 경우 배열로 전달한다. 배열과 달리 index가 없으므로, 프로퍼티의 순서는 중요하지 않다.~~
 - `queryFunction`: api 호출을 하는 promise 함수
 
+## (미작성) useMutation이란?
+
 # 🧶 Recoil
 
-- (미작성) Recoil이란...
+참고 문서: [Recoil - 또 다른 React 상태 관리 라이브러리? - Toast UI](https://ui.toast.com/weekly-pick/ko_20200616)
 
-## Atom
+- [Recoil](https://recoiljs.org/ko/)은 Facebook에서 만든 React를 위한 상태 관리 라이브러리로, npm을 이용하여 설치할 수 있다.
 
-- `atom`은 전역 상태로, 어떤 컴포넌트에서든 참조하고 사용할 수 있다.
+## (미작성) Recoil vs Context API vs Redux
+
+### 참고 문서
+
+- [recoil 공식문서](https://recoiljs.org/ko/docs/introduction/motivation/)
+- [Recoil, 리액트의 상태관리 라이브러리](https://tech.osci.kr/2022/06/16/recoil-state-management-of-react/)
+- [Recoil은 Context API를 어떻게 사용하길래 상태 변경이 일어나도 RecoilRoot의 자식 컴포넌트들에 대한 불필요한 리렌더링을 유발하지 않을까?](https://woomin.netlify.app/recoil-context-api-no-rerender/)
+- [Redux, Context, or Recoil: Which One Is Best for Your Modern Web App?](https://betterprogramming.pub/redux-context-or-recoil-which-one-is-best-for-your-modern-web-app-db41be99b448)
+- [Redux, Recoil, and React Context API: Choosing Your State Management Adventure!](https://medium.com/@davidkelley87/redux-recoil-and-react-context-api-choosing-your-state-management-adventure-67fb2355daa2)
+- [React에서 상태관리하기 (feat. Context API, Redux, React Query)](https://mingule.tistory.com/74)
+
+## API
+
+### `<RecoilRoot>`
+
+- [`<RecoilRoot>`](https://recoiljs.org/ko/docs/api-reference/core/RecoilRoot/)는 하위 컴포넌트에게 recoil 상태를 사용할 수 있도록 제공하는 컴포넌트이다.
+- `<RecoilRoot>`는 recoil 상태를 공유하는 모든 컴포넌트들의 조상 컴포넌트여야 한다. -> 프로젝트의 root 컴포넌트에 제공하는 것이 효율적일 수 있다.
+- 여러 개의 root가 같이 존재할 수 있으며 각각의 root는 별개의 상태를 가지지만, `<RecoilRoot>`가 여러 개 존재할 경우 상태 변경 사항이 다른 root와 공유되는 등 예기치 않은 동작이 발생할 수 있기 때문에 하나의 root만 사용할 것을 권장한다.
+  - `selector` 캐시같은 캐시들은 root 사이에서 공유될 수 있다. 이는 `selector` 함수를 사용하는 다른 컴포넌트에서 이미 생성된 캐시를 사용할 수 있다는 성능 향상의 장점이 있지만, root를 공유할 수 있다는 예측 불가능성이 있다.
+  - root들이 중첩된 구조로 작성되어 있다면 최하위의 root가 최상위의 root를 override 할 수 있다.
+
+#### `<RecoilRoot>`의 `override` 속성
+
+- 기본값은 `true`로, `override` 속성이 `true`일 경우 해당 root는 새로운 recoil scope를 생성한다.
+- `override` 속성이 `false`일 경우
+  - 일반적으로 `override` 속성을 `false`로 하는 것은 recoil에서 제공하는 디버깅 및 개발 도구가 비활성화되므로 권장되지 않는다.
+  - 장점
+    - Recoil 개발 도구는 Recoil의 상태 및 액션 로그를 브라우저 콘솔에 표시하는데, 베포 시 보안 이슈가 발생될 수 있다. 이럴 경우 `override` 속성을 `false`로 해서 recoil 개발 도구를 비활성화 할 수 있다.
+  - 단점
+    - 상태 변경 알림 없음: `atom` 또는 `selector`의 값이 변경될 때 개발자 도구에서 상태 변경 알림이 표시되지 않는다.
+    - 디버깅 모드 제한: 개발자 도구에서 제공하는 상태 디버깅, 스냅샷 등의 기능이 제한된다.
+    - 액션 로깅 제한: 개발자 도구에서 제공하는 액션 로깅 기능이 제한된다. (액션 로깅 기능을 사용하면 애플리케이션에서 발생하는 모든 상태 변경 작업이 로깅되므로 문제 해결에 도움이 된다.)
+    - 성능 저하: 개발자 도구와 관련된 부가적인 작업이 수행되지 않기 때문에 일부 성능 저하가 발생될 수 있다.
+
+#### `<RecoilRoot>`의 구조
+
+```ts
+export type RecoilRootProps =
+  | {
+      initializeState?: (mutableSnapshot: MutableSnapshot) => void;
+      override?: true;
+      children: React.ReactNode;
+    }
+  | {
+      override: false;
+      children: React.ReactNode;
+    };
+
+/**
+ * Root component for managing Recoil state.  Most Recoil hooks should be
+ * called from a component nested in a <RecoilRoot>
+ */
+export const RecoilRoot: React.FC<RecoilRootProps>;
+```
+
+### `atom`
+
+- [`atom`](https://recoiljs.org/ko/docs/api-reference/core/atom)은 전역 상태로, 어떤 컴포넌트에서든 참조하고 사용할 수 있다.
 - 컴포넌트가 `atom`을 참조하는 순간부터 컴포넌트는 `atom`을 구독하고 있는 것으로, `atom` 값이 변경되면 `atom`을 구독하고 있는 모든 컴포넌트는 리렌더링 된다.
+- `atom`의 반환값 `RecoilState`이기 때문에 컴포넌트가 `atom`을 참조할 때는 `useRecoilState` 메서드를 사용하여 인수에 `atom`으로 선언된 state를 전달해야 한다.
 
-### `atom` 정의 코드
+#### `atom`의 구조
 
 ```ts
 interface AtomOptionsWithoutDefault<T> {
@@ -248,10 +308,7 @@ export namespace atom {
 }
 ```
 
-- `atom`의 값은 `RecoilState`이기 때문에 컴포넌트가 `atom`을 참조할 때는 `useRecoilState` 메서드를 사용하여 인수에 `atom`으로 선언된 state를 전달해야 한다.
-  - `useRecoilState()`: 전역 상태인 `atom`에 접근하고 관리하기 위한 메서드
-
-### 작성 방법
+#### 작성 방법
 
 ```ts
 import { atom, useRecoilState } from "recoil";
@@ -264,14 +321,16 @@ const atomState = atom<defaultValueType>({
 const [state, setState] = useRecoilState(atomState);
 ```
 
-## Selector
+### `Selector`
 
-- Derived state를 계산하는 데 사용되는 메서드로, 다른 `atom`이나 `selector`를 읽어들여 새로운 값을 계산하고 이 값을 다른 컴포넌트에서 사용할 수 있도록 해준다.
+- [`selector`](https://recoiljs.org/ko/docs/api-reference/core/selector)는 Derived state를 계산하는 데 사용되는 메서드로, 다른 `atom`이나 `selector`를 읽어들여 새로운 값을 계산하고 이 값을 다른 컴포넌트에서 사용할 수 있도록 해준다.
   - [Derived state](https://legacy.reactjs.org/blog/2018/06/07/you-probably-dont-need-derived-state.html): 다른 상태(state)들로 계산해서 얻어내는 새로운 상태값으로, props와 의존성이 있는 state이다.
+  - 주어진 종속성 값 집합에 대해 항상 동일한 값을 반환하는 순수함수라고 생각하면 된다.
 - `selector`는 일반적인 상태값이 아닌, 읽기 전용(read-only)로 사용된다.
-- return 값이 `RecoilValueReadOnly`이기 때문에 `selector` 값을 참조하기 위해서는 `useRecoilValue` 메서드를 사용해야 한다.
+- `selector` 함수가 실행될 때 마다 `selector` 캐시가 생성되며 이 캐시는 메모리에 보관되어 재사용된다. 이는 `selector` 함수를 실행할 때마다 새로운 인스턴스를 만들 필요가 없어져 성능 향상에 도움이 된다.
+- return 값이 `RecoilValueReadOnly`일 때 `selector` 값을 참조하기 위해서는 `useRecoilValue` 메서드를 사용해야 한다.
 
-### `selector` 정의 코드
+#### `selector`의 구조
 
 ```ts
 export interface ReadOnlySelectorOptions<T> {
@@ -284,27 +343,26 @@ export interface ReadOnlySelectorOptions<T> {
   cachePolicy_UNSTABLE?: CachePolicyWithoutEquality;
 }
 
-/** 읽기 전용으로 작성되었을 때의 selector: RecoilValueReadOnly */
+/** 읽기 전용(get)으로 작성되었을 때의 반환값: RecoilValueReadOnly */
 export function selector<T>(
   options: ReadOnlySelectorOptions<T>
 ): RecoilValueReadOnly<T>;
 
-/** 읽기와 쓰기가 모두 허용되었을 때의 selector: RecoilState */
+/** 읽기와 쓰기(get, set)가 모두 허용되었을 때의 반환값: RecoilState */
 export function selector<T>(
   options: ReadWriteSelectorOptions<T>
 ): RecoilState<T>;
 
-/** 단순히 값을 감싸는데 사용되는 selector: WrappedValue */
+/** 단순히 값을 감싸는데 사용되는 반환값: WrappedValue */
 export namespace selector {
   function value<T>(value: T): WrappedValue<T>;
 }
 ```
 
-### 작성 방법
+#### 작성 방법
 
 - `selector`의 인수로 `key` 프로퍼티와 `get` 메세드를 가진 객체를 전달한다.
 - recoil의 `get` 메서드는 메서드 축약표현을 사용하지 않고 화살표 함수로 작성한다.
-- `get` 메서드에는 `get` 매개변수를 사용하여 다른 `atom`과 `selector`를 참조할 수 있다.
 - `selector` 값을 참조하기 위해서는 `useRecoilValue` 메서드를 사용한다.
 
 ```js
@@ -326,13 +384,13 @@ export function Component() {
 }
 ```
 
-## `selectorFamily` 메서드
+### `selectorFamily` 메서드
 
 - `selectorFamily` 메서드는 `key` 프로퍼티와 `get`, `set` 메서드를 가진 객체를 인수로 전달하면 `selector`를 반환하는 메서드이다.
 - `selectorFamily`는 결과값이 `RecoilState`이기 때문에 `useRecoilState` 메서드를 이용하여 `selector`의 값을 참조해야 한다.
 - `selectorFamily`는 인수 작성 타입이 `ReadWriteSelectorFamilyOptions`으로 `get`, `set` 프로퍼티를 작성할 때 `(param) => (options) => returnValue` 방식으로 작성한다.
 
-### `selectorFamily` 함수 정의 코드
+#### `selectorFamily`의 구조
 
 ```ts
 export interface ReadWriteSelectorFamilyOptions<
@@ -363,7 +421,7 @@ export function selectorFamily<T, P extends SerializableParam>(
 ): (param: P) => RecoilState<T>;
 ```
 
-### 작성 방법
+#### 작성 방법
 
 ```js
 import { selectorFamily } from "recoil";
@@ -378,6 +436,29 @@ const mySelector = selectorFamily({
   },
 });
 ```
+
+### (미작성) `useRecoilState()`
+
+- 전역 상태인 `atom`에 접근하고 관리하기 위한 메서드 (읽고 쓰기가 가능)
+- `atom`의 값을 구독하여 업데이트할 수 있는 hook으로, useState와 동일한 방식으로 사용할 수 있다.
+- `atom`에 컴포넌트를 등록하는 hook이다.
+
+### (미작성) `useRecoilValue()`
+
+- setter 함수 없이 atom의 값을 반환한다. 즉, `atom`을 읽기만 할 때 사용한다.
+- `atom`에 컴포넌트를 등록하는 hook이다.
+
+### (미작성) `useSetRecoilState()`
+
+- setter 함수만 반환한다. 즉, `atom`을 쓰기만 할 때 사용한다.
+
+### (미작성) `useResetRecoilState()`
+
+- atom을 초깃값으로 초기화할 때 사용한다.
+
+### (미작성) `useRecoilCallback()`
+
+- 컴포넌트를 atom에 등록하지 않고 값을 읽어야 하는 경우에 사용한다.
 
 # 🌌 Mocking
 
@@ -771,4 +852,5 @@ src/queryClient.tsx에서 restfetcher 함수를 만들 때 fetchOptions의 body�
 - [New Suspense SSR Architecture in React 18](https://github.com/reactwg/react-18/discussions/37)
 - [모던 프론트엔드 테스트 전략 - 1편(Testing Overview) - 콴다 팀블로그](https://blog.mathpresso.com/%EB%AA%A8%EB%8D%98-%ED%94%84%EB%A1%A0%ED%8A%B8%EC%97%94%EB%93%9C-%ED%85%8C%EC%8A%A4%ED%8A%B8-%EC%A0%84%EB%9E%B5-1%ED%8E%B8-841e87a613b2)
 - [My구독의 React Query 전환기 - Kakao Tech](https://tech.kakao.com/2022/06/13/react-query/)
+- [카카오페이 프론트엔드 개발자들이 React Query를 선택한 이유 - Kakao Tech](https://tech.kakaopay.com/post/react-query-1/)
 - [[React Query] useQuery 동작원리(1)](https://www.timegambit.com/blog/digging/react-query/01)
