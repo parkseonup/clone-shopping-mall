@@ -43,7 +43,7 @@ export const handlers = [
   graphql.query(GET_CART, (req, res, ctx) => {
     return res(ctx.data(cartData));
   }),
-  // POST | PATCH: cart 추가 => 추가된 cartItem
+  // POST | PATCH: cart 추가 => 추가된 newItem
   graphql.mutation(ADD_CART, (req, res, ctx) => {
     const { id } = req.variables;
     const newCartData = { ...cartData };
@@ -51,33 +51,35 @@ export const handlers = [
 
     if (!targetProduct) throw new Error("없는 데이터입니다.");
 
-    const cartItem = {
+    const newItem = {
       ...targetProduct,
       amount: (newCartData[id]?.amount || 0) + 1,
     };
-    newCartData[id] = cartItem;
+    newCartData[id] = newItem;
     cartData = newCartData;
 
-    return res(ctx.data(cartItem));
+    return res(ctx.data(newItem));
   }),
-  // PATCH: cart 개수 변경 (id, amount) => cartItem
+  // PATCH: cart 개수 변경 (id, amount) => newItem
   graphql.mutation(UPDATE_CART, (req, res, ctx) => {
     const { id, amount } = req.variables;
     const newCartData = { ...cartData };
-
-    const cartItem = {
+    const newItem = {
       ...newCartData[id],
       amount,
     };
-    newCartData[id] = cartItem;
+
+    newCartData[id] = newItem;
     cartData = newCartData;
 
-    return res(ctx.data(cartItem));
+    return res(ctx.data(newItem));
   }),
   // DELETE: cart 삭제 (id) => id
   graphql.mutation(DELETE_CART, (req, res, ctx) => {
     const { id } = req.variables;
-    delete cartData[id];
+    const newCartData = { ...cartData };
+    delete newCartData[id];
+    cartData = newCartData;
     return res(ctx.data(id));
   }),
 ];
