@@ -1,4 +1,4 @@
-import { SyntheticEvent, useRef } from "react";
+import { createRef, SyntheticEvent, useRef } from "react";
 import { CartType } from "../../graphql/cart";
 import CartItem from "./item";
 
@@ -6,21 +6,19 @@ import CartItem from "./item";
 // FIXME: item을 삭제했을 때는 전체 체크가 동작을 안함. (item 삭제시 onChange 이벤트가 안읽히기 때문)
 const CartList = ({ items }: { items: CartType[] }) => {
   const formRef = useRef<HTMLFormElement>(null);
+  const checkboxRefs = items.map(() => createRef<HTMLInputElement>());
 
   function handleCheckboxChagned(e: SyntheticEvent) {
     if (!formRef.current) return;
 
     const targetInput = e.target as HTMLInputElement;
-    const checkboxs = formRef.current.querySelectorAll<HTMLInputElement>(
-      ".cart-item__checkbox"
-    );
     const data = new FormData(formRef.current);
     const selectedCount = data.getAll("select-item").length;
 
     if (targetInput.classList.contains("select-all")) {
       const allChecked = targetInput.checked;
-      checkboxs.forEach((inputElem) => {
-        inputElem.checked = allChecked;
+      checkboxRefs.forEach((checkboxRef) => {
+        checkboxRef.current!.checked = allChecked;
       });
     } else {
       const allChecked = selectedCount === items.length;
@@ -35,8 +33,8 @@ const CartList = ({ items }: { items: CartType[] }) => {
         <input type="checkbox" className="select-all" name="select-all" />
       </label>
       <ul className="cart">
-        {items.map((item) => (
-          <CartItem {...item} key={item.id} />
+        {items.map((item, i) => (
+          <CartItem {...item} key={item.id} ref={checkboxRefs[i]} />
         ))}
       </ul>
     </form>
