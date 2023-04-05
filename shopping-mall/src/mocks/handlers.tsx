@@ -1,5 +1,11 @@
 import { graphql } from "msw";
-import { ADD_CART, CartType, GET_CART } from "../graphql/cart";
+import {
+  ADD_CART,
+  CartType,
+  DELETE_CART,
+  GET_CART,
+  UPDATE_CART,
+} from "../graphql/cart";
 import { GET_PRODUCT, GET_PRODUCTS } from "../graphql/products";
 
 const mockProducts = (() =>
@@ -25,43 +31,55 @@ export const handlers = [
   }),
   // GET: id를 전달해서 일치하는 Product Item data 요청
   graphql.query(GET_PRODUCT, (req, res, ctx) => {
-    const foundProduct = mockProducts.find(
+    const targetProduct = mockProducts.find(
       (product) => product.id === req.variables.id
     );
 
-    if (!foundProduct) return res();
+    if (!targetProduct) return res();
 
-    return res(ctx.data(foundProduct));
+    return res(ctx.data(targetProduct));
   }),
-  // GET: cart 목록 요청
+  // GET: cart 전체 목록 요청
   graphql.query(GET_CART, (req, res, ctx) => {
     return res(ctx.data(cartData));
   }),
-  // POST | PATCH: cart 추가
+  // POST | PATCH: cart 추가 => 추가된 newItem
   graphql.mutation(ADD_CART, (req, res, ctx) => {
-    let newData = { ...cartData };
-    const id = req.variables.id;
+    const { id } = req.variables;
+    const newCartData = { ...cartData };
+    const targetProduct = mockProducts.find((product) => product.id === id);
 
-    if (newData[id]) {
-      // newData가 있으면 amount + 1
-      newData[id] = {
-        ...newData[id],
-        amount: (newData[id].amount || 0) + 1,
-      };
-    } else {
-      // 없으면 id를 key로 하고 mockProducts에서 찾아서 생성
-      const foundProduct = mockProducts.find((product) => product.id === id);
+    if (!targetProduct) throw new Error("없는 데이터입니다.");
 
-      newData = {
-        ...newData,
-        [id]: {
-          ...foundProduct,
-          amount: 1,
-        },
-      };
-    }
+    const newItem = {
+      ...targetProduct,
+      amount: (newCartData[id]?.amount || 0) + 1,
+    };
+    newCartData[id] = newItem;
+    cartData = newCartData;
 
-    cartData = newData;
-    return res(ctx.data(cartData));
+    return res(ctx.data(newItem));
+  }),
+  // PATCH: cart 개수 변경 (id, amount) => newItem
+  graphql.mutation(UPDATE_CART, (req, res, ctx) => {
+    const { id, amount } = req.variables;
+    const newCartData = { ...cartData };
+    const newItem = {
+      ...newCartData[id],
+      amount,
+    };
+
+    newCartData[id] = newItem;
+    cartData = newCartData;
+
+    return res(ctx.data(newItem));
+  }),
+  // DELETE: cart 삭제 (id) => id
+  graphql.mutation(DELETE_CART, (req, res, ctx) => {
+    const { id } = req.variables;
+    const newCartData = { ...cartData };
+    delete newCartData[id];
+    cartData = newCartData;
+    return res(ctx.data(id));
   }),
 ];
