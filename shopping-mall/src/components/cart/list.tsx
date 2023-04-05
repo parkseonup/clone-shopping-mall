@@ -2,48 +2,41 @@ import { SyntheticEvent, useRef } from "react";
 import { CartType } from "../../graphql/cart";
 import CartItem from "./item";
 
-// TODO: 강사님 코드로 다시 짜보고 어떤게 더 좋은지 고민해보기
 // TODO: ref의 매개변수로 node가 등록되었을 때 node가 undefined일 경우가 어떻게 생기는지 알아보기
+// FIXME: item을 삭제했을 때는 전체 체크가 동작을 안함. (item 삭제시 onChange 이벤트가 안읽히기 때문)
 const CartList = ({ items }: { items: CartType[] }) => {
-  const cartAllcheckboxRef = useRef<HTMLInputElement>(null);
-  const cartItemCheckboxRef = useRef(new Map());
+  const formRef = useRef<HTMLFormElement>(null);
 
-  function handleChangeCheckbox(e: SyntheticEvent) {
-    if (e.target === cartAllcheckboxRef.current) {
-      cartItemCheckboxRef.current.forEach(
-        (checkbox) => (checkbox.checked = cartAllcheckboxRef.current!.checked)
-      );
+  function handleCheckboxChagned(e: SyntheticEvent) {
+    if (!formRef.current) return;
+
+    const targetInput = e.target as HTMLInputElement;
+    const checkboxs = formRef.current.querySelectorAll<HTMLInputElement>(
+      ".cart-item__checkbox"
+    );
+    const data = new FormData(formRef.current);
+    const selectedCount = data.getAll("select-item").length;
+
+    if (targetInput.classList.contains("select-all")) {
+      const allChecked = targetInput.checked;
+      checkboxs.forEach((inputElem) => {
+        inputElem.checked = allChecked;
+      });
     } else {
-      const checkedItemCount = [...cartItemCheckboxRef.current.values()].filter(
-        (checkbox) => checkbox.checked
-      ).length;
-
-      cartAllcheckboxRef.current!.checked =
-        checkedItemCount === items.length ? true : false;
+      const allChecked = selectedCount === items.length;
+      formRef.current.querySelector<HTMLInputElement>(".select-all")!.checked =
+        allChecked;
     }
   }
 
   return (
-    <form onChange={handleChangeCheckbox}>
+    <form ref={formRef} onChange={handleCheckboxChagned}>
       <label>
-        <input
-          type="checkbox"
-          className="select-all"
-          name="select-all"
-          ref={cartAllcheckboxRef}
-        />
+        <input type="checkbox" className="select-all" name="select-all" />
       </label>
       <ul className="cart">
         {items.map((item) => (
-          <CartItem
-            {...item}
-            key={item.id}
-            ref={(node: HTMLInputElement) => {
-              node
-                ? cartItemCheckboxRef.current.set(item.id, node)
-                : cartItemCheckboxRef.current.delete(item.id);
-            }}
-          />
+          <CartItem {...item} key={item.id} />
         ))}
       </ul>
     </form>
