@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import CartList from "../../components/cart/list";
+import CartList from "../../components/cart";
 import { CartType, GET_CART } from "../../graphql/cart";
 import { graphqlFetcher, QueryKeys } from "../../queryClient";
 

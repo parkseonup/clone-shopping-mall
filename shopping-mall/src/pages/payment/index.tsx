@@ -1,3 +1,10 @@
-const Payment = () => <h2>상품결제</h2>;
+import Payment from "../../components/payment";
 
-export default Payment;
+const PaymentPage = () => (
+  <div>
+    <h2>결제창</h2>
+    <Payment />
+  </div>
+);
+
+export default PaymentPage;

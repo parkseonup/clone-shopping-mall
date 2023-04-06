@@ -6,6 +6,7 @@ import {
   GET_CART,
   UPDATE_CART,
 } from "../graphql/cart";
+import { EXCUTE_PAY } from "../graphql/payment";
 import { GET_PRODUCT, GET_PRODUCTS } from "../graphql/products";
 
 const mockProducts = (() =>
@@ -81,5 +82,16 @@ export const handlers = [
     delete newCartData[id];
     cartData = newCartData;
     return res(ctx.data(id));
+  }),
+  // DELETE: 결제한 상품은 cartData에서 제거 => 지워진 cartItem
+  graphql.mutation(EXCUTE_PAY, ({ variables }, res, ctx) => {
+    // const newCartData = { ...cartData };
+    // variables.payInfos.forEach(({ id }: { id: string }) => {
+    //   delete newCartData[id];
+    // });
+    // cartData = newCartData;
+    // return res(ctx.data(variables.payInfos));
+    console.log(variables);
+    return res();
   }),
 ];

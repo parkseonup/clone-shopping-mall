@@ -20,21 +20,6 @@ vite에는 [env 환경변수](https://vitejs.dev/guide/env-and-mode.html#env-var
 
 MSW의 application root에 browser integration을 적용할 때 예제에 작성된 `process.env.NODE_ENV`는 어떤 의미일까?
 
-# 🚀 React Router
-
-## 현 프로젝트의 router
-
-- 하위 경로에 있는 페이지들을 router로 제공하기 위해서는 react-router에서 제공하는 [`<Outlet>`](https://reactrouter.com/en/6.9.0/components/outlet) 컴포넌트를 사용해야 한다. 때문에 \_layout.tsx에서 `<Outlet />` 컴포넌트를 사용하는 Layout 함수 컴포넌트를 만든다.
-- routes.tsx에서 `GlobalLayout`(=Layout)을 불러와 routes의 element로 전달하여 routes 구조를 만든다.
-- 이를 프로젝트의 진입점 파일인 app.tsx의 `App` 함수 컴포넌트에서 [`useRoutes(routes)`](https://reactrouter.com/en/6.9.0/hooks/use-routes)를 호출하여 route 경로를 지정한다.
-
-### routes.tsx는 어디서 나타난걸까?
-
-- [vite-plugin-next-react-router](https://www.npmjs.com/package/vite-plugin-next-react-router)는 라우트 폴더 구조를 next와 동일하게 가져갈 수 있도록 도와주는 third-party library이다.
-- vite.config.ts 파일에서 `defineConfig` 인수로 객체를 전달할 때 plugins 프로퍼티의 배열 내부에 `reactRouterPlugin()`을 전달하면 프로젝트 root 폴더에 routes.tsx 파일을 자동 생성해주며, route 경로에 해당하는 페이지들 또한 자동으로 routes.tsx 파일에 추가해준다.
-
-### (미작성) vite-plugin-next-react-router에서 제공하는 소스 분석해보기
-
 # 🍴 JavaScript + React
 
 ## `React.lazy()`란?
@@ -111,6 +96,91 @@ interface URLSearchParams {
   ): void;
 }
 ```
+
+## `createPotal`
+
+```ts
+export function createPortal(
+  children: ReactNode,
+  container: Element | DocumentFragment,
+  key?: null | string
+): ReactPortal;
+
+createPortal(children, domNode);
+```
+
+- [`createPotal`](https://react.dev/reference/react-dom/createPortal)는 부모 컴포넌트의 DOM 계층 구조 밖에 있는 DOM 노드(`domNode`)로 `children`을 렌더링하는 [Potal](https://ko.reactjs.org/docs/portals.html)을 가능하게 하는 메서드이다. 즉, 부모 컴포넌트가 아닌 다른 곳에 `children`을 출력할 필요가 있을 때 사용하는 메서드이다. (예: modal)
+- `children`에는 element, string, fragment 등 react가 렌더링할 수 있는 모든 요소를 전달할 수 있다.
+- `domNode`는 `children`이 렌더링되는 DOM Element를 말하며, potal이 호출되기 전 `domNode`가 반드시 존재해야 한다.
+- potal은 출력될 DOM(`children`)의 물리적 위치만 변경해주기 때문에 이벤트 전파 등은 React Tree 상의 위치를 따른다.
+  - 즉, `children`은 출력되는 위치가 아닌 선언된 위치(부모 트리)에서 제공하는 컨텍스트를 공유한다.
+  - 이는 부모 컴포넌트에서 `children`의 이벤트 전파를 감지하는 등의 관여가 가능함을 말하며, portal에 의존하지 않는 유연한 개발을 가능하게 한다.
+
+## (미작성) `ref`의 매개변수
+
+# 🚀 React Router
+
+## 현 프로젝트의 router
+
+- 하위 경로에 있는 페이지들을 router로 제공하기 위해서는 react-router에서 제공하는 [`<Outlet>`](https://reactrouter.com/en/6.9.0/components/outlet) 컴포넌트를 사용해야 한다. 때문에 \_layout.tsx에서 `<Outlet />` 컴포넌트를 사용하는 Layout 함수 컴포넌트를 만든다.
+- routes.tsx에서 `GlobalLayout`(=Layout)을 불러와 routes의 element로 전달하여 routes 구조를 만든다.
+- 이를 프로젝트의 진입점 파일인 app.tsx의 `App` 함수 컴포넌트에서 [`useRoutes(routes)`](https://reactrouter.com/en/6.9.0/hooks/use-routes)를 호출하여 route 경로를 지정한다.
+
+### routes.tsx는 어디서 나타난걸까?
+
+- [vite-plugin-next-react-router](https://www.npmjs.com/package/vite-plugin-next-react-router)는 라우트 폴더 구조를 next와 동일하게 가져갈 수 있도록 도와주는 third-party library이다.
+- vite.config.ts 파일에서 `defineConfig` 인수로 객체를 전달할 때 plugins 프로퍼티의 배열 내부에 `reactRouterPlugin()`을 전달하면 프로젝트 root 폴더에 routes.tsx 파일을 자동 생성해주며, route 경로에 해당하는 페이지들 또한 자동으로 routes.tsx 파일에 추가해준다.
+
+### (미작성) vite-plugin-next-react-router에서 제공하는 소스 분석해보기
+
+## `<Link>` vs. `useNavigate` vs. `redirect`
+
+### `<Link>`
+
+- [`<Link>`](https://reactrouter.com/en/main/components/link)는 react-router에서 제공하는 컴포넌트로, 사용자의 액션으로 인한 페이지 이동을 위해 사용되며 브라우저에 출력시 `<a>` 태그로 변환되어 출력된다.
+- 클릭시 바로 페이지 이동이 일어나는, 즉 `<a>` 태그와 동일한 역할을 하는 경우에 사용한다.
+- `<a>`태그와 달리 상태값을 저장하고 이동할 페이지로 전달할 수 있다.
+
+### `useNavigate`
+
+```ts
+declare function useNavigate(): NavigateFunction;
+
+interface NavigateFunction {
+  (
+    to: To,
+    options?: {
+      replace?: boolean;
+      state?: any;
+      relative?: RelativeRoutingType;
+    }
+  ): void;
+  (delta: number): void;
+}
+```
+
+- [`useNavigate`](https://reactrouter.com/en/main/hooks/use-navigate)는 일반적인 페이지 이동이 아닌, 특정 이벤트가 발생했을 때 페이지 이동이 필요하거나 추가 로직이 필요할 경우 사용하는 hook이다.
+- 반환값은 함수로, 전달하는 인수에 따라 동작하는 형태가 다르다.
+
+  - 첫번째 인수에 페이지 이동 경로를 작성하면, 작성한 경로로 페이지 이동을 해주는 `<Link to={path}>`와 동일한 동작을 하며, 두 번째 인수에는 `replace`, `state` 등 부가 옵션을 전달할 수 있다.
+    - [`replace`](https://stackoverflow.com/questions/72794430/what-does-usenavigate-replace-option-do)의 기본값은 `false`로, `true`를 전달하면 react-router는 이동할 url을 history에 새롭게 push 하는 대신 현재 history를 이동할 url로 replace한다. 때문에 `NavigateFunction`을 이용하여 페이지가 이동할 때 `replace: true`일 경우 뒤로 가기 버튼을 이용하여 기존의 페이지로 접근할 수 없다.
+  - 첫번째 인수에 숫자를 전달하면 브라우저 history 이동이 가능하다. 예를 들어, 아래와 같이 useNavigate가 반환한 함수에 숫자 -1을 전달하면 브라우저의 뒤로 가기 버튼을 클릭한 것과 동일한 동작을 한다.
+
+    ```js
+    const navigate = useNavigate();
+
+    navigate(-1);
+    ```
+
+### `redirect`
+
+```ts
+type RedirectFunction = (url: string, init?: number | ResponseInit) => Response;
+```
+
+- [`redirect`](https://reactrouter.com/en/main/fetch/redirect)은 loaders나 actions에서 서버의 응답을 반환 받아서 페이지 이동을 수행할 때 사용하는 함수이다.
+- 따라서 리디렉션이 데이터에 대한 응답인 경우 `useNavigate` 대신 [loader](https://reactrouter.com/en/main/route/loader) 및 action 함수에서 `redirect`을 사용하는 것이 좋다.
+
 
 # 📥 React Query
 
@@ -317,10 +387,11 @@ useQuery(queryKey, queryFunction);
 #### options
 
 - `onMutate?: (variables: unknown, mutation: Mutation) => Promise<unknown> | unknown`
-  - mutation이 시작되기 전에 동기적으로 호출되는 함수이다.
+  - mutation이 시작되기 전에 동기적으로 호출되는 함수로, 서버와의 통신 없이 이뤄진다.
   - `onMutate`에서 반환하는 값은 `onSuccess`, `onError`, `onSettled`의 매개변수 `context`로 전달된다.
-- `onSuccess?: (data: unknown, variables: unknown, context: unknown, mutation: Mutation) => Promise<unknown> | unknown`: 일부 mutate가 성공하면 호출되는 함수
-- `onError?: (error: unknown, variables: unknown, context: unknown, mutation: Mutation) => Promise<unknown> | unknown`: 일부 mutate가 실패하면 호출되는 함수
+- `onSuccess?: (data: unknown, variables: unknown, context: unknown, mutation: Mutation) => Promise<unknown> | unknown`: 일부 mutate가 성공하면 호출되는 함수로, mutate 이후 서버에서 반환하는 값이 첫번째 매개변수인 data로 들어온다.
+- `onError?: (error: unknown, variables: unknown, context: unknown, mutation: Mutation) => Promise<unknown> | unknown`
+  - 일부 mutate가 실패하면 호출되는 함수
   - Optimistic Update 구현시 `onMutate`에서 반환한 `context`를 이용하여 이전값으로 돌리는 롤백 로직을 구현할 수 있다.
 - `onSettled?: (data: unknown | undefined, error: unknown | null, variables: unknown, context: unknown, mutation: Mutation) => Promise<unknown> | unknown`: 일부 mutate가 settled, 즉 성공이든 실패든 결과를 반환하면 호출되는 함수
 
@@ -351,9 +422,17 @@ mutation은 query와 직접적으로 연결되지 않는다. 따라서 mutation�
 - 서버의 응답이 성공적이지 않을 경우 이전 상태로 돌아가기 때문에 업데이트 롤백 로직을 함께 구현해야 한다는 번거로움이 있다.
 - 서버에 데이터가 반영되기 전에 애플리케이션이 종료되거나 네트워크에 문제가 생긴다면 데이터 소실의 위험이 있으므로, 과도한 사용은 지양해야 한다.
 - 주로, 좋아요 버튼 같은 가벼운 서버 통신에 사용된다.
-- React Query는 `onMutate` 프로퍼티를 이용하여 Optimistic Update를 제공하고, `onError`, `onSettled` 프로퍼티를 이용하여 롤백 로직을 구현할 수 있다.
+
+##### 작성 방법
+
+- `useMutation`의 `onMutate` 콜백을 이용하여 Optimistic Update를 제공하고, `onError`, `onSettled` 콜백을 이용하여 롤백 로직을 구현할 수 있다.
 - [Optimistic Update 구현 시 데이터 꼬임 방지](https://velog.io/@mskwon/react-query-cancel-queries): `cancelQueries() 사용`
   - React Query가 제공하는 `refetchOnMount` 옵션의 기본값은 `true`이기 때문에, React Query는 컴포넌트가 마운트될 때 데이터를 최신으로 업데이트 해주기 위해 refetch를 한다. 이때 refetch 시점은 정확하게 알 수 없기 때문에 타이밍이 꼬이면 optimistic update 데이터가 먼저 보이고, 나중에 응답된 refetch 데이터(예전 데이터)가 이를 override 되어 화면에는 예전 데이터가 그대로 뿌려지는 현상이 일어날 수 있다. 이를 막기 위해서는 `cancelQueries()`를 이용하여 refetch를 취소해야 한다.
+- Optimistic Update 구현 후 안정화 처리를 하는 방법
+  - `onMutate` 내부에 구현한 로직은 변경 전 데이터를 기준으로 업데이트를 하고 UI에 출력한다. 이 작업은 서버와의 통신 없이 이뤄지기 때문에 서버의 최종 응답과 다른 결과를 보여줄 수 있어 안정화 처리가 필요하다.
+  - 서버 데이터와의 동기화에 안정성을 주기 위해서는 `onMutate` 이후 `onSuccess` 콜백에 새로운 데이터로 캐시를 업데이트하는 작업이 필요하다.
+  - `onSuccess` 콜백은 서버로부터 실제 응답을 받았을 때, 즉 Optimistic Update를 수행하고 난 뒤 서버와 동기화된 데이터를 사용하여 UI를 업데이트할 때 사용한다.
+  - `onSuccess` 콜백을 사용하지 않고 `onMutate`만 작성했을 경우, 서버 응답이 실패한다면 UI와 실제 데이터가 동기화되지 않을 수 있다. 따라서 `onSuccess` 내부에 `setQueryData()`를 이용하여 새로운 데이터로 캐시를 업데이트 해주는 것이 좋다.
 
 # 🧶 Recoil
 
@@ -920,6 +999,28 @@ const productItem = {
 ### (미작성) `as`란?
 
 ### (미작성) interface와 type의 차이
+
+### `Pick<type, keys>`
+
+- `type`에서 프로퍼티들을 뽑은 집합 `keys`를 선택하여 type 유형을 구성할 수 있다.
+- `keys`는 `type`에 작성된 프로퍼티 키를 문자열로 작성하고 `|`를 이용하여 나열한다.
+
+#### 예시
+
+```ts
+interface Todo {
+  title: string;
+  description: string;
+  completed: boolean;
+}
+
+type TodoPreview = Pick<Todo, "title" | "completed">;
+
+const todo: TodoPreview = {
+  title: "Clean room",
+  completed: false,
+};
+```
 
 ## 타입 유형
 

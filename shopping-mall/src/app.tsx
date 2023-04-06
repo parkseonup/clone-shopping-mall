@@ -4,9 +4,8 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import "./scss/index.scss";
 import { getClient } from "./queryClient";
-import Gnb from "./components/product/gnb";
+import Gnb from "./components/gnb";
 
-// TODO: React.lazy()란?
 const App = () => {
   const element = useRoutes(routes);
   const queryClient = getClient();
