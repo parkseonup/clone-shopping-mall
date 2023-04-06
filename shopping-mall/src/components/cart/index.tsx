@@ -8,7 +8,7 @@ const CartList = ({ items }: { items: CartType[] }) => {
   const formRef = useRef<HTMLFormElement>(null);
   const checkboxRefs = items.map(() => createRef<HTMLInputElement>());
 
-  function handleCheckboxChagned(e: SyntheticEvent) {
+  const handleCheckboxChagned = (e: SyntheticEvent) => {
     if (!formRef.current) return;
 
     const targetInput = e.target as HTMLInputElement;
@@ -25,7 +25,7 @@ const CartList = ({ items }: { items: CartType[] }) => {
       formRef.current.querySelector<HTMLInputElement>(".select-all")!.checked =
         allChecked;
     }
-  }
+  };
 
   return (
     <form ref={formRef} onChange={handleCheckboxChagned}>
