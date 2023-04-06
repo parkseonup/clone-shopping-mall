@@ -23,7 +23,7 @@ const WillPay = ({
           <li key={id}>
             <ItemData title={title} imageUrl={imageUrl} price={price} />
             <p>수량: {amount}</p>
-            <p>금액: {price}</p>
+            <p>금액: {price * amount}</p>
           </li>
         ))}
       </ul>
