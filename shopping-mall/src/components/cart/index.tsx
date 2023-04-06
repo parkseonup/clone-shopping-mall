@@ -59,7 +59,6 @@ const CartList = ({ items }: { items: CartType[] }) => {
     // 초기 마운트시 checkedCartState에서 체크된 아이템 확인해서 동기화
     checkedCartData.forEach((item) => {
       const checkedItem = checkboxRefs.find((ref) => {
-        console.log(ref.current, item);
         return ref.current!.dataset.id === item.id;
       });
       if (checkedItem) checkedItem.current!.checked = true;

@@ -57,7 +57,6 @@ export const resfetcher = async ({
 
     if (params) {
       const searchParams = new URLSearchParams(params);
-      console.log(params, searchParams, searchParams.toString());
       url += `?${searchParams.toString()}`;
     }
 
