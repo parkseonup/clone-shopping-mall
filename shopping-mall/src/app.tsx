@@ -6,7 +6,6 @@ import "./scss/index.scss";
 import { getClient } from "./queryClient";
 import Gnb from "./components/gnb";
 
-// TODO: React.lazy()란?
 const App = () => {
   const element = useRoutes(routes);
   const queryClient = getClient();
