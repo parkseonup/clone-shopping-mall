@@ -5,8 +5,6 @@ export type CartType = {
   title: string;
   imageUrl: string;
   price: number;
-  description: string;
-  createdAt: string;
   amount: number;
 };
 
@@ -17,8 +15,6 @@ export const GET_CART = gql`
       title
       imageUrl
       price
-      description
-      createdAt
       amount
     }
   }
@@ -31,8 +27,6 @@ export const ADD_CART = gql`
       title
       imageUrl
       price
-      description
-      createdAt
       amount
     }
   }
@@ -45,8 +39,6 @@ export const UPDATE_CART = gql`
       title
       imageUrl
       price
-      description
-      createdAt
       amount
     }
   }
