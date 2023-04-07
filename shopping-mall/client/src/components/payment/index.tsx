@@ -8,22 +8,16 @@ import { checkedCartState } from "../../recoils/cart";
 import WillPay from "../willPay";
 import PaymentModal from "./modal";
 
-type PayInfo = {
-  id: string;
-  amount: number;
-};
-
-type PaymentInfos = PayInfo[];
+type PaymentInfos = string[];
 
 const Payment = () => {
   const navigate = useNavigate();
   const [checkedCartData, setCheckedCartData] =
     useRecoilState(checkedCartState);
   const [modalShow, toggleModal] = useState(false);
-  // FIXME: MutationKey type이 정의되지 않았다는 거 확인해보기
-  const { mutate: excutePay } = useMutation((payInfos: PaymentInfos) => {
-    graphqlFetcher(EXCUTE_PAY, payInfos);
-  });
+  const { mutate: excutePay } = useMutation((payInfos: PaymentInfos) =>
+    graphqlFetcher(EXCUTE_PAY, payInfos)
+  );
 
   const showModal = () => {
     toggleModal(true);
@@ -31,11 +25,9 @@ const Payment = () => {
 
   const proceed = () => {
     // 결제 진행
-    const payInfos = checkedCartData.map(({ id, amount }) => ({
-      id,
-      amount,
-    }));
+    const payInfos = checkedCartData.map(({ id }) => id);
     excutePay(payInfos);
+    alert("결제가 완료되었습니다.");
 
     // checkedCartState 비우기
     setCheckedCartData([]);
