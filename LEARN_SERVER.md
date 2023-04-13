@@ -230,3 +230,241 @@ const variables = {
 
 request('/graphql', query, variables);
 ```
+
+# 📐 (미작성) ts-node
+
+- [ts-node](https://typestrong.org/ts-node)는 nodejs 환경에서 typescript를 사전 컴파일 없이 사용하게 도와주는 패키지이다.
+- ts-node는 tsconfig.json을 자동으로 찾아서 로드한다.
+  - node 환경에서 tsconfig.json을 제공하기 위해서는 `@tsconfig/node16`이 필요하다.
+- ts-node는 별도의 설정이 없으면 TypeScript 파일을 CommonJS로 변환하여 node가 해석할 수 있도록 도와준다.
+
+# 🗃 Apollo Server와 express 연동하여 서버 만들기
+
+## Apollo Server란?
+
+- [Apollo Server](https://www.apollographql.com/docs/apollo-server/)란 Apollo Client를 포함한 모든 GraphQL 클라이언트와 호환되는 spec 호환 GraphQL Server이다.
+  - [Apollo Client](https://www.apollographql.com/docs/react): GraphQL을 이용하여 로컬 및 원격 데이터를 모두 관리할 수 있는 JavaScript용 종합 상태관리 라이브러리로, UI를 자동으로 업데이트하면서 애플리케이션 데이터를 가져오고 캐시하고 수정할 수 있다. `@apollo/client`는 React와의 기본 integration을 제공한다.
+
+## Apollo Server에서 express 연동하는 방법
+
+참고 문서: [Migrate from apollo-server-express](https://www.apollographql.com/docs/apollo-server/migration/#migrate-from-apollo-server-express)
+
+Apollo Server 3까지는 express를 사용하려면 apollo-server-express 패키지를 설치해야 했지만, Apollo Server 4에서는 `expressMiddleware` 함수로 GraphQL 서버를 설정하여 apollo-server-express 패키지 대신에 사용할 수 있다.
+
+### 설정 단계
+
+1. @apollo/server, cors, body-parser 패키지를 설치한다.
+
+- `cors`를 TypeScript 환경에서 사용하려면 [`@types/cors`](https://www.npmjs.com/package/@types/cors)도 함께 설치해야 한다.
+
+2. @apollo/server에서 심볼(`ApolloServer`)을 가져와야 한다. (apollo-server-express, apollo-server-core에서 가져오는 것이 아님)
+3. 서버 설정에 `cors`와 `bodyParser.json()`을 추가해야 한다.
+4. Apollo Server 3의 apollo-server-express와 apollo-server-core 패키지를 제거해야 한다.
+5. apollo-server-express의 기본 `/graphql` URL 경로를 사용하는 경우 (즉, path 옵션을 사용하여 다른 URL을 지정하지 않는 경우), `expressMiddleware`를 `/graphql`에 마운트하여 동작을 유지할 수 있다. 다른 URL 경로를 사용하려면 `app.use`를 사용하여 지정된 경로에 서버를 마운트한다.
+
+### 예제
+
+```ts
+// npm install @apollo/server express graphql cors body-parser
+import { ApolloServer } from "@apollo/server";
+import { expressMiddleware } from "@apollo/server/express4";
+import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHttpServer";
+import express from "express";
+import http from "http";
+import cors from "cors";
+import bodyParser from "body-parser";
+import { typeDefs, resolvers } from "./schema";
+
+interface MyContext {
+  token?: String;
+}
+
+// Express와의 통합에 필요한 로직
+const app = express();
+// httpServer는 Express 앱으로 들어오는 요청을 처리합니다.
+// 아래에서는 Apollo 서버에 이 httpServer를 drain하도록 지시하여 서버를 정상적으로 종료할 수 있도록 한다.
+const httpServer = http.createServer(app);
+
+// 이전과 동일한 ApolloServer 초기화와 httpServer용 drain 플러그인.
+const server = new ApolloServer<MyContext>({
+  typeDefs,
+  resolvers,
+  plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
+});
+
+// 서버가 시작될 때까지 기다리도록 await를 사용한다.
+await server.start();
+
+// CORS, body parsing, `expressMiddleware` 기능을 처리하도록 Express 미들웨어를 설정한다.
+app.use(
+  "/",
+  cors<cors.CorsRequest>(),
+  // 50mb는 `startStandaloneServer`가 사용하는 제한이지만 필요에 맞게 구성할 수 있다.
+  bodyParser.json({ limit: "50mb" }),
+  // `expressMiddleware`는 `ApolloServer` 인스턴스와 optional configuration options: { context: asynchronousFunction }과 같은 동일한 인수를 허용한다.
+  expressMiddleware(server, {
+    context: async ({ req }) => ({ token: req.headers.token }),
+  })
+);
+
+// 수정된 서버 시작
+await new Promise<void>((resolve) =>
+  httpServer.listen({ port: 4000 }, resolve)
+);
+console.log(`🚀 Server ready at http://localhost:4000/`);
+```
+
+## GraphQL 통신 구현 방법
+
+1. Schema 정의
+
+   - Apollo Server를 포함한 모든 GraphQL Server는 스키마를 사용하여 클라이언트가 쿼리할 수 있는 데이터 구조를 정의한다.
+   - 스키마는 type이 정의된 모음(`typeDefs`)이며, 함께 실행되는 쿼리의 모양을 정의한다.
+
+2. Data set 정의
+
+   - 클라이언트가 쿼리할 수 있는 간단한 data set를 정의할 수 있으며, data set은 스키마에서 정의한 데이터 type과 동일해야 한다.
+
+3. Resolver 정의
+
+   - Resolver를 생성하여 Apollo Server에게 특정 유형과 관련 데이터를 가져오는 방법을 알려줄 수 있다. (Apollo Server은 쿼리를 실행할 때 정의해둔 Data Set을 사용해야 한다는 것을 모른다.)
+
+4. `ApolloServer` 인스턴스 생성
+
+   - `new` 연산자와 함께 `ApolloServer`를 호출할 때 `typeDefs` 속성과 `resolvers` 속성이 정의된 객체를 인수로 전달한다.
+     ```ts
+     const server = new ApolloServer({
+       typeDefs,
+       resolvers,
+     });
+     ```
+
+## (미작성) Schema 정의
+
+## (미작성) Resolver 정의
+
+## `expressMiddleware`
+
+```ts
+expressMiddleware(ApolloServer Instance, { context: context function })
+```
+
+- [`expressMiddleware`](https://www.apollographql.com/docs/apollo-server/api/express-middleware)는 Apollo Server를 Express 서버에 연결할 수 있도록 하는 함수이다.
+- `expressMiddleware`를 사용하기 위해서는 웹 프레임워크에 대한 HTTP body parsing 및 CORS 헤더를 설정해야 한다. (`cors`, `body-parser` 패키지 설치 필요)
+
+## 인수
+
+- `ApolloServer Instance`: `expressMiddleware`의 첫 번째 인수로, `ApolloServer`의 Instance를 전달한다.
+- [`{ context: context function }`](https://www.apollographql.com/docs/apollo-server/data/context)
+  - `expressMiddleware`의 두 번째 인수로, `context` 속성에 `context` function을 값으로 가지는 객체를 전달한다.
+  - `context` function는 비동기 함수로 operation 실행 중에 서버의 모든 resolver가 공유하는 객체를 반환한다. 이를 통해 resolver는 데이터베이스 연결과 같은 유용한 context value를 공유할 수 있다.
+  - `context` 함수는 express.Request 및 express.Response 객체인 req 및 res 옵션을 받는다.
+
+# 💼 Express
+
+## 미들웨어란?
+
+- [미들웨어](https://lakelouise.tistory.com/211)는 HTTP 요청과 응답 사이(middle)에서 단계별 동작을 수행하는 함수이다.
+
+### Express 미들웨어
+
+```js
+const middelware = (req, res, next) => {
+  // ...
+};
+```
+
+- 미들웨어는 Express의 핵심 기능으로, HTTP 요청이 들어오는 순간 순차적으로 시작되며 HTTP 요청(`req`)과 응답 객체(`res`)를 처리하거나 다음 미들웨어를 실행(`next()`)할 수 있다.
+- HTTP 응답이 마무리될 때까지 미들웨어 동작 사이클이 실행된다.
+- `next` 함수를 호출하지 않으면 미들웨어 동작 사이클이 멈춘다.
+- 미들웨어는 적용되는 위치에 따라서 애플리케이션 미들웨어, 라우터 미들웨어, 오류처리 미들웨어로 분류가 가능하다. 따라서 필요한 동작 방식에 따라 미들웨어의 위치를 지정해야 한다.
+
+### 오류 처리 미들웨어
+
+- [오류 처리 미들웨어](https://expressjs.com/ko/guide/error-handling.html)는 다른 미들웨어와 달리 `(err, req, res, next)`, 4개를 인수로 받는다.
+- 모든 매개변수를 사용하지 않아도 4가지 모두 선언해주어야 Express가 오류 처리 미들웨어로 식별한다.
+- 동일한 경로(`path`)에 요청되는 미들웨어를 처리하는 메서드를 모두 작성한 뒤, 오류 처리 미들웨어는 마지막에 메서드와 함께 정의해야 한다.
+
+  ```js
+  var bodyParser = require("body-parser");
+  var methodOverride = require("method-override");
+
+  app.use(bodyParser());
+  app.use(methodOverride());
+  app.use(function (err, req, res, next) {
+    // logic
+  });
+  ```
+
+## `app.use([path,] callback [, callback...])`
+
+- 지정된 미들웨어의 기능을 지정된 경로에 마운트하는 메서드로, 요청된 `path` 경로의 기준이 일치할 때 미들웨어가 실행된다.
+- 즉, `path`로 들어오는 요청에 대한 공통 미들웨어를 적용하기 위해 사용되는 메서드이다.
+
+### Arguments
+
+- `[path,]`
+  - 미들웨어의 기능이 호출되는 경로로, 기본값은 root(`/`)이다.
+  - 배열에 문자열, 경로 pattern, 정규표현식, 경로 조합을 전달할 수 있다.
+  - `path`와 매칭할 때, `path`의 하위 `path`들 또한 함께 매칭된다.
+    - 예를 들어, `/fruits`을 `path`로 등록하면 `/fruits/apple` 또한 매칭된다.
+    - path를 작성하지 않을 경우 기본값인 root(`/`)를 `path`로 매칭하기 때문에 미들웨어는 애플리케이션에 접근하는 모든 요청에 마운트된다.
+- `callback`
+  - `callback`에는 미들웨어 function이나 미들웨어 function이 쉼표(`,`)를 기준으로 나열된 list, 미들웨어 function의 배열, 이들의 조합을 전달할 수 있다.
+
+## `app.listen()`
+
+```ts
+listen(port: number, hostname: string, backlog: number, callback?: () => void): http.Server;
+listen(port: number, hostname: string, callback?: () => void): http.Server;
+listen(port: number, callback?: () => void): http.Server;
+listen(callback?: () => void): http.Server;
+listen(path: string, callback?: () => void): http.Server;
+listen(handle: any, listeningListener?: () => void): http.Server;
+```
+
+- node의 [http.Server.listen()](https://nodejs.org/api/http.html#http_server_listen) 메서드와 동일한 동작을 하는 express 메서드로, http.Server를 반환한다.
+- Apollo Server 공식문서에서 http 모듈의 `createServer()` 메소드를 이용하여 서버를 생성하는 것과 동일한 역할을 하나, express에서는 http 모듈과 달리 미들웨어, 라우팅, 세션 관리, 에러 핸들링 등을 미리 구현해둔 서버를 제공하여 사용이 간단하다.
+
+# 👁 nodemon
+
+- [nodemon](https://www.npmjs.com/package/nodemon)은 디렉토리의 파일 변경이 감지되면 자동으로 노드 응용 프로그램을 다시 시작하여 Node.js 기반 응용 프로그램의 개발을 돕는 도구이다.
+- nodemon은 코드나 개발 방법을 추가로 변경할 필요가 없다. nodemon은 node.js 애플리케이션을 wrapping 하므로, nodemon을 사용하려면 스크립트를 실행할 때 명령줄을 변경하면 된다.
+
+## `--exec`
+
+- node script가 아닌 파일을 실행할 때 사용하는 확장자이다.
+- nodemon은 다른 프로그램을 실행하고 모니터링하는 데에도 사용할 수 있다. nodemon은 실행 중인 스크립트의 파일 확장자를 읽고 nodemon.json이 없는 경우 .js 대신 해당 확장자를 모니터링한다.
+
+### 예시
+
+```json
+{
+  "scripts": {
+    "dev": "nodemon --exec 'ts-node ./src/index.ts'"
+  }
+}
+```
+
+위 코드는 `npm run dev` 명령을 입력하면 nodemon은 ts-node로 ./src/index.ts를 실행한다는 뜻이다.
+
+## (미작성) nodemon.json 해석...
+
+```json
+{
+  "watch": ["src"],
+  "ignore": ["db/**/*"],
+  "env": {
+    "NODE_ENV": "development"
+  }
+}
+```
+
+# ⛓ cors
+
+[cors](https://github.com/expressjs/cors)
+
+## (미작성) cors()
+
+- `origin`
+- `credentials`

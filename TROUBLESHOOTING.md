@@ -145,3 +145,65 @@ const addToCart = () => setCartAmount((prev) => (prev || 0) + 1);
    - cartItemSelector(id)의 결과값 대입: const [cartAmount, setCartAmount] = useRecoilState(cartItemSelector)
 3. addToCart를 호출하면 setCartAmount가 state인 cartAmount값을 cartAmout = cartAmount + 1로 변경한다. 이는 cartItemSelector의 set 프로퍼티에 접근하게 된다.
    - cartAmount의 재할당된 cartAmount + 1은 set 프로퍼티의 newValue 매개변수에 할당되어 최종적으로 cartState의 값을 변경하게 된다.
+
+## express server에서 `.ts`가 안읽힘
+
+### 문제 상황
+
+#### 에러 메세지
+
+> TypeError [ERR_UNKNOWN_FILE_EXTENSION]: Unknown file extension ".ts" for /Users/seonupark/Documents/dev/all-practice/clone-shopping-mall/shopping-mall/server/src/index.ts
+
+### 문제 원인 분석
+
+- 서버의 package.json을 세팅할 때 `.ts` 파일에서 `import/export` 구문(ESModule)을 사용하기 위해 package.json에서 `"type": "module"`을 설정해주었다.
+  - nodejs는 CommonJS(CJS)와 ESModule(ESM) 시스템을 모두 지원하는데, 기본 지원은 CJS이기 때문에 ESM을 사용하기 위해서는 package.json `type`을 `module`로 설정해주어야 한다.
+- Node는 typescript를 해석할 수 없기 때문에 `.ts` 확장자를 읽을 수 없다. 따라서 ts-node와 같은 Node 환경에서 사용하는 typescript 컴파일러가 필요하다.
+  - ts-node는 node환경에서 typescript 파일을 CommonJS로 변환해준다.
+  - [node가 일반적으로 제공하는 모듈 시스템이 CommonJS이기 때문에 ts-node 또한 별도의 설정이 없으면 CommonJS로 변환하는 것이다.](https://typestrong.org/ts-node/docs/imports#commonjs)
+- 즉, node 환결 설정을 할 때 ESModule을 사용한다고 했는데 ts-node가 변환하는 파일 형태는 CommonJS이므로, node는 ts-node가 변경해준 CommonJS 파일을 무시하고 `.ts` 파일을 직접적으로 읽으려 시도하기 때문에 위와 같은 에러가 발생하는 것이다.
+- 또한 TypeScript는 CommonJS와 ESModule 문법 모두 제공하기 때문에 ts-node가 ESModule의 문법인 `import/export` 구문으로 작성된 TypeScript 파일 또한 해석할 수 있다. 따라서 `"type"`을 `"module"`로 설정할 필요가 없다.
+
+### 문제 해결
+
+server 폴더의 package.json에서 `"type": "module"` 삭제하고, tsconfig.json에서 `compilerOptions`에 `"module": "CommonJS"`룰 추가한다.
+
+```json
+{
+  "compilerOptions": {
+    "module": "CommonJS"
+  }
+}
+```
+
+## commonjs에서는 Top-level `await`를 사용할 수 없음
+
+### 문제 상황
+
+#### 에러 메세지
+
+> /Users/seonupark/Documents/dev/all-practice/clone-shopping-mall/shopping-mall/node_modules/ts-node/src/index.ts:859
+>
+> return new TSError(diagnosticText, diagnosticCodes, diagnostics);
+>
+> TSError: ⨯ Unable to compile TypeScript:
+> src/index.ts:17:1 - error TS1378: Top-level 'await' expressions are only allowed when the 'module' option is set to 'es2022', 'esnext', 'system', 'node16', or 'nodenext', and the 'target' option is set to 'es2017' or higher.
+>
+> 17 <u>await</u> server.start;
+
+- CommonJS 시스템을 사용하고 있는 node 환경에서 Top-level await를 사용했더니 위와 같은 에러 메시지가 떴다.
+
+### 문제 원인 분석
+
+- [Top-level `await`](https://github.com/tc39/proposal-top-level-await)는 모듈 환경, 즉 CommonJS가 아닌 ESModule 시스템에서만 지원된다.
+  - Top-level `await`: 비동기 함수 외부에서 `await` 키워드를 사용할 수 있도록 하는 개념으로 top-level code에서 비동기 함수(`async`) 없이 `await`를 사용할 수 있다.
+  - top-level code: 최상위 레벨의 코드, 즉 전역 스코프의 코드를 의미한다.
+
+### 문제 해결
+
+- `await` 키워드가 필요한 곳에 `async` 함수로 감싸준다.
+
+### 그렇다면 CommonJS에서 Top-level `await`를 지원하지 않는 이유가 뭘까?
+
+- CommonJS는 모듈 로딩을 동기적으로 수행하여, 모듈 로딩이 완료된 이후에만 해당 모듈의 코드를 실행할 수 있다. 이런 시스템에서 Top-level await를 사용하면 모듈이 로딩되기 전에 await 키워드가 실행되어 버리기 때문에 모듈 코드 실행 시점에서 해당 모듈이 완전히 로딩되지 않은 상태가 되는 문제가 발생된다.
+- ESModule은 모듈을 비동기적으로 로딩하고, 모듈이 완전히 로딩되기 전가지 해당 모듈의 코드를 실행하지 않는다. 때문에 Top-level await를 지원할 수 있다.

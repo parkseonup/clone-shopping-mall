@@ -181,7 +181,6 @@ type RedirectFunction = (url: string, init?: number | ResponseInit) => Response;
 - [`redirect`](https://reactrouter.com/en/main/fetch/redirect)은 loaders나 actions에서 서버의 응답을 반환 받아서 페이지 이동을 수행할 때 사용하는 함수이다.
 - 따라서 리디렉션이 데이터에 대한 응답인 경우 `useNavigate` 대신 [loader](https://reactrouter.com/en/main/route/loader) 및 action 함수에서 `redirect`을 사용하는 것이 좋다.
 
-
 # 📥 React Query
 
 참고 문서: [[번역] #10: 리액트 쿼리는 상태 관리자다](https://parang.gatsbyjs.io/react/2022-react-11/)
@@ -911,8 +910,6 @@ const variables = {
 request('/graphql', query, variables);
 ```
 
-
-
 # 🪪 UUID
 
 - [UUID(Universally Unique IDentifier, 범용 고유 식별자)](https://en.wikipedia.org/wiki/Universally_unique_identifier)는 네트워크 상에서 고유성을 보장하는 ID를 만들기 위한 표준 규약으로, GUID(Globally Unique IDentifier)라고도 불린다.
@@ -969,6 +966,13 @@ const productItem = {
 - 컴포넌트가 마운트될 때마다 uuid가 호출되어 uuid는 늘 새로운 id값을 반환하기 때문에 기존의 id값을 유지하기 어렵다. (예시: 상품 id를 이용하여 서버에 상품 정보를 GET 요청하는 로직이라면, 해당 페이지에서 새로고침을 했을 경우 uuid가 생성한 상품 id값이 변경되기 때문에 동일한 상품 id를 서버에서 찾지 못한다.)
 
 # 📐 TypeScript
+
+## tsconfig.json
+
+### Options
+
+- `target`: ECMAScript의 버전을 결정함
+- `module`: CommonJS와 ESModule 중 어떤 모듈 시스템을 지원할 건지 결정함
 
 ## TypeScript 환경에서 ESLint 적용하기
 
