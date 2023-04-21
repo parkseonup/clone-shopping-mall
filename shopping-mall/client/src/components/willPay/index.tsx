@@ -11,21 +11,26 @@ const WillPay = ({
   handleSubmit: (e: SyntheticEvent) => void;
 }) => {
   const checkedItems = useRecoilValue(checkedCartState);
-  const totalPrice = checkedItems.reduce((res, { price, amount }) => {
-    res += price * amount;
-    return res;
-  }, 0);
+  const totalPrice = checkedItems.reduce(
+    (res, { amount, product: { price } }) => {
+      res += price * amount;
+      return res;
+    },
+    0
+  );
 
   return (
     <div className="cart-willpay">
       <ul>
-        {checkedItems.map(({ id, title, imageUrl, price, amount }) => (
-          <li key={id}>
-            <ItemData title={title} imageUrl={imageUrl} price={price} />
-            <p>수량: {amount}</p>
-            <p>금액: {price * amount}</p>
-          </li>
-        ))}
+        {checkedItems.map(
+          ({ id, amount, product: { title, imageUrl, price } }) => (
+            <li key={id}>
+              <ItemData title={title} imageUrl={imageUrl} price={price} />
+              <p>수량: {amount}</p>
+              <p>금액: {price * amount}</p>
+            </li>
+          )
+        )}
       </ul>
       <p>총 예상 결제 금액: {totalPrice}</p>
       <button onClick={handleSubmit}>{submitTitle}</button>

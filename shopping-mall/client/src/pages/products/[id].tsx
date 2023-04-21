@@ -6,7 +6,7 @@ import { ProductType, GET_PRODUCT } from "../../graphql/products";
 
 const ProductDetailPage = () => {
   const { id } = useParams();
-  const { data } = useQuery<Promise<unknown>, Error, ProductType>(
+  const { data } = useQuery<{ product: ProductType }>(
     [QueryKeys.PRODUCTS, id],
     () => graphqlFetcher(GET_PRODUCT, { id })
   );
@@ -16,7 +16,7 @@ const ProductDetailPage = () => {
   return (
     <div>
       <h2>상세페이지</h2>
-      <ProductDetail item={data} />
+      <ProductDetail item={data.product} />
     </div>
   );
 };
