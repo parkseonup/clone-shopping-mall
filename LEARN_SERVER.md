@@ -1,3 +1,83 @@
+# 🧩 node
+
+## `fs`
+
+- [`fs`](https://nodejs.org/api/fs.html) 모듈은 nodejs에서 제공하는 File System Module로, 파일 처리와 관련된 작업을 할 수 있다.
+- module로 선언된 fs 자체에 접근하여 내부에 export로 내보내지는 function들을 사용할 수 있다.
+  ```ts
+  declare module "fs" {
+    // ...
+  }
+  ```
+- 모든 파일 시스템 작업에는 Synchronous, Callback 및 Promise 기반 형식이 있다
+  - 메소드 이름에 Sync가 붙으면 Synchronous 형식이다.
+- CommonJS 구문과 ES6 모듈을 사용하여 fs에 접근할 수 있다.
+
+### method
+
+#### `fs.readFileSync`
+
+```ts
+fs.readFileSync(path[, options]);
+```
+
+- 파일의 전체 내용을 동기적으로 읽는 메서드이다.
+- 인수
+  - `path`: 파일 경로
+  - `options`
+    - 결과에 대한 인코딩을 지정하는 문자열이거나 반환된 링크 경로에 사용할 문자 인코딩을 지정하는 인코딩 속성이 있는 개체이다.
+    - 인코딩에 대한 기본값은 `"utf-8"`이다.
+
+#### `fs.writeFileSync`
+
+```ts
+fs.writeFileSync(file, data[, options]);
+```
+
+- 인수
+  - `file: <string> | <Buffer> | <URL> | <integer>`
+    - 파일명 또는 파일 descriptor이다.
+    - `file`이 파일명일 경우 파일에 데이터를 쓰고 파일이 이미 있는 경우 파일을 바꾼다.
+    - `file`이 파일 descriptor일 경우 `fs.write()`를 직접 호출하는 것과 유사한 동작을 한다.
+  - `data: <string> | <Buffer> | <TypedArray> | <DataView>`: `<string>`의 경우 인코딩을 지정할 수 있고, `<Buffer>`의 경우 `encoding` 옵션은 무시된다.
+  - `options: <Object> | <string>`
+    - `encoding: <string> | <null>`: 기본값은 'utf8'이다.
+    - `mode: <integer>`: mode는 새로 생성된 파일에만 영향을 미치며, 기본 값은 `0o666`(readable + writable)이다.
+    - `flag: <string>`: See support of file system flags. Default: 'w'.
+- 반환값은 `undefined`이다.
+- 콜백을 기다리지 않고 동일한 파일에서 fs.writeFile()을 여러 번 사용하는 것은 안전하지 않으므로, 이 경우 [`fs.createWriteStream()`](https://nodejs.org/api/fs.html#fscreatewritestreampath-options)이 권장된다.
+
+## `path`
+
+- nodejs에서 제공하는 [`path`](https://nodejs.org/api/path.html) 모듈은 파일 및 디렉토리 경로 작업을 위한 유틸리티를 제공한다.
+
+### method
+
+#### `resolve`
+
+```ts
+resolve(...paths: string[]): string;
+```
+
+- path들의 모음, 즉 경로나 경로 세그먼트들을 절대경로로 변환하는 메서드이다.
+- `paths`
+  - 인수로 문자열로 된 경로들이 나열된 리스트를 전달할 수 있다.
+  - 하나라도 문자열이 아닌 경우 `TypeError`를 일으킨다.
+  - paths에서 가장 오른쪽 매개변수는 {to}로 간주하고 다른 매개변수는 {from}의 배열로 간주하여 {to}부터 시작하여 절대 경로를 찾을 때까지 왼쪽에 위치한 {from}을 차례대로 `/`로 구분하여 {to} 앞에 추가한다.
+  - 모든 {from}을 추가한 뒤에도 여전히 절대 경로를 찾을 수 없으면 현재 작업 중인 디렉토리가 사용된다. 즉, 인수로 어떤 값도 전달하지 않으면 현재 작업 중인 디렉토리 경로를 반환한다.
+
+## `__dirname`
+
+- node에서 제공하는 절대 경로로, 현재 실행 중인 디렉토리 경로를 제공한다.
+  - 예시: 현재 실행 중인 파일의 위치가 `src/db/cart.json`일 경우 `__dirname`은 `src/db`이다.
+- CommonJS 시스템에서만 제공되므로 ESModule 시스템에서는 사용할 수 없다.
+
+## `__filename`
+
+- node에서 제공하는 파일 경로로, 현재 실행 중인 디렉토리 경로를 포함한 파일명까지를 제공한다.
+  - 예시: 현재 파일의 위치가 `src/db/cart.json`일 경우 `__dirname`은 `src/db/cart.json`이다.
+- CommonJS 시스템에서만 제공되므로 ESModule 시스템에서는 사용할 수 없다.
+
 # 🌌 Mocking
 
 ## 참고 문서
@@ -178,6 +258,110 @@ query {
   - 클라이언트는 이 정보를 기반으로 요청을 작성할 수 있다.
   - GraphQL은 런타임에서 쿼리의 유효성을 검사하고, 표준화된 JSON 형식으로 결과를 반환한다.
 
+### `extend` 키워드
+
+- 기존에 정의된 스키마에 새로운 타입이나 필드를 추가하는 것
+  - 예를 들어, 기존에 정의된 Query 타입에 새로운 필드를 추가할 때 extend 키워드를 사용할 수 있다.
+- 기존의 스키마를 수정할 수 있기 때문에, 스키마의 변경 사항이 바로 적용되며, 타입과 필드를 더 쉽게 관리할 수 있다.
+- 스키마의 변경이 필요한 경우에 사용
+
+#### 예시
+
+아래와 같이 `extend` 키워드를 사용하여 Query의 type을 정의해주면 Query는 cartSchema에 정의된 Query 타입의 필드와 productSchema에 정의된 Query 타입의 필드를 모두 추가하기 때문에 맨 하단의 코드와 같은 확장된 필드를 가질 수 있다.
+
+```ts
+const cartSchema = gql`
+  type CartItem {
+    id: ID!
+    amount: String!
+    product: Product!
+  }
+
+  extend type Query {
+    cart: [CartItem!]
+  }
+`;
+
+const productSchema = gql`
+  type Product {
+    id: ID!
+    title: String!
+    imageUrl: String!
+    price: Int!
+    description: String!
+    createdAt: String!
+  }
+
+  extend type Query {
+    products: [Product!]
+    product(id: ID!): Product!
+  }
+`;
+```
+
+```ts
+// Query 타입의 필드가 확장된 결과
+gql`
+  type Query {
+    cart: [CartItem!]
+    products: [Product!]
+    product(id: ID!): Product!
+  }
+`;
+```
+
+### Link 스키마
+
+- 기존에 정의된 스키마에 의존하는 다른 스키마를 정의하는 방식
+- 이 방식은 스키마의 변경이 용이하지 않지만, 여러 스키마에서 동일한 타입을 참조해야 하는 경우에 유용합니다.
+- 여러 스키마에서 동일한 타입을 참조해야 하는 경우에 사용
+
+#### 예시
+
+CartItem 타입에서 product 필드가 참조하고 있는 것은 다른 스키마인 productSchema의 Product 타입이다. 이처럼 Link 스키마는 다른 스키마의 타입을 참조할 수 있도록 제공한다.
+
+```ts
+const cartSchema = gql`
+  type CartItem {
+    id: ID!
+    amount: String!
+    product: Product!
+  }
+
+  extend type Query {
+    cart: [CartItem!]
+  }
+`;
+
+const productSchema = gql`
+  type Product {
+    id: ID!
+    title: String!
+    imageUrl: String!
+    price: Int!
+    description: String!
+    createdAt: String!
+  }
+
+  extend type Query {
+    products: [Product!]
+    product(id: ID!): Product!
+  }
+`;
+
+const linkSchema = gql`
+  type Query {
+    _: Boolean
+  }
+
+  type Mutation {
+    _: Boolean
+  }
+`;
+
+export default [linkSchema, productSchema, cartSchema];
+```
+
 ## operation과 종류
 
 - 클라이언트에서 서버로 전송되는 GraphQL 요청의 유형을 말하며, `query`, `mutation`, `subscription`이 있다.
@@ -331,17 +515,21 @@ console.log(`🚀 Server ready at http://localhost:4000/`);
 
 4. `ApolloServer` 인스턴스 생성
 
-   - `new` 연산자와 함께 `ApolloServer`를 호출할 때 `typeDefs` 속성과 `resolvers` 속성이 정의된 객체를 인수로 전달한다.
-     ```ts
-     const server = new ApolloServer({
-       typeDefs,
-       resolvers,
-     });
-     ```
-
 ## (미작성) Schema 정의
 
 ## (미작성) Resolver 정의
+
+## `ApolloServer` 인스턴스 생성
+
+```ts
+const server = new ApolloServer({
+  typeDefs,
+  resolvers,
+});
+```
+
+- `new` 연산자와 함께 `ApolloServer`를 호출할 때 `typeDefs` 속성과 `resolvers` 속성이 정의된 객체를 인수로 전달한다.
+- 기존에는 `context` 속성 또한 `ApolloServer`를 호출할 때 전달했으나, 4버전에서는 `expressMiddleware` 또는 `startStandaloneServer`에 전달하는 것으로 변경되었다.
 
 ## `expressMiddleware`
 
@@ -356,8 +544,31 @@ expressMiddleware(ApolloServer Instance, { context: context function })
 
 - `ApolloServer Instance`: `expressMiddleware`의 첫 번째 인수로, `ApolloServer`의 Instance를 전달한다.
 - [`{ context: context function }`](https://www.apollographql.com/docs/apollo-server/data/context)
+
   - `expressMiddleware`의 두 번째 인수로, `context` 속성에 `context` function을 값으로 가지는 객체를 전달한다.
-  - `context` function는 비동기 함수로 operation 실행 중에 서버의 모든 resolver가 공유하는 객체를 반환한다. 이를 통해 resolver는 데이터베이스 연결과 같은 유용한 context value를 공유할 수 있다.
+  - `context` function는 비동기 함수로 객체를 반환해야 한다.
+  - operation 실행 중에 서버의 모든 resolver가 공유하는 객체를 반환한다. 이를 통해 resolver는 데이터베이스 연결과 같은 유용한 context value를 공유할 수 있다.
+  - TypeScript를 사용하는 경우, `ApolloServer`에 `contextValue`에 대한 타입이 정의된 context를 전달해야 한다.
+
+    ```ts
+    interface MyContext {
+      // You can optionally create a TS interface to set up types for your contextValue
+      authScope?: String;
+    }
+
+    const server = new ApolloServer<MyContext>({
+      typeDefs,
+      resolvers,
+    });
+
+    const { url } = await startStandaloneServer(server, {
+      // async context function should async and return an object
+      context: async ({ req, res }) => ({
+        authScope: getScope(req.headers.authorization),
+      }),
+    });
+    ```
+
   - `context` 함수는 express.Request 및 express.Response 객체인 req 및 res 옵션을 받는다.
 
 # 💼 Express

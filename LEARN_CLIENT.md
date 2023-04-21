@@ -351,7 +351,9 @@ queryClient.setQueryData(queryKey, updater);
 ## useQuery란?
 
 - [useQuery](https://tanstack.com/query/v4/docs/react/reference/useQuery)는 react-query에서 제공하는 api로, query를 서버로부터 GET 받을 때 사용한다.
-- useQuery는 비동기로 동작한다.
+- `useQuery`는 비동기로 동작한다.
+  - `useQuery`는 렌더링 시점에 데이터를 가져오는 비동기 함수이다. 따라서 첫 렌더링에는 데이터를 가져오지 못하고, `undefined`를 반환할 수 있다.
+- `useQuery`는 첫 렌더링 때 데이터를 캐시하고, 이후에는 캐시된 데이터를 사용한다. 첫 렌더링 이후에 `useQuery`의 비동기 함수가 실행되고 데이터를 새롭게 캐시했기 때문에 리렌더링이 발생되며, `data`에는 캐시된 데이터에서 값을 읽어온다.
 - 쿼리는 자동으로 수행된다.
   - 종속성을 정의하지만, React Query는 즉각적인 쿼리 실행이나 업데이트가 필요하다고 판단되는 경우 자동으로 background update를 수행한다.
   - 백엔드의 실제 데이터와 화면에 표시되는 내용을 동기화 하는 것에 적합하다.
@@ -363,7 +365,7 @@ queryClient.setQueryData(queryKey, updater);
 ### 작성 방법
 
 ```js
-useQuery(queryKey, queryFunction);
+useQuery(queryKey, queryFunction): UseQueryResult;
 ```
 
 - `queryKey: (string, number, object)[]`: `query`를 관리하는데 사용되는 unique key
