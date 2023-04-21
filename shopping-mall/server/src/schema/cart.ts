@@ -1,23 +1,21 @@
 import { gql } from "graphql-tag";
 
 const cartSchema = gql`
-  type Cart {
+  type CartItem {
     id: ID!
-    title: String!
-    imageUrl: String!
-    price: Int!
     amount: Int!
+    product: Product!
   }
 
   extend type Query {
-    cart: [Cart!]
+    cart: [CartItem!]
   }
 
   extend type Mutation {
-    addCart: Cart!
-    updateCart: Cart!
-    deleteCart: ID!
-    excutePay: [ID!]
+    addCart(id: ID!): CartItem!
+    updateCart(id: ID!, amount: Int!): CartItem!
+    deleteCart(id: ID!): ID!
+    excutePay(ids: [ID!]): [ID!]
   }
 `;
 

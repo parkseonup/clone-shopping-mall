@@ -1,0 +1,162 @@
+[
+  {
+    "id": "1",
+    "imageUrl": "https://picsum.photos/id/20/200/150",
+    "title": "임시제목1",
+    "description": "임시설명1",
+    "price": 50000,
+    "createdAt": "Tue Jun 28 54625 18:38:21 GMT+0900 (대한민국 표준시)"
+  },
+  {
+    "id": "2",
+    "imageUrl": "https://picsum.photos/id/21/200/150",
+    "title": "임시제목2",
+    "description": "임시설명2",
+    "price": 50000,
+    "createdAt": "Wed Jun 29 54625 18:38:21 GMT+0900 (대한민국 표준시)"
+  },
+  {
+    "id": "3",
+    "imageUrl": "https://picsum.photos/id/22/200/150",
+    "title": "임시제목3",
+    "description": "임시설명3",
+    "price": 50000,
+    "createdAt": "Thu Jun 30 54625 18:38:21 GMT+0900 (대한민국 표준시)"
+  },
+  {
+    "id": "4",
+    "imageUrl": "https://picsum.photos/id/23/200/150",
+    "title": "임시제목4",
+    "description": "임시설명4",
+    "price": 50000,
+    "createdAt": "Fri Jul 01 54625 18:38:21 GMT+0900 (대한민국 표준시)"
+  },
+  {
+    "id": "5",
+    "imageUrl": "https://picsum.photos/id/24/200/150",
+    "title": "임시제목5",
+    "description": "임시설명5",
+    "price": 50000,
+    "createdAt": "Sat Jul 02 54625 18:38:21 GMT+0900 (대한민국 표준시)"
+  },
+  {
+    "id": "6",
+    "imageUrl": "https://picsum.photos/id/25/200/150",
+    "title": "임시제목6",
+    "description": "임시설명6",
+    "price": 50000,
+    "createdAt": "Sun Jul 03 54625 18:38:21 GMT+0900 (대한민국 표준시)"
+  },
+  {
+    "id": "7",
+    "imageUrl": "https://picsum.photos/id/26/200/150",
+    "title": "임시제목7",
+    "description": "임시설명7",
+    "price": 50000,
+    "createdAt": "Mon Jul 04 54625 18:38:21 GMT+0900 (대한민국 표준시)"
+  },
+  {
+    "id": "8",
+    "imageUrl": "https://picsum.photos/id/27/200/150",
+    "title": "임시제목8",
+    "description": "임시설명8",
+    "price": 50000,
+    "createdAt": "Tue Jul 05 54625 18:38:21 GMT+0900 (대한민국 표준시)"
+  },
+  {
+    "id": "9",
+    "imageUrl": "https://picsum.photos/id/28/200/150",
+    "title": "임시제목9",
+    "description": "임시설명9",
+    "price": 50000,
+    "createdAt": "Wed Jul 06 54625 18:38:21 GMT+0900 (대한민국 표준시)"
+  },
+  {
+    "id": "10",
+    "imageUrl": "https://picsum.photos/id/29/200/150",
+    "title": "임시제목10",
+    "description": "임시설명10",
+    "price": 50000,
+    "createdAt": "Thu Jul 07 54625 18:38:21 GMT+0900 (대한민국 표준시)"
+  },
+  {
+    "id": "11",
+    "imageUrl": "https://picsum.photos/id/30/200/150",
+    "title": "임시제목11",
+    "description": "임시설명11",
+    "price": 50000,
+    "createdAt": "Fri Jul 08 54625 18:38:21 GMT+0900 (대한민국 표준시)"
+  },
+  {
+    "id": "12",
+    "imageUrl": "https://picsum.photos/id/31/200/150",
+    "title": "임시제목12",
+    "description": "임시설명12",
+    "price": 50000,
+    "createdAt": "Sat Jul 09 54625 18:38:21 GMT+0900 (대한민국 표준시)"
+  },
+  {
+    "id": "13",
+    "imageUrl": "https://picsum.photos/id/32/200/150",
+    "title": "임시제목13",
+    "description": "임시설명13",
+    "price": 50000,
+    "createdAt": "Sun Jul 10 54625 18:38:21 GMT+0900 (대한민국 표준시)"
+  },
+  {
+    "id": "14",
+    "imageUrl": "https://picsum.photos/id/33/200/150",
+    "title": "임시제목14",
+    "description": "임시설명14",
+    "price": 50000,
+    "createdAt": "Mon Jul 11 54625 18:38:21 GMT+0900 (대한민국 표준시)"
+  },
+  {
+    "id": "15",
+    "imageUrl": "https://picsum.photos/id/34/200/150",
+    "title": "임시제목15",
+    "description": "임시설명15",
+    "price": 50000,
+    "createdAt": "Tue Jul 12 54625 18:38:21 GMT+0900 (대한민국 표준시)"
+  },
+  {
+    "id": "16",
+    "imageUrl": "https://picsum.photos/id/35/200/150",
+    "title": "임시제목16",
+    "description": "임시설명16",
+    "price": 50000,
+    "createdAt": "Wed Jul 13 54625 18:38:21 GMT+0900 (대한민국 표준시)"
+  },
+  {
+    "id": "17",
+    "imageUrl": "https://picsum.photos/id/36/200/150",
+    "title": "임시제목17",
+    "description": "임시설명17",
+    "price": 50000,
+    "createdAt": "Thu Jul 14 54625 18:38:21 GMT+0900 (대한민국 표준시)"
+  },
+  {
+    "id": "18",
+    "imageUrl": "https://picsum.photos/id/37/200/150",
+    "title": "임시제목18",
+    "description": "임시설명18",
+    "price": 50000,
+    "createdAt": "Fri Jul 15 54625 18:38:21 GMT+0900 (대한민국 표준시)"
+  },
+  {
+    "id": "19",
+    "imageUrl": "https://picsum.photos/id/38/200/150",
+    "title": "임시제목19",
+    "description": "임시설명19",
+    "price": 50000,
+    "createdAt": "Sat Jul 16 54625 18:38:21 GMT+0900 (대한민국 표준시)"
+  },
+  {
+    "id": "20",
+    "imageUrl": "https://picsum.photos/id/39/200/150",
+    "title": "임시제목20",
+    "description": "임시설명20",
+    "price": 50000,
+    "createdAt": "Sun Jul 17 54625 18:38:21 GMT+0900 (대한민국 표준시)"
+  }
+]
