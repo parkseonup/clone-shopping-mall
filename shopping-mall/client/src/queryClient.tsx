@@ -1,14 +1,6 @@
 import { QueryClient } from "@tanstack/react-query";
 import { request, RequestDocument } from "graphql-request";
 
-/**
- * NOTE: queryClient를 따로 관리하면 여기저기서 불러오기 쉽고, 수정이 간편하다.
- *
- * 클로저로 만들어진 getClient는 최초 실행 때만 변수 client를 선언하고,
- * 이후 getClient가 호출되면 new QueryClient의 인스턴스가 된 client를 return 한다.
- *
- * THINK: 클로저를 위해 client을 null로 미리 선언해두었는데, 클로저가 아닌 매 호출마다 new QueryClient()를 호출하는 client 변수를 선언하면 안되는가? 뭐가 더 좋을까?
- */
 export const getClient = (() => {
   let client: QueryClient | null = null;
 
@@ -29,11 +21,11 @@ export const getClient = (() => {
   };
 })();
 
-const BASE_URL = "/";
+const BASE_URL = "http://localhost:8000/graphql";
+// const BASE_URL = "/";
 
 type AnyOBJ = { [key: string]: any };
 
-/** fetch를 간편하게 하도록 하는 함수 */
 export const resfetcher = async ({
   method,
   path,
@@ -70,8 +62,10 @@ export const resfetcher = async ({
   }
 };
 
-export const graphqlFetcher = async (query: RequestDocument, variables = {}) =>
-  request(BASE_URL, query, variables);
+export const graphqlFetcher = async (
+  query: RequestDocument,
+  variables = {}
+): Promise<any> => request(BASE_URL, query, variables);
 
 /** react-query에서 unique key로 사용되는 값 */
 export const QueryKeys = {
