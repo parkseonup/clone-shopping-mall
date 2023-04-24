@@ -2,24 +2,6 @@
 
 강의를 들으면서 처음 접하거나 이해가 되지 않는 부분들이 있었기 때문에 추가 공부가 필요했다. 아래에 따로 공부한 것들을 간단하게 정리해보았다.
 
-# 🔨 vite
-
-## (미작성) vite에서 사용하는 환경 변수
-
-vite에는 [env 환경변수](https://vitejs.dev/guide/env-and-mode.html#env-variables-and-modes)를 노출할 때 사용되는 문법이 따로 있다.
-
-- vite는 dotenv를 활용하여 환경 디렉토리의 파일에 추가 환경 변수를 로드한다.
-
-### (미작성) 환경 변수란?
-
-### (미작성) dotenv란?
-
-[dotenv](https://github.com/motdotla/dotenv)
-
-### (미작성) process.env.NODE_ENV는 어떤 의미인가?
-
-MSW의 application root에 browser integration을 적용할 때 예제에 작성된 `process.env.NODE_ENV`는 어떤 의미일까?
-
 # 🍴 JavaScript + React + browser API
 
 ## URLSearchParams 란?
@@ -50,17 +32,46 @@ interface URLSearchParams {
 }
 ```
 
-## Intersection Observer 란?
+## Intersection Observer API
 
-- [](https://www.smashingmagazine.com/2018/01/deferring-lazy-loading-intersection-observer-api/)
+### 참고 문서
 
-### (미작성) 무한스크롤 구현시 scroll 좌표를 구하는 방식이 아닌 Intersection Observer를 사용하는 이유
-
-참고 사이트
-
+- [Now You See Me: How To Defer, Lazy-Load And Act With IntersectionObserver](https://www.smashingmagazine.com/2018/01/deferring-lazy-loading-intersection-observer-api/)
 - [IntersectionObserver's coming into view - web.dev](https://web.dev/intersectionobserver/)
 
-### IntersectionObserver를 보다 나은 react hook으로 만들기
+### Intersection Observer API 란?
+
+```ts
+new IntersectionObserver((entries: IntersectionObserverEntry) => { ... }): IntersectionObserver;
+```
+
+- 브라우저가 제공하는 [Intersection Observer API](https://developer.mozilla.org/ko/docs/Web/API/Intersection_Observer_API)는 상위 요소 또는 최상위 문서의 viewport와 target 요소의 교차에서 변경 사항을 비동기식으로 관찰하는 방법을 제공한다.
+- 비동기 특성 때문에 여러 관찰 항목이 동시에 콜백 함수의 인수로 전달될 수 있으며, 때문에 콜백 함수의 인자는 단일 항목이 아닌 Array이다.
+- [`IntersectionObserverEntry`](https://developer.mozilla.org/en-US/docs/Web/API/IntersectionObserverEntry)의 인스턴스는 `IntersectionObserver`의 인수인 entries로 전달되며, target 요소의 좌표와 교차하는 경계 등 여러 속성을 포함하고 있다.
+- 주의할 점
+  - Intersection Observer API 자체는 비동기로 동작하나, `InterSectionObserver`의 콜백 함수 내에서 실행되는 코드는 비동기가 아니기 때문에 내부 코드는 자바스크립트의 스레드를 blocking 시킬 수 있다.
+  - `InterSectionObserver`를 이미지 등 컨텐츠를 지연 로드할 때 사용할 경우 자산이 로드된 후에 `unobserve()` 메서드를 실행해야 한다.
+  - target 요소가 DOM tree에 존재해야만 교차를 감지할 수 있다. 즉, target 요소가 레이아웃에 영향을 미쳐야 한다.
+    - `display: none`인 target 요소는 교차를 감지할 수 없다.
+    - `opacity: 0` 또는 `visibility: hidden`로 인해 target 요소기 보이지 않아도 레이아웃을 가지면(`width`와 `height`가 존재하는 등) target 요소를 감지할 수 있다.
+    - `position: absolute; width: 0; height: 0`인 target 요소는 감지할 수 있으나, containing block의 영역 밖에 위치하고 `overflow: hidden`에 의해 가려진 target 요소는 감지할 수 없다.
+
+### 전통적인 방법 vs Intersection Observer API
+
+과거에 target 요소와의 교차를 감지하기 위해서는 이벤트 핸들러(`scroll`)와 `Element.getBoundingClientRect()`로 구현했다. 현재는 이러한 전통적인 방법 대신 Intersection Observer API를 사용하는데, 그 이유에 대해 알아보자.
+
+- `getBoundingClientRect()` 메서드는 호출될 때마다 브라우저가 전체 페이지를 re-layout 하도록 강제하여 속도를 더디게 하는 반면, `IntersectionObserverEntry`는 미리 정의되고 미리 계산된 속성 집합을 제공하기 때문에 효율적이다.
+- 전통적인 방법은 자바스크립트의 스레드에서 동기적으로 실행되기 때문에 성능 문제를 야기하는 반면, Intersection Observer API는 자바스크립트 스레드와는 별개의 스레드(browser의 스레드 중 하나)에서 비동기적으로 실행되어 최적화가 가능하다.
+  - 이벤트 핸들러는 비동기로 호출되지만, 결론적으로는 테스크 큐에 쌓인 비동기 함수들이 순서대로 호출되므로 메인 스레드(자바스크립트 스레드)의 응답성에 영향을 미친다.
+
+### 교차 감지로 구현할 수 있는 항목 예시
+
+- 스크롤시 이미지 또는 기타 컨텐츠 지연 로드
+- 무한 스크롤
+- 광고 수익을 계산하기 위한 광고의 가시성 보고
+- 현재 스크롤이 위치한 콘텐츠에 따라 네비게이션 하이라이팅
+
+### (미작성) IntersectionObserver를 보다 나은 react hook으로 만들기
 
 - [How To Use an IntersectionObserver in a React Hook](https://medium.com/the-non-traditional-developer/how-to-use-an-intersectionobserver-in-a-react-hook-9fb061ac6cb5)
 
