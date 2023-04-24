@@ -6,7 +6,6 @@ import { checkedCartState } from "../../recoils/cart";
 import WillPay from "../willPay";
 import CartItem from "./item";
 
-// TODO: ref의 매개변수로 node가 등록되었을 때 node가 undefined일 경우가 어떻게 생기는지 알아보기
 // FIXME: item을 삭제했을 때는 전체 체크가 동작을 안함. (item 삭제시 onChange 이벤트가 안읽히기 때문)
 const CartList = ({ items }: { items: CartType[] }) => {
   const navigate = useNavigate();
