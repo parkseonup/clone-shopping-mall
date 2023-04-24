@@ -4,6 +4,7 @@ import CartIndex from "./pages/cart/index";
 import PaymentIndex from "./pages/payment/index";
 import ProductsIndex from "./pages/products/index";
 import ProductsId from "./pages/products/[id]";
+import AdminIndex from "./pages/admin/index";
 
 export const routes = [
   {
@@ -15,14 +16,17 @@ export const routes = [
       { path: "/payment", element: <PaymentIndex />, index: true },
       { path: "/products", element: <ProductsIndex />, index: true },
       { path: "/products/:id", element: <ProductsId /> },
+      { path: "/admin", element: <AdminIndex />, index: true },
     ],
   },
 ];
 
+// TODO: pages가 필요한 이유
 export const pages = [
   { route: "/" },
   { route: "/cart" },
   { route: "/payment" },
   { route: "/products" },
   { route: "/products/:id" },
+  // { route: "/admin" },
 ];

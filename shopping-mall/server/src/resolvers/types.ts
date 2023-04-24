@@ -20,7 +20,7 @@ export type Product = {
   imageUrl: string;
   price: number;
   description: string;
-  createdAt: string;
+  createdAt?: number;
 };
 
 export type Products = Product[];
