@@ -415,7 +415,7 @@ const variables = {
 request('/graphql', query, variables);
 ```
 
-# 📐 (미작성) ts-node
+# 📐 ts-node
 
 - [ts-node](https://typestrong.org/ts-node)는 nodejs 환경에서 typescript를 사전 컴파일 없이 사용하게 도와주는 패키지이다.
 - ts-node는 tsconfig.json을 자동으로 찾아서 로드한다.
@@ -515,21 +515,15 @@ console.log(`🚀 Server ready at http://localhost:4000/`);
 
 4. `ApolloServer` 인스턴스 생성
 
-## (미작성) Schema 정의
+   ```ts
+   const server = new ApolloServer({
+     typeDefs,
+     resolvers,
+   });
+   ```
 
-## (미작성) Resolver 정의
-
-## `ApolloServer` 인스턴스 생성
-
-```ts
-const server = new ApolloServer({
-  typeDefs,
-  resolvers,
-});
-```
-
-- `new` 연산자와 함께 `ApolloServer`를 호출할 때 `typeDefs` 속성과 `resolvers` 속성이 정의된 객체를 인수로 전달한다.
-- 기존에는 `context` 속성 또한 `ApolloServer`를 호출할 때 전달했으나, 4버전에서는 `expressMiddleware` 또는 `startStandaloneServer`에 전달하는 것으로 변경되었다.
+   - `new` 연산자와 함께 `ApolloServer`를 호출할 때 `typeDefs` 속성과 `resolvers` 속성이 정의된 객체를 인수로 전달한다.
+   - 기존에는 `context` 속성 또한 `ApolloServer`를 호출할 때 전달했으나, 4버전에서는 `expressMiddleware` 또는 `startStandaloneServer`에 전달하는 것으로 변경되었다.
 
 ## `expressMiddleware`
 
@@ -658,18 +652,6 @@ listen(handle: any, listeningListener?: () => void): http.Server;
 ```
 
 위 코드는 `npm run dev` 명령을 입력하면 nodemon은 ts-node로 ./src/index.ts를 실행한다는 뜻이다.
-
-## (미작성) nodemon.json 해석...
-
-```json
-{
-  "watch": ["src"],
-  "ignore": ["db/**/*"],
-  "env": {
-    "NODE_ENV": "development"
-  }
-}
-```
 
 # ⛓ cors
 
