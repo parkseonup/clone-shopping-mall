@@ -9,8 +9,10 @@ export const getClient = (() => {
       client = new QueryClient({
         defaultOptions: {
           queries: {
-            cacheTime: 1000 * 60 * 60 * 24, // 데이터를 캐시에 저장하는 시간: 24시간
-            staleTime: 1000 * 60, // 데이터 갱신 전 만료 시간: 1분
+            // cacheTime: 1000 * 60 * 60 * 24, // 데이터를 캐시에 저장하는 시간: 24시간
+            // staleTime: 1000 * 60, // 데이터 갱신 전 만료 시간: 1분
+            cacheTime: Infinity,
+            staleTime: Infinity,
             refetchOnMount: false, // 컴포넌트가 처음 마운트될 때마다 새로고침 여부: x
             refetchOnReconnect: false, // 인터넷 연결이 다시 활성화될 때마다 새로고침 여부: x
             refetchOnWindowFocus: false, // 브라우저 창에 포커스될 때마다 새로고침 여부: x
