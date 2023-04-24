@@ -20,7 +20,7 @@ import { DBField, readDB } from "./dbController";
   app.use(
     "/graphql",
     cors<CorsRequest>({
-      origin: ["http://localhost:5173", "https://studio.apollographql.com"],
+      origin: ["http://localhost:3000", "https://studio.apollographql.com"],
       credentials: true,
     }),
     bodyParser.json(),

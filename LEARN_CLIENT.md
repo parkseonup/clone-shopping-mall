@@ -20,7 +20,49 @@ vite에는 [env 환경변수](https://vitejs.dev/guide/env-and-mode.html#env-var
 
 MSW의 application root에 browser integration을 적용할 때 예제에 작성된 `process.env.NODE_ENV`는 어떤 의미일까?
 
-# 🍴 JavaScript + React
+# 🍴 JavaScript + React + browser API
+
+## URLSearchParams 란?
+
+[URLSearchParams](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams) 인스턴스는 `new URLSearchParams()`의 반환값으로 URLSearchParams 호출시 인수로 전달한 key/value 쌍을 반복하여 쿼리 문자열을 쉽게 다룰 수 있도록 돕는다.
+
+```ts
+interface URLSearchParams {
+  /** Appends a specified key/value pair as a new search parameter. */
+  append(name: string, value: string): void;
+  /** Deletes the given search parameter, and its associated value, from the list of all search parameters. */
+  delete(name: string): void;
+  /** Returns the first value associated to the given search parameter. */
+  get(name: string): string | null;
+  /** Returns all the values association with a given search parameter. */
+  getAll(name: string): string[];
+  /** Returns a Boolean indicating if such a search parameter exists. */
+  has(name: string): boolean;
+  /** Sets the value associated to a given search parameter to the given value. If there were several values, delete the others. */
+  set(name: string, value: string): void;
+  sort(): void;
+  /** Returns a string containing a query string suitable for use in a URL. Does not include the question mark. */
+  toString(): string;
+  forEach(
+    callbackfn: (value: string, key: string, parent: URLSearchParams) => void,
+    thisArg?: any
+  ): void;
+}
+```
+
+## Intersection Observer 란?
+
+- [](https://www.smashingmagazine.com/2018/01/deferring-lazy-loading-intersection-observer-api/)
+
+### (미작성) 무한스크롤 구현시 scroll 좌표를 구하는 방식이 아닌 Intersection Observer를 사용하는 이유
+
+참고 사이트
+
+- [IntersectionObserver's coming into view - web.dev](https://web.dev/intersectionobserver/)
+
+### IntersectionObserver를 보다 나은 react hook으로 만들기
+
+- [How To Use an IntersectionObserver in a React Hook](https://medium.com/the-non-traditional-developer/how-to-use-an-intersectionobserver-in-a-react-hook-9fb061ac6cb5)
 
 ## `React.lazy()`란?
 
@@ -69,34 +111,6 @@ lazy(loadFunction);
 - 내비게이션에서 서스펜스 경계 재설정
 - 서버 오류 및 서버 전용 콘텐츠에 대한 대체 제공
 
-## URLSearchParams 란?
-
-[URLSearchParams](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams) 인스턴스는 `new URLSearchParams()`의 반환값으로 URLSearchParams 호출시 인수로 전달한 key/value 쌍을 반복하여 쿼리 문자열을 쉽게 다룰 수 있도록 돕는다.
-
-```ts
-interface URLSearchParams {
-  /** Appends a specified key/value pair as a new search parameter. */
-  append(name: string, value: string): void;
-  /** Deletes the given search parameter, and its associated value, from the list of all search parameters. */
-  delete(name: string): void;
-  /** Returns the first value associated to the given search parameter. */
-  get(name: string): string | null;
-  /** Returns all the values association with a given search parameter. */
-  getAll(name: string): string[];
-  /** Returns a Boolean indicating if such a search parameter exists. */
-  has(name: string): boolean;
-  /** Sets the value associated to a given search parameter to the given value. If there were several values, delete the others. */
-  set(name: string, value: string): void;
-  sort(): void;
-  /** Returns a string containing a query string suitable for use in a URL. Does not include the question mark. */
-  toString(): string;
-  forEach(
-    callbackfn: (value: string, key: string, parent: URLSearchParams) => void,
-    thisArg?: any
-  ): void;
-}
-```
-
 ## `createPotal`
 
 ```ts
@@ -116,7 +130,38 @@ createPortal(children, domNode);
   - 즉, `children`은 출력되는 위치가 아닌 선언된 위치(부모 트리)에서 제공하는 컨텍스트를 공유한다.
   - 이는 부모 컴포넌트에서 `children`의 이벤트 전파를 감지하는 등의 관여가 가능함을 말하며, portal에 의존하지 않는 유연한 개발을 가능하게 한다.
 
-## (미작성) `ref`의 매개변수
+## `ref callback` 이란?
+
+```js
+<div ref={(node) => console.log(node)} />
+```
+
+- [`ref callback`](https://react.dev/reference/react-dom/components/common#ref-callback)는 이전 렌더링에서의 `node`를 인수로 받아
+- `ref` attribute의 값으로 작성된 함수를 `ref callback`(`ref`의 콜백함수)이라고 부른다.
+- React는 변경된 `ref callback`을 전달 받을 때마다 `ref callback`을 호출하며, 컴포넌트가 리렌더링될 때 마운트가 해제된 함수는 `null`을 인자로 하여 호출되고 마운트되는 함수는 `DOM node`를 인자로 하여 호출한다.
+- `null`을 인자로 받아 호출된 `ref`는 참조값을 삭제한다.
+- 매개변수: `node`
+  - `DOM node` 또는 `null`를 값으로 가진다.
+  - 모든 렌더링에서 ref 콜백에 대해 동일한 함수 참조를 전달하지 않는 한 콜백은 구성 요소를 다시 렌더링하는 동안 일시적으로 분리되고(언마운트) 다시 연결된다.
+
+## `useCallback` 이란?
+
+```ts
+useCallback(fn, dependencies): fn;
+```
+
+- [`useCallback`](https://react.dev/reference/react/useCallback)이란 리렌더링 간에 함수 정의를 캐시할 수 있는 메서드이다.
+- 즉, 일반 함수처럼 컴포넌트가 호출될 때마다 매번 특정 함수를 새롭게 정의하는 하지 않고, 특정 함수를 새로 만들지 않고 재사용하고 싶을 때 사용한다.
+- 이는 매번 함수를 정의하지 않기 때문에 최적화에 유리하다.
+- React에서 제공하는 `useMemo`와 비슷하나, 함수를 호출하지 않고 함수 객체를 캐시한 뒤 함수 객체를 반환한다. 때문에 개발자가 함수 호출 시점을 지정할 수 있다.
+  - `useMemo`: 인수로 전달된 함수를 호출하고 함수가 실행된 결과값을 캐시하는 메서드이다.
+- 인수
+  - `fn`
+    - 캐시하려는 함수 객체이다.
+    - React는 초기 렌더링 중에 함수 객체를 캐시한 후, 리렌더링이 발생할 때 `dependencies`(의존성 배열)이 이전 렌더링과 비교하여 변경되지 않았을 경우 동일한 함수를 제공한다. 변경되었으면 현재 렌더링 중에 해석되는 `fn` 함수를 제공한 뒤 재사용할 수 있도록 캐시한다.
+    - `useCallback`은 `fn`을 호출하지 않는다. 따라서 반환된 `fn`으로 사용자가 호출 시점을 결정할 수 있다.
+  - `dependencies`: 의존성 배열로, 배열의 값을 이전 렌더링과 비교하여 캐시할 `fn`을 결정한다.
+- 반환값: `fn` 함수 객체
 
 # 🚀 React Router
 
@@ -435,6 +480,26 @@ mutation은 query와 직접적으로 연결되지 않는다. 따라서 mutation�
   - `onSuccess` 콜백은 서버로부터 실제 응답을 받았을 때, 즉 Optimistic Update를 수행하고 난 뒤 서버와 동기화된 데이터를 사용하여 UI를 업데이트할 때 사용한다.
   - `onSuccess` 콜백을 사용하지 않고 `onMutate`만 작성했을 경우, 서버 응답이 실패한다면 UI와 실제 데이터가 동기화되지 않을 수 있다. 따라서 `onSuccess` 내부에 `setQueryData()`를 이용하여 새로운 데이터로 캐시를 업데이트 해주는 것이 좋다.
 
+## `useInfiniteQuery`란?
+
+```ts
+function useInfiniteQuery<
+  TQueryFnData = unknown,
+  TError = unknown,
+  TData = TQueryFnData,
+  TQueryKey extends QueryKey = QueryKey
+>({
+  queryKey,
+  queryFn: ({ pageParam = 1 }) => fetchPage(pageParam),
+  ...options,
+  getNextPageParam: (lastPage, allPages) => lastPage.nextCursor,
+  getPreviousPageParam: (firstPage, allPages) => firstPage.prevCursor,
+}): UseInfiniteQueryResult<TData, TError>;
+```
+
+- [`useInfiniteQuery`](https://tanstack.com/query/v4/docs/react/reference/useInfiniteQuery)는 해당 쿼리에 대한 데이터 수신(`useQuery`)을 파라미터 값만 변경하여 무한정 호출할 때 사용하는 메서드이다.
+- 수신된 데이터는 페이지 단위로 수신/관리하며, `getNextPageParam`, `getPreviousPageParam`으로 다음 수신에 필요한 파라미터 값을 전달할 수 있다.
+
 # 🧶 Recoil
 
 참고 문서: [Recoil - 또 다른 React 상태 관리 라이브러리? - Toast UI](https://ui.toast.com/weekly-pick/ko_20200616)
@@ -656,28 +721,55 @@ const mySelector = selectorFamily({
 });
 ```
 
-### (미작성) `useRecoilState()`
+### `useRecoilState()`
+
+```ts
+function useRecoilState<T>(
+  recoilState: RecoilState<T>
+): [T, SetterOrUpdater<T>];
+```
 
 - 전역 상태인 `atom`에 접근하고 관리하기 위한 메서드 (읽고 쓰기가 가능)
 - `atom`의 값을 구독하여 업데이트할 수 있는 hook으로, useState와 동일한 방식으로 사용할 수 있다.
 - `atom`에 컴포넌트를 등록하는 hook이다.
+- 반환값은 `useState`와 비슷하게 `[recoilState, setRecoilState]`이다.
 
-### (미작성) `useRecoilValue()`
+### `useRecoilValue()`
+
+```ts
+function useRecoilValue<T>(recoilValue: RecoilValue<T>): T;
+```
 
 - setter 함수 없이 atom의 값을 반환한다. 즉, `atom`을 읽기만 할 때 사용한다.
-- `atom`에 컴포넌트를 등록하는 hook이다.
+- `atom`에 컴포넌트를 등록하는 hook이다. (atom이 변경되는 것을 구독한다.)
 
-### (미작성) `useSetRecoilState()`
+### `useSetRecoilState()`
 
-- setter 함수만 반환한다. 즉, `atom`을 쓰기만 할 때 사용한다.
+```ts
+function useSetRecoilState<T>(recoilState: RecoilState<T>): SetterOrUpdater<T>;
+```
 
-### (미작성) `useResetRecoilState()`
+- setter 함수만 반환한다. 즉, `atom` 값을 변경하는 등 쓰기만 할 때 사용한다.
 
-- atom을 초깃값으로 초기화할 때 사용한다.
+### `useResetRecoilState()`
 
-### (미작성) `useRecoilCallback()`
+```ts
+function useResetRecoilState(recoilState: RecoilState<any>): Resetter;
+```
 
-- 컴포넌트를 atom에 등록하지 않고 값을 읽어야 하는 경우에 사용한다.
+- `atom`을 초깃값으로 초기화할 때 사용한다.
+
+### `useRecoilCallback()`
+
+```ts
+function useRecoilCallback<Args extends ReadonlyArray<unknown>, Return>(
+  fn: (interface: CallbackInterface) => (...args: Args) => Return,
+  deps?: ReadonlyArray<unknown>
+): (...args: Args) => Return;
+```
+
+- 컴포넌트를 `atom`에 등록하지 않고 값을 읽어야 하는 경우에 사용한다.
+- 이벤트에 대한 응답으로 Recoil state에 접근하는 데 유용합니다.
 
 # 🌌 Mocking
 

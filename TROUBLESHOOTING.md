@@ -305,13 +305,34 @@ const filenames = {
 };
 ```
 
-## (미작성) mutation의 subField를 작성하는 기준...?
+## delete mutation 요청시 query에 작성한 subField에 에러 발생
 
-장바구니 상품 삭제 로직에서 GraphQL 에러가 발생했다.
+장바구니 상품 삭제 로직에서 GraphQL 에러가 발생했다. 에러를 일으킨 코드와 에러 메세지를 살펴보자.
 
 - 기존 코드
 
   ```ts
+  // server
+  const cartSchema = gql`
+    extend type Mutation {
+      deleteCart(id: ID!): ID!
+    }
+  `;
+
+  const cartResolver: Resolvers = {
+    Mutation: {
+      deleteCart: (parent, { id }, { db }) => {
+        const newCart = db.cart.filter((cartItem) => cartItem.id !== id);
+        db.cart = newCart;
+        setJSON(db.cart);
+        return id;
+      },
+    },
+  };
+  ```
+
+  ```ts
+  // client
   export const DELETE_CART = gql`
     mutation DELETE_CART($id: ID!) {
       deleteCart(id: $id) {
@@ -327,12 +348,62 @@ const filenames = {
 
   <img width="1442" alt="스크린샷 2023-04-21 오후 1 54 33" src="https://user-images.githubusercontent.com/76897813/233544054-49648cf9-d1a1-4498-b024-609fa0336583.png">
 
+에러 메세지를 읽어보면 deleteCart는 ID! 타입을 반환하기 때문에 하위 필드를 가지면 안된다고 작성되어 있다.
+
+### 문제 원인 분석
+
+에러 메세지를 보고 찾아본 결과, 이 에러는 graphql의 field에 대해 잘못 이해하고 있었기 때문에 생긴 문제였다.
+
+- ❌ 나는 graphql의 field에 작성하는 중괄호(`{}`)가 반환하는 값에 대해 열거하는 코드블럭이라고 생각했다.
+- ⭕️ graphql의 field에 작성하는 중괄호(`{}`)는 코드블럭이 아닌 객체이며, 반환 받는 객체 내부에 포함된 field를 열거할 수 있다.
+
+정리하면, 서버의 resolver에 작성한 deleteCart 필드가 반환하는 값은 객체가 아닌 ID(string) 타입의 id이며, 다른 field를 전달하지 않는다. 따라서 deleteCart 필드는 subField가 없어야 한다.
+
 ### 문제 해결
 
 ```ts
+// client
 export const DELETE_CART = gql`
   mutation DELETE_CART($id: ID!) {
     deleteCart(id: $id)
   }
 `;
+```
+
+## `IntersectionObserver`의 isIntersecting이 true로 변하지 않는 문제
+
+### 문제 원인 분석
+
+무한스크롤은 `observe(targetElement)` 메서드의 `targetElement`로 전달한 `<div ref={fetchMoreRef} />`(이하 `targetElement`)와 root의 viewport가 교차했을 때 서버에 데이터를 요청하도록 구현했는데, 현재 `targetElement`의 `height`는 `0`이고 root viewport의 가장자리 끝점에 위치하고 있기 때문에 root의 viewport는 `targetElement`와 교차하는 임계점을 지나지 못한다.
+
+### 문제 해결
+
+viewport가 `targetElement`와 교차하는 지점을 지날 수 있도록 트릭을 사용하면 해결할 수 있다. 아래에 3가지 방법을 작성해두었다.
+
+1. `IntersectionObserver`의 `rootMargin`을 확장한다.
+2. `targetElement`의 `heigth`를 확장한다.
+3. `targetElement`에 텍스트를 추가한다.
+
+세 가지 방법 중 나는 1번 방법으로 해결하였다. 2, 3번은 `targetElement`의 layout을 직접적으로 변경하기 때문에 원하는 디자인으로의 구현이 어려울 수 있을 것이라 판단했다. 하지만, 1번은 root viewport의 교차 영역만 확장할 뿐 실제 layout에는 영향을 미치지 않고 무한 스크롤을 구현할 수 있다. 때문에 아래와 같은 코드로 `rootMargin` 값을 지정하여 임계점 문제를 해결했다.
+
+```js
+const ProductListPage = () => {
+  // (생략...)
+
+  observerRef.current = new IntersectionObserver(
+    (entries) => {
+      setIntersecting(entries.some((entry) => entry.isIntersecting));
+    },
+    { rootMargin: "1px" }
+  );
+
+  // (생략...)
+
+  return (
+    <div>
+      // (생략...)
+      <div ref={fetchMoreRef} />;
+    </div>
+  );
+};
 ```
