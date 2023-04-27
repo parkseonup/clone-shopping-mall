@@ -1,5 +1,11 @@
 import { RefObject, useCallback, useEffect, useRef, useState } from "react";
 
+/**
+ * TODO: 리팩토링
+ * - custom hook을 좀더 사용성 있게 만들순 없나?
+ * - 꼭 observer가 ref 객체에 저장되어야 하나?
+ * - useRef를 사용해서 target node를 저장하는게 옳은가?
+ */
 const useIntersection = (targetRef: RefObject<HTMLElement>) => {
   const [intersecting, setIntersecting] = useState(false);
   const observerRef = useRef<IntersectionObserver>();
@@ -8,8 +14,8 @@ const useIntersection = (targetRef: RefObject<HTMLElement>) => {
   const getObserver = useCallback(() => {
     if (!observerRef.current) {
       observerRef.current = new IntersectionObserver(
-        (entries) => {
-          setIntersecting(entries.some((entry) => entry.isIntersecting));
+        entries => {
+          setIntersecting(entries.some(entry => entry.isIntersecting));
         },
         { rootMargin: "1px" }
       );
