@@ -653,11 +653,17 @@ listen(handle: any, listeningListener?: () => void): http.Server;
 
 위 코드는 `npm run dev` 명령을 입력하면 nodemon은 ts-node로 ./src/index.ts를 실행한다는 뜻이다.
 
-# ⛓ cors
+# ⛓ cors package
 
-[cors](https://github.com/expressjs/cors)
+- [cors](https://www.npmjs.com/package/cors) package는 CORS와 관련된 옵션들을 설정할 수 있는 Express 미들웨어를 제공하는 패키지로, npm에서 설치 가능하다.
 
-## (미작성) cors()
+## `cors()`
 
-- `origin`
-- `credentials`
+`cors(options)` 메서드는 CORS와 관련된 설정을 할 수 있도록 만들어진 미들웨어로, 아래 속성을 포함한 `options` 객체를 인수를 전달할 수 있다.
+
+- `origin`: Access-Control-Allow-Origin CORS 헤더를 구성할 수 있다. 작성 가능한 값은 아래와 같다.
+  - `Boolean`: `req.header('Origin')`에 정의된 대로 request origin(요청 출처)를 반영하려면 origin을 true로 설정하고, CORS를 비활성화하려면 false로 설정한다.
+  - `String`: origin을 하나의 특정 origin으로 반영한다.
+  - `RegExp`: origin 요청을 테스트하는 데 사용할 정규식 패턴으로 origin을 설정한다. 일치할 경우 request origin이 반영된다.
+  - `Array`: origin을 유효한 origin의 배열, 즉 여러개의 origin을 설정한다. 각 origin은 String 또는 RegExp일 수 있다.
+- `credentials`: Access-Control-Allow-Credentials CORS 헤더를 구성한다. 헤더를 전달하려면 true로 설정하고 그렇지 않으면 생략한다.
