@@ -433,3 +433,38 @@ const ProductListPage = () => {
   );
 };
 ```
+
+## JSX 구문을 해석(parsing)할 때 ESLint 에러 발생
+
+typescript를 사용하지 않을 때, React에서 eslint를 적용하면 아래와 같은 에러 메세지를 만날 수 있다.
+
+> Error: [eslint] 'React' must be in scope when using JSX.
+
+해당 에러는 React를 시작할 때 React 객체(모듈)을 react에서 import 받지 않아서 생기는 문제로, React17 버전 미만에서는 최상단에 `import React from 'react'`를 작성하여 React 객체를 import 받아와야 했지만, React17 버전부터는 `import React from 'react'`를 생략해도 React가 암묵적으로 React 객체를 import 해준다.
+
+### 문제 원인 분석
+
+그렇다면 eslint는 왜 이런 에러를 띄우는 걸까?
+
+- 원래 ESLint는 React 객체를 개발자가 직접 import 해야 하는 것으로 알고 있다.
+- 하지만, ESLint 버전 7.14.0부터는 `'react/react-in-jsx-scope': 'off'`를 추가해주면 ESLint React 객체 import를 생략하겠다고 알릴 수 있다. (하위 버전의 ESLint에는 알릴 수 없으므로 import React from 'react'를 써야한다)
+
+### 문제 해결
+
+위와 같은 eslint 에러를 피하려면 .eslintrc 파일에 아래 코드를 추가하여, ESLint에게 React 객체 import 구문을 생략하겠다고 알리면 된다.
+
+```js
+{
+  // ...
+  rules: {
+    'react/react-in-jsx-scope': 'off'
+  }
+}
+```
+
+### ⚠️ TypeScript 환경에서는 eslint에 해당 구문을 추가하지 않아도 된다.
+
+- typescript는 React17 버전부터 React 객체 import를 생략해도 된다는 것을 알고 있다.
+- 때문에 typescript는 JSX를 컴파일 할 때 React 객체 import 구문을 자동으로 생성한다.
+- eslint는 typescript 코드를 해석할 때 TypeScript 컴파일러가 사용하는 내부적인 AST(Abstract Syntax Tree)를 이용한다. 이를 통해 typescript 코드에서 사용되는 React 컴포넌트를 추적할 수 있다.
+- 따라서 Typescript를 사용할 때는 ESLint에 'react/react-in-jsx-scope': 'off' 라고 알리지 않아도 된다.
