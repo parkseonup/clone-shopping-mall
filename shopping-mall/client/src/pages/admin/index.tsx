@@ -1,7 +1,10 @@
+import Admin from "../../components/admin";
+
 const AdminPage = () => {
   return (
     <div>
-      <h2>관리자 페이지</h2>
+      <h2>관리자</h2>
+      <Admin />
     </div>
   );
 };
