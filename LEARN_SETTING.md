@@ -1,3 +1,146 @@
+# (미작성) ESlint 설치...
+
+## package.json
+
+```json
+// package.json
+{
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.56.0",
+    "@typescript-eslint/parser": "^5.56.0",
+    "@vitejs/plugin-react": "^3.1.0",
+    "eslint": "^8.36.0",
+    "eslint-config-airbnb": "^19.0.4",
+    "eslint-config-prettier": "^8.8.0",
+    "eslint-plugin-import": "^2.27.5",
+    "eslint-plugin-jsx-a11y": "^6.7.1",
+    "eslint-plugin-prettier": "^4.2.1",
+    "eslint-plugin-react": "^7.32.2",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "prettier": "2.8.5",
+    "vite-tsconfig-paths": "^4.2.0"
+  }
+}
+```
+
+## .eslintrc
+
+### eslint의 format을 지정할 수 있는 파일이 있는데, 형식은 상황에 따라 다양하다.
+
+- .eslintrc.json: JSON 형식으로 작성한다.
+- .eslintrc.js: JavaScript 형식으로 작성하며, ESM를 지원하지 않지 때문에 ESM 사용시 .eslintrc.cjs로 작성해야 한다.
+- .eslintrc.cjs: JavaScript 형식으로 작성하며, ESM를 지원한다. package.json에서 `type: module`을 설정해줬다면 .cjs로 작성하자.
+
+```js
+// .eslintrc.cjs
+module.exports = {
+  parser: "@typescript-eslint/parser",
+  parserOptions: {
+    ecmaVersion: "latest",
+    ecmaFeatures: {
+      jsx: true,
+    },
+    ecmaVersion: 13,
+    sourceType: "module",
+  },
+  root: true,
+  plugins: ["react", "@typescript-eslint"],
+  extends: [
+    "eslint:recommended",
+    "plugin:react/recommended",
+    "airbnb",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:prettier/recommended",
+  ],
+  env: {
+    browser: true,
+    node: true,
+    commonjs: true,
+    es2022: true,
+  },
+  rules: {
+    "@typescript-eslint/interface-name-prefix": "on",
+    "@typescript-eslint/explicit-function-return-type": "on",
+    "@typescript-eslint/explicit-module-boundary-types": "on",
+    "@typescript-eslint/no-explicit-any": "on",
+  },
+};
+```
+
+## TypeScript 환경에서 ESLint 적용하기
+
+[JavaScript ESLint](https://eslint.org/)와 [TypeScript ESLint](https://typescript-eslint.io/)는 적용 방식이 다르다.
+
+- 수정 전 코드
+  ```json
+  // pakage.json
+  {
+    "devDependencies": {
+      "eslint-config-airbnb-base": "^15.0.0",
+      "eslint-config-prettier": "^8.7.0",
+      "eslint-plugin-html": "^7.1.0",
+      "eslint-plugin-import": "^2.27.5"
+    }
+  }
+  ```
+- 수정 코드
+  ```json
+  // pakage.json
+  {
+    "devDependencies": {
+      "@typescript-eslint/eslint-plugin": "^5.56.0",
+      "@typescript-eslint/parser": "^5.56.0",
+      "typescript": "^4.9.5"
+    }
+  }
+  ```
+
+```json
+// tsconfig.json
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "useDefineForClassFields": true,
+    "lib": ["DOM", "DOM.Iterable", "ESNext"],
+    "allowJs": false,
+    "skipLibCheck": true,
+    "esModuleInterop": false,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "types": ["vite/client"]
+  },
+  "include": ["src"],
+  "references": [{ "path": "./tsconfig.node.json" }]
+}
+```
+
+- `target`: ECMAScript의 버전을 결정함
+- `module`: CommonJS와 ESModule 중 어떤 모듈 시스템을 지원할 건지 결정함
+
+## vite.config.ts
+
+```ts
+// vite.config.ts
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import tsconfigPaths from "vite-tsconfig-paths";
+
+// https://vitejs.dev/config/
+export default defineConfig({
+  plugins: [react(), tsconfigPaths()],
+  server: {
+    port: 3000,
+  },
+});
+```
+
 # (미작성) 환경 변수
 
 ## dotenv란?

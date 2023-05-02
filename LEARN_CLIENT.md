@@ -576,6 +576,22 @@ mutation은 query와 직접적으로 연결되지 않는다. 따라서 mutation�
   1. 기존의 쿼리를 stale data로 변경한다.
   2. 해당 쿼리가 `useQuery`를 통해 렌더링되거나 비슷한 Hooks를 사용하고 있다면 데이터를 refetching한다.
 - 클라이언트에서 사용자의 액션에 의해 어떤 데이터가 변경되면 서버 데이터를 동기화할 필요가 있는데, 이런 경우에 많이 사용한다.
+- (미작성) filter 객체
+
+  ```ts
+  queryClient.invalidateQueries([QueryKeys.PRODUCTS], {
+    exact: false,
+    refetchType: "all",
+  });
+
+  // or
+
+  queryClient.invalidateQueries({
+    queryKey: [QueryKeys.PRODUCTS],
+    exact: false,
+    refetchType: "all",
+  });
+  ```
 
 #### 직접 업데이트
 
@@ -1212,6 +1228,10 @@ const todo: TodoPreview = {
   completed: false,
 };
 ```
+
+### (미작성) `Omit`
+
+### (미작성) `Partial`
 
 ## 타입 유형
 
