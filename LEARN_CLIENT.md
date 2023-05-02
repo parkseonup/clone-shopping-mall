@@ -2,24 +2,6 @@
 
 강의를 들으면서 처음 접하거나 이해가 되지 않는 부분들이 있었기 때문에 추가 공부가 필요했다. 아래에 따로 공부한 것들을 간단하게 정리해보았다.
 
-# 🔨 vite
-
-## (미작성) vite에서 사용하는 환경 변수
-
-vite에는 [env 환경변수](https://vitejs.dev/guide/env-and-mode.html#env-variables-and-modes)를 노출할 때 사용되는 문법이 따로 있다.
-
-- vite는 dotenv를 활용하여 환경 디렉토리의 파일에 추가 환경 변수를 로드한다.
-
-### (미작성) 환경 변수란?
-
-### (미작성) dotenv란?
-
-[dotenv](https://github.com/motdotla/dotenv)
-
-### (미작성) process.env.NODE_ENV는 어떤 의미인가?
-
-MSW의 application root에 browser integration을 적용할 때 예제에 작성된 `process.env.NODE_ENV`는 어떤 의미일까?
-
 # 🍴 JavaScript + React + browser API
 
 ## URLSearchParams 란?
@@ -50,19 +32,175 @@ interface URLSearchParams {
 }
 ```
 
-## Intersection Observer 란?
+## Intersection Observer API
 
-- [](https://www.smashingmagazine.com/2018/01/deferring-lazy-loading-intersection-observer-api/)
+### 참고 문서
 
-### (미작성) 무한스크롤 구현시 scroll 좌표를 구하는 방식이 아닌 Intersection Observer를 사용하는 이유
-
-참고 사이트
-
+- [Now You See Me: How To Defer, Lazy-Load And Act With IntersectionObserver](https://www.smashingmagazine.com/2018/01/deferring-lazy-loading-intersection-observer-api/)
 - [IntersectionObserver's coming into view - web.dev](https://web.dev/intersectionobserver/)
 
-### IntersectionObserver를 보다 나은 react hook으로 만들기
+### Intersection Observer API 란?
+
+```ts
+new IntersectionObserver((entries: IntersectionObserverEntry) => { ... }): IntersectionObserver;
+```
+
+- 브라우저가 제공하는 [Intersection Observer API](https://developer.mozilla.org/ko/docs/Web/API/Intersection_Observer_API)는 상위 요소 또는 최상위 문서의 viewport와 target 요소의 교차에서 변경 사항을 비동기식으로 관찰하는 방법을 제공한다.
+- 비동기 특성 때문에 여러 관찰 항목이 동시에 콜백 함수의 인수로 전달될 수 있으며, 때문에 콜백 함수의 인자는 단일 항목이 아닌 Array이다.
+- [`IntersectionObserverEntry`](https://developer.mozilla.org/en-US/docs/Web/API/IntersectionObserverEntry)의 인스턴스는 `IntersectionObserver`의 인수인 entries로 전달되며, target 요소의 좌표와 교차하는 경계 등 여러 속성을 포함하고 있다.
+- 주의할 점
+  - Intersection Observer API 자체는 비동기로 동작하나, `InterSectionObserver`의 콜백 함수 내에서 실행되는 코드는 비동기가 아니기 때문에 내부 코드는 자바스크립트의 스레드를 blocking 시킬 수 있다.
+  - `InterSectionObserver`를 이미지 등 컨텐츠를 지연 로드할 때 사용할 경우 자산이 로드된 후에 `unobserve()` 메서드를 실행해야 한다.
+  - target 요소가 DOM tree에 존재해야만 교차를 감지할 수 있다. 즉, target 요소가 레이아웃에 영향을 미쳐야 한다.
+    - `display: none`인 target 요소는 교차를 감지할 수 없다.
+    - `opacity: 0` 또는 `visibility: hidden`로 인해 target 요소기 보이지 않아도 레이아웃을 가지면(`width`와 `height`가 존재하는 등) target 요소를 감지할 수 있다.
+    - `position: absolute; width: 0; height: 0`인 target 요소는 감지할 수 있으나, containing block의 영역 밖에 위치하고 `overflow: hidden`에 의해 가려진 target 요소는 감지할 수 없다.
+
+### 전통적인 방법 vs Intersection Observer API
+
+과거에 target 요소와의 교차를 감지하기 위해서는 이벤트 핸들러(`scroll`)와 `Element.getBoundingClientRect()`로 구현했다. 현재는 이러한 전통적인 방법 대신 Intersection Observer API를 사용하는데, 그 이유에 대해 알아보자.
+
+- `getBoundingClientRect()` 메서드는 호출될 때마다 브라우저가 전체 페이지를 re-layout 하도록 강제하여 속도를 더디게 하는 반면, `IntersectionObserverEntry`는 미리 정의되고 미리 계산된 속성 집합을 제공하기 때문에 효율적이다.
+- 전통적인 방법은 자바스크립트의 스레드에서 동기적으로 실행되기 때문에 성능 문제를 야기하는 반면, Intersection Observer API는 자바스크립트 스레드와는 별개의 스레드(browser의 스레드 중 하나)에서 비동기적으로 실행되어 최적화가 가능하다.
+  - 이벤트 핸들러는 비동기로 호출되지만, 결론적으로는 테스크 큐에 쌓인 비동기 함수들이 순서대로 호출되므로 메인 스레드(자바스크립트 스레드)의 응답성에 영향을 미친다.
+
+### 교차 감지로 구현할 수 있는 항목 예시
+
+- 스크롤시 이미지 또는 기타 컨텐츠 지연 로드
+- 무한 스크롤
+- 광고 수익을 계산하기 위한 광고의 가시성 보고
+- 현재 스크롤이 위치한 콘텐츠에 따라 네비게이션 하이라이팅
+
+### react로 IntersectionObserver 구현하기
+
+강의에서 구현한 IntsersectionObserver의 로직 이해를 위해 찾아보다가 아래 문서들을 읽게 되었다. 문서에서 구현한 로직과 강의에서 구현한 로직은 다른 형태를 띄고 있다. 추후 리팩토링하는 시간을 가지기 위해 문서의 내용을 정리했다.
+
+#### 참고 문서
 
 - [How To Use an IntersectionObserver in a React Hook](https://medium.com/the-non-traditional-developer/how-to-use-an-intersectionobserver-in-a-react-hook-9fb061ac6cb5)
+- [React - Intersection Observer API를
+  사용하여 인피니트 스크롤 구현하기](https://godsenal.com/posts/react-intersection-observer%EB%A5%BC-%EC%82%AC%EC%9A%A9%ED%95%98%EC%97%AC-%EC%9D%B8%ED%94%BC%EB%8B%88%ED%8A%B8-%EC%8A%A4%ED%81%AC%EB%A1%A4-%EA%B5%AC%ED%98%84%ED%95%98%EA%B8%B0/)
+
+#### 기능 구현
+
+```js
+const App = () => {
+  const [target, setTarget] = useState(null);
+
+  useEffect(() => {
+    let observer;
+
+    if (target) {
+      observer = new IntersectionObserver(onIntersect, { threshold: 0.5 });
+      observer.observe(target);
+    }
+
+    return () => observer && observer.disconnect();
+  }, [target]);
+
+  // ...
+
+  return (
+    ...
+    <div ref={setTarget} />
+  );
+}
+```
+
+1. `useState`를 사용하여 `IntersectionObserver`의 callback에서 실행되는 항목을 제공할 수 있다.
+   - 예를 들어, `entry.isIntersecting`의 값에 따라 서버에 데이터를 요청하거나 view가 달라진다면 `entry.isIntersecting`의 값을 state(상태)로 관리하는 것이 좋다.
+2. `useEffect`를 사용하여 컴포넌트 렌더링의 결과와 동기화된 Intersection Observer API를 실행할 수 있다.
+   - `useEffect`는 React에게 외부 API(Intersection Observer API)가 하는 일을 알리지 않을 수 있으며, 컴포넌트가 렌더링 되고 난 이후 실행되기 때문에 변경된 상태나 DOM 등 React를 외부 시스템과 동기화할 수 있다.
+3. `useState`를 이용하여 target node를 저장하고 `IntersectionObserver`가 target node를 관찰할 수 있도록 `observe()` 메서드에 전달한다.
+   - target node의 `ref` 속성에 callback으로 `useState`의 `setState`를 전달하면 `ref callback`이 호출되면서 `state`에 target node가 등록된다.
+   - `observe()` 메서드를 호출하고 있는 `useEffect` 메서드의 의존성 배열에 `useState`의 값을 추가 하여 target node가 변경될 때만 `useEffect`가 호출될 수 있게 해야 한다.
+   - 단, target node가 변경되었을 때 `IntersectionObserver`가 관찰하고 있는 대상을 기존의 관찰 대상에 추가하려는 게 아니라 관찰 대상을 교체하는 것이라면 `useEffect`에 `disconnect()` 메서드를 호출하는 `cleanup function`을 작성해야 한다.
+   - `useRef`를 이용하여 target node를 저장하는 방법도 있지만, `ref` 객체는 값이 변경되어도 렌더링을 일으키지 않기 때문에 `useEffect`의 호출을 제어할 수 없다. (`useEffect`는 컴포넌트 렌더링 이후에 호출된다.)
+
+#### Custom Hook으로 만들기
+
+- 완성된 Custom Hook 코드
+
+  ```js
+  /**
+   * @param onIntersect IntersectionObserver callback: (entries, observer) => { ... }
+   * @param options IntersectionObserver options: { root = null, threshode = 0, rootMargin = 0 })
+   * @return [target, setTarget]: target node와 target node를 변경할 수 있는 함수
+   */
+  const useIntersect = (onIntersect, options) => {
+    const [target, setTarget] = useState(null);
+
+    /**
+     * - 외부에서 인자로 전달받은 onIntersect 함수를 이용하여 useIntersect 호출시 IntersectionObserver의 callback으로 전달될 함수 생성.
+     * - useCallback 메서드를 이용해서 useIntersect 함수가 처음 호출되었을 때만 checkIntersect 함수를 정의할 수 있도록 최적화
+     */
+    const checkIntersect = useCallback(([entry], observer) => {
+      // entries 배열의 첫번째 entry의 isIntersecting 값을 판단하여 외부에서 전달받은 onIntersect 호출
+      if (entry.isIntersecting) {
+        onIntersect(entry, observer);
+      }
+    }, []);
+
+    /**
+     * - target, options가 변경되면 useEffect 콜백 실행
+     * - target가 있으면: observer를 생성하고 observer가 target를 관찰하도록 연결
+     * - useEffect가 언마운트 될 때 observer가 있으면: observer가 관찰하고 있는 대상과의 연결을 해지
+     */
+    useEffect(() => {
+      let observer;
+
+      if (target) {
+        observer = new IntersectionObserver(checkIntersect, {
+          ...option,
+        });
+        observer.observe(target);
+      }
+
+      return () => observer && observer.disconnect();
+    }, [
+      target,
+      options.root,
+      options.threshold,
+      options.rootMargin,
+      checkIntersect,
+    ]);
+
+    // [target, setTarget]를 반환하여 useIntersect 커스텀 함수를 사용하는 곳에서 target를 조작할 수 있도록 함
+    return [target, setTarget];
+  };
+  ```
+
+- 사용 예제
+
+  ```js
+  const App = () => {
+    const [_, setTarget] = useIntersect(async (entry, observer) => {
+      observer.unobserve(entry.target);
+      await fetchItems();
+      observer.observe(entry.target);
+    }, {});
+
+    return (
+      ...
+      <div ref={setTarget}>more</div>
+    )
+  }
+  ```
+
+## `ref callback` 이란?
+
+```js
+<div ref={(node) => console.log(node)} />
+```
+
+- [`ref callback`](https://react.dev/reference/react-dom/components/common#ref-callback)는 이전 렌더링에서의 `node`를 인수로 받아
+- `ref` attribute의 값으로 작성된 함수를 `ref callback`(`ref`의 콜백함수)이라고 부른다.
+- React는 변경된 `ref callback`을 전달 받을 때마다 `ref callback`을 호출한다.
+  - React는 이전에 사용된 `ref`를 제거하고 새 `ref`를 설정하기 위해 컴포넌트가 리렌더링될 때 마운트가 해제된 함수는 `null`을 인자로 하여 호출하고 마운트되는 함수는 `DOM node`를 인자로 하여 호출한다. 즉, 총 2번 호출된다.
+- `null`을 인자로 받아 호출된 `ref`는 참조값을 삭제한다.
+- 매개변수: `node`
+  - `DOM node` 또는 `null`를 값으로 가진다.
+  - 모든 렌더링에서 ref 콜백에 대해 동일한 함수 참조를 전달하지 않는 한 콜백은 구성 요소를 다시 렌더링하는 동안 일시적으로 분리되고(언마운트) 다시 연결된다.
 
 ## `React.lazy()`란?
 
@@ -129,20 +267,6 @@ createPortal(children, domNode);
 - potal은 출력될 DOM(`children`)의 물리적 위치만 변경해주기 때문에 이벤트 전파 등은 React Tree 상의 위치를 따른다.
   - 즉, `children`은 출력되는 위치가 아닌 선언된 위치(부모 트리)에서 제공하는 컨텍스트를 공유한다.
   - 이는 부모 컴포넌트에서 `children`의 이벤트 전파를 감지하는 등의 관여가 가능함을 말하며, portal에 의존하지 않는 유연한 개발을 가능하게 한다.
-
-## `ref callback` 이란?
-
-```js
-<div ref={(node) => console.log(node)} />
-```
-
-- [`ref callback`](https://react.dev/reference/react-dom/components/common#ref-callback)는 이전 렌더링에서의 `node`를 인수로 받아
-- `ref` attribute의 값으로 작성된 함수를 `ref callback`(`ref`의 콜백함수)이라고 부른다.
-- React는 변경된 `ref callback`을 전달 받을 때마다 `ref callback`을 호출하며, 컴포넌트가 리렌더링될 때 마운트가 해제된 함수는 `null`을 인자로 하여 호출되고 마운트되는 함수는 `DOM node`를 인자로 하여 호출한다.
-- `null`을 인자로 받아 호출된 `ref`는 참조값을 삭제한다.
-- 매개변수: `node`
-  - `DOM node` 또는 `null`를 값으로 가진다.
-  - 모든 렌더링에서 ref 콜백에 대해 동일한 함수 참조를 전달하지 않는 한 콜백은 구성 요소를 다시 렌더링하는 동안 일시적으로 분리되고(언마운트) 다시 연결된다.
 
 ## `useCallback` 이란?
 
@@ -452,6 +576,22 @@ mutation은 query와 직접적으로 연결되지 않는다. 따라서 mutation�
   1. 기존의 쿼리를 stale data로 변경한다.
   2. 해당 쿼리가 `useQuery`를 통해 렌더링되거나 비슷한 Hooks를 사용하고 있다면 데이터를 refetching한다.
 - 클라이언트에서 사용자의 액션에 의해 어떤 데이터가 변경되면 서버 데이터를 동기화할 필요가 있는데, 이런 경우에 많이 사용한다.
+- (미작성) filter 객체
+
+  ```ts
+  queryClient.invalidateQueries([QueryKeys.PRODUCTS], {
+    exact: false,
+    refetchType: "all",
+  });
+
+  // or
+
+  queryClient.invalidateQueries({
+    queryKey: [QueryKeys.PRODUCTS],
+    exact: false,
+    refetchType: "all",
+  });
+  ```
 
 #### 직접 업데이트
 
@@ -1061,39 +1201,6 @@ const productItem = {
 
 # 📐 TypeScript
 
-## tsconfig.json
-
-### Options
-
-- `target`: ECMAScript의 버전을 결정함
-- `module`: CommonJS와 ESModule 중 어떤 모듈 시스템을 지원할 건지 결정함
-
-## TypeScript 환경에서 ESLint 적용하기
-
-[JavaScript ESLint](https://eslint.org/)와 [TypeScript ESLint](https://typescript-eslint.io/)는 적용 방식이 다르다.
-
-- 수정 전 코드
-  ```json
-  // pakage.json devdependencies
-  "eslint-config-airbnb-base": "^15.0.0",
-  "eslint-config-prettier": "^8.7.0",
-  "eslint-plugin-html": "^7.1.0",
-  "eslint-plugin-import": "^2.27.5",
-  ```
-- 수정 코드
-  ```json
-  // pakage.json devdependencies
-  "@typescript-eslint/eslint-plugin": "^5.56.0",
-  "@typescript-eslint/parser": "^5.56.0",
-  "typescript": "^4.9.5",
-  ```
-
-### eslint의 format을 지정할 수 있는 파일이 있는데, 형식은 상황에 따라 다양하다.
-
-- .eslintrc.json: JSON 형식으로 작성한다.
-- .eslintrc.js: JavaScript 형식으로 작성하며, ESM를 지원하지 않지 때문에 ESM 사용시 .eslintrc.cjs로 작성해야 한다.
-- .eslintrc.cjs: JavaScript 형식으로 작성하며, ESM를 지원한다. package.json에서 `type: module`을 설정해줬다면 .cjs로 작성하자.
-
 ## 문법
 
 ### (미작성) `as`란?
@@ -1121,6 +1228,10 @@ const todo: TodoPreview = {
   completed: false,
 };
 ```
+
+### (미작성) `Omit`
+
+### (미작성) `Partial`
 
 ## 타입 유형
 

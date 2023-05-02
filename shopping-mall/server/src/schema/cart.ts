@@ -15,7 +15,7 @@ const cartSchema = gql`
     addCart(id: ID!): CartItem!
     updateCart(id: ID!, amount: Int!): CartItem!
     deleteCart(id: ID!): ID!
-    excutePay(ids: [ID!]): [ID!]
+    executePay(ids: [ID!]): [ID!]
   }
 `;
 

@@ -5,7 +5,7 @@ import { getClient, graphqlFetcher, QueryKeys } from "../../queryClient";
 import ItemData from "./itemData";
 
 const CartItem = (
-  { id, amount, product: { title, imageUrl, price } }: CartType,
+  { id, amount, product: { title, imageUrl, price, createdAt } }: CartType,
   ref: ForwardedRef<HTMLInputElement>
 ) => {
   const queryClient = getClient();
@@ -23,12 +23,9 @@ const CartItem = (
 
         if (!previousCart) return null;
 
-        const targetCartIndex = previousCart?.findIndex(
-          (cartItem) => cartItem.id === id
-        );
+        const targetCartIndex = previousCart?.findIndex(cartItem => cartItem.id === id);
 
-        if (targetCartIndex === undefined || targetCartIndex < 0)
-          return previousCart;
+        if (targetCartIndex === undefined || targetCartIndex < 0) return previousCart;
 
         const newCart = [...previousCart];
         newCart[targetCartIndex] = { ...newCart[targetCartIndex], amount };
@@ -43,16 +40,9 @@ const CartItem = (
         }>([QueryKeys.CART]) || { cart: [] };
         const newCart = [...previousCart];
 
-        const targetCartIndex = previousCart?.findIndex(
-          (cartItem) => cartItem.id === id
-        );
+        const targetCartIndex = previousCart?.findIndex(cartItem => cartItem.id === id);
 
-        if (
-          !previousCart ||
-          targetCartIndex === undefined ||
-          targetCartIndex < 0
-        )
-          return;
+        if (!previousCart || targetCartIndex === undefined || targetCartIndex < 0) return;
 
         newCart[targetCartIndex] = newCartItem;
 
@@ -70,7 +60,7 @@ const CartItem = (
           cart: CartType[];
         }>([QueryKeys.CART]) || { cart: [] };
 
-        const newCart = previousCart.filter((cartItem) => cartItem.id !== id);
+        const newCart = previousCart.filter(cartItem => cartItem.id !== id);
 
         queryClient.setQueryData([QueryKeys.CART], { cart: newCart });
 
@@ -81,7 +71,7 @@ const CartItem = (
           cart: CartType[];
         }>([QueryKeys.CART]) || { cart: [] };
 
-        const newCart = previousCart.filter((cartItem) => cartItem.id !== id);
+        const newCart = previousCart.filter(cartItem => cartItem.id !== id);
 
         queryClient.setQueryData([QueryKeys.CART], { cart: newCart });
       },
@@ -105,20 +95,21 @@ const CartItem = (
         name="select-item"
         ref={ref}
         data-id={id}
+        disabled={!createdAt}
       />
       <ItemData title={title} imageUrl={imageUrl} price={price} />
-      <input
-        type="number"
-        className="cart-item__amount"
-        value={amount}
-        onChange={handleUpdateAmount}
-        min={1}
-      />
-      <button
-        type="button"
-        className="cart-item__delete"
-        onClick={handleDeleteCart}
-      >
+      {!!createdAt ? (
+        <input
+          type="number"
+          className="cart-item__amount"
+          value={amount}
+          onChange={handleUpdateAmount}
+          min={1}
+        />
+      ) : (
+        <strong>품절된 상품입니다.</strong>
+      )}
+      <button type="button" className="cart-item__delete" onClick={handleDeleteCart}>
         삭제
       </button>
     </li>
