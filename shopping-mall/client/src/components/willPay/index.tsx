@@ -12,8 +12,8 @@ const WillPay = ({
 }) => {
   const checkedItems = useRecoilValue(checkedCartState);
   const totalPrice = checkedItems.reduce(
-    (res, { amount, product: { price } }) => {
-      res += price * amount;
+    (res, { amount, product: { price, createdAt } }) => {
+      if (createdAt) res += price * amount;
       return res;
     },
     0
@@ -23,11 +23,17 @@ const WillPay = ({
     <div className="cart-willpay">
       <ul>
         {checkedItems.map(
-          ({ id, amount, product: { title, imageUrl, price } }) => (
+          ({ id, amount, product: { title, imageUrl, price, createdAt } }) => (
             <li key={id}>
               <ItemData title={title} imageUrl={imageUrl} price={price} />
-              <p>수량: {amount}</p>
-              <p>금액: {price * amount}</p>
+              {createdAt ? (
+                <>
+                  <p>수량: {amount}</p>
+                  <p>금액: {price * amount}</p>
+                </>
+              ) : (
+                <strong>품절된 상품입니다.</strong>
+              )}
             </li>
           )
         )}

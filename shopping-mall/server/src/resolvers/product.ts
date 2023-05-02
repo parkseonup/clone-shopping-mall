@@ -71,7 +71,6 @@ const productResolver: Resolvers = {
       if (existProductIndex < 0) throw new Error("삭제 할 상품이 없습니다.");
 
       const deletedProduct = { ...db.products[existProductIndex] };
-
       delete deletedProduct.createdAt;
       db.products.splice(existProductIndex, 1, deletedProduct);
       setJSON(db.products);

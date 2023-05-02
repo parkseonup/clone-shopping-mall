@@ -7,13 +7,14 @@ import WillPay from "../willPay";
 import CartItem from "./item";
 
 // FIXME: item을 삭제했을 때는 전체 체크가 동작을 안함. (item 삭제시 onChange 이벤트가 안읽히기 때문)
+// FIXME: 결제상품으로 등록한 뒤 품절되면 체크된 상태임. 체크를 해제해줘야 함.
 const CartList = ({ items }: { items: CartType[] }) => {
   const navigate = useNavigate();
-  const [checkedCartData, setCheckedCartData] =
-    useRecoilState(checkedCartState);
+  const [checkedCartData, setCheckedCartData] = useRecoilState(checkedCartState);
   const formRef = useRef<HTMLFormElement>(null);
   const checkboxRefs = items.map(() => createRef<HTMLInputElement>());
   const [formData, setFormData] = useState<FormData>();
+  const enabledItems = items.filter(cartItem => cartItem.product.createdAt);
 
   const setAllCheckedFormItems = () => {
     // 개별 선택
@@ -21,17 +22,18 @@ const CartList = ({ items }: { items: CartType[] }) => {
 
     const data = new FormData(formRef.current);
     const selectedCount = data.getAll("select-item").length;
-    const allChecked = selectedCount === items.length;
-    formRef.current.querySelector<HTMLInputElement>(".select-all")!.checked =
-      allChecked;
+    const allChecked = selectedCount === enabledItems.length;
+    formRef.current.querySelector<HTMLInputElement>(".select-all")!.checked = allChecked;
   };
 
   const setItemsCheckedFormAll = (targetInput: HTMLInputElement) => {
     // 전체 선택
     const allChecked = targetInput.checked;
-    checkboxRefs.forEach((inputElem) => {
-      inputElem.current!.checked = allChecked;
-    });
+    checkboxRefs
+      .filter(InputElem => !InputElem.current?.disabled)
+      .forEach(inputElem => {
+        inputElem.current!.checked = allChecked;
+      });
   };
 
   const handleCheckboxChagned = (e?: SyntheticEvent) => {
@@ -56,8 +58,8 @@ const CartList = ({ items }: { items: CartType[] }) => {
 
   useEffect(() => {
     // 초기 마운트시 checkedCartState에서 체크된 아이템 확인해서 동기화
-    checkedCartData.forEach((item) => {
-      const checkedItem = checkboxRefs.find((ref) => {
+    checkedCartData.forEach(item => {
+      const checkedItem = checkboxRefs.find(ref => {
         return ref.current!.dataset.id === item.id;
       });
       if (checkedItem) checkedItem.current!.checked = true;

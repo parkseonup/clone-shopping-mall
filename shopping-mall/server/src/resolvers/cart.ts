@@ -59,8 +59,15 @@ const cartResolver: Resolvers = {
       setJSON(db.cart);
       return id;
     },
-    excutePay: (parent, { ids }, { db }) => {
+    executePay: (parent, { ids }, { db }) => {
       const newCart = db.cart.filter((cartItem) => !ids.includes(cartItem.id));
+      const hasDeletedItem = ids.some((id: string) => {
+        const product = db.products.find((product) => product.id === id);
+        return !product?.createdAt;
+      });
+
+      if (hasDeletedItem) throw new Error("품절된 상품이 포함되어 있습니다.");
+
       db.cart = newCart;
       setJSON(db.cart);
       return ids;

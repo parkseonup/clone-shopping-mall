@@ -12,10 +12,11 @@ type PaymentInfos = string[];
 
 const Payment = () => {
   const navigate = useNavigate();
-  const [checkedCartData, setCheckedCartData] =
-    useRecoilState(checkedCartState);
+  const [checkedCartData, setCheckedCartData] = useRecoilState(checkedCartState);
   const [modalShow, toggleModal] = useState(false);
-  const { mutate: excutePay } = useMutation((ids: PaymentInfos) =>
+
+  // TODO: 품절 상품이 포함되어 있을 때 결제가 진행되지 않고 장바구니 페이지로 다시 돌리는 로직 구현
+  const { mutate: executePay } = useMutation((ids: PaymentInfos) =>
     graphqlFetcher(EXCUTE_PAY, { ids })
   );
 
@@ -26,7 +27,7 @@ const Payment = () => {
   const proceed = () => {
     // 결제 진행
     const ids = checkedCartData.map(({ id }) => id);
-    excutePay(ids, {
+    executePay(ids, {
       onSuccess: () => {
         // checkedCartState 비우기
         setCheckedCartData([]);
