@@ -35,7 +35,10 @@ const productResolver: Resolvers = {
         | QueryFieldFilterConstraint
       )[] = [orderBy("createdAt", "desc")];
 
-      if (cursor) queryOptions.push(startAfter(cursor));
+      if (cursor) {
+        const snapshot = await getDoc(doc(db, "products", cursor));
+        queryOptions.push(startAfter(snapshot));
+      }
       if (!showDeleted) queryOptions.unshift(where("createdAt", "!=", null));
 
       const q = query(products, ...queryOptions, limit(PAGE_SIZE));
