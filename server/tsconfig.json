@@ -1,16 +1,20 @@
 {
-  "$schema": "https://json.schemastore.org/tsconfig",
-  "display": "Node 16",
+  // "$schema": "https://json.schemastore.org/tsconfig",
+  // "display": "Node 16",
   "compilerOptions": {
-    "lib": ["ESNext"],
-    "target": "ESNext",
+    // "lib": ["ESNext"],
+    "target": "ES5",
     "preserveValueImports": false,
     "module": "CommonJS",
-
+    "allowJs": true,
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "moduleResolution": "node"
-  }
+    "moduleResolution": "node",
+    "noEmit": false,
+    "outDir": "dist"
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules"]
 }
