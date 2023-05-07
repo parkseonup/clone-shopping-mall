@@ -1,81 +1,123 @@
-import { DBField, writeDB } from "../dbController";
-import { Cart, Resolvers } from "./types";
-
-const setJSON = (data: Cart) => {
-  writeDB(DBField.CART, data);
-};
+import { db } from "../firebase";
+import { Cart, Product, Resolvers } from "./types";
+import {
+  collection,
+  getDoc,
+  getDocs,
+  DocumentData,
+  doc,
+  updateDoc,
+  query,
+  where,
+  increment,
+  addDoc,
+  deleteDoc,
+} from "firebase/firestore";
 
 const cartResolver: Resolvers = {
   Query: {
-    cart: (parent, args, { db }) => db.cart,
-  },
-  Mutation: {
-    addCart: (parent, { id }, { db }) => {
-      const targetProduct = db.products.find((product) => product.id === id);
+    cart: async () => {
+      const cart = collection(db, "cart");
+      const snapshot = await getDocs(cart);
+      const data: DocumentData[] = [];
 
-      if (!targetProduct) throw new Error("없는 데이터입니다.");
-
-      const targetCartIndex = db.cart?.findIndex(
-        (cartItem) => cartItem.id === id
-      );
-
-      if (targetCartIndex === undefined || targetCartIndex < 0) {
-        const newItem = { id, amount: 1 };
-        db.cart.push(newItem);
-        setJSON(db.cart);
-        return newItem;
-      }
-
-      const newItem = {
-        id,
-        amount: db.cart[targetCartIndex].amount + 1,
-      };
-      db.cart[targetCartIndex] = newItem;
-      setJSON(db.cart);
-
-      return newItem;
-    },
-    updateCart: (parent, { id, amount }, { db }) => {
-      const targetCartIndex = db.cart?.findIndex(
-        (cartItem) => cartItem.id === id
-      );
-
-      if (targetCartIndex === undefined || targetCartIndex < 0)
-        throw new Error("장바구니에 id가 없습니다.");
-
-      const newItem = {
-        id,
-        amount,
-      };
-
-      db.cart[targetCartIndex] = newItem;
-      setJSON(db.cart);
-
-      return newItem;
-    },
-    deleteCart: (parent, { id }, { db }) => {
-      const newCart = db.cart.filter((cartItem) => cartItem.id !== id);
-      db.cart = newCart;
-      setJSON(db.cart);
-      return id;
-    },
-    executePay: (parent, { ids }, { db }) => {
-      const newCart = db.cart.filter((cartItem) => !ids.includes(cartItem.id));
-      const hasDeletedItem = ids.some((id: string) => {
-        const product = db.products.find((product) => product.id === id);
-        return !product?.createdAt;
+      snapshot.forEach((doc) => {
+        data.push({
+          ...doc.data(),
+          id: doc.id,
+        });
       });
 
-      if (hasDeletedItem) throw new Error("품절된 상품이 포함되어 있습니다.");
+      return data;
+    },
+  },
+  Mutation: {
+    addCart: async (parent, { productId }) => {
+      const productRef = doc(db, "products", productId);
+      const productSnapshot = await getDoc(productRef);
 
-      db.cart = newCart;
-      setJSON(db.cart);
-      return ids;
+      if (!productSnapshot.exists()) throw new Error("없는 상품입니다.");
+
+      const cartCollection = collection(db, "cart");
+      const exist = (
+        await getDocs(query(cartCollection, where("product", "==", productRef)))
+      ).docs[0];
+      let cartRef = null;
+
+      if (exist) {
+        cartRef = doc(cartCollection, exist.id);
+        await updateDoc(cartRef, { amount: increment(1) });
+      } else {
+        cartRef = await addDoc(cartCollection, {
+          product: productRef,
+          amount: 1,
+        });
+      }
+
+      const snapshot = await getDoc(cartRef);
+
+      return {
+        ...snapshot.data(),
+        id: snapshot.id,
+      };
+    },
+    updateCart: async (parent, { cartId, amount }) => {
+      const cartRef = doc(db, "cart", cartId);
+      let snapshot = await getDoc(cartRef);
+
+      if (!snapshot.data()) throw new Error("장바구니에 없는 상품입니다.");
+
+      await updateDoc(cartRef, { amount });
+      snapshot = await getDoc(cartRef);
+
+      return {
+        ...snapshot.data(),
+        id: snapshot.id,
+      };
+    },
+    deleteCart: async (parent, { cartId }) => {
+      const cartRef = doc(db, "cart", cartId);
+      const snapshot = await getDoc(cartRef);
+
+      if (!snapshot.exists()) throw new Error("장바구니에 없는 상품입니다.");
+
+      await deleteDoc(cartRef);
+      return cartId;
+    },
+    executePay: (parent, { ids }) => {
+      const deletedIds = ids.filter(async (id: string) => {
+        const cartRef = doc(db, "cart", id);
+        const cartSnapshot = await getDoc(cartRef);
+
+        if (!cartSnapshot.exists())
+          throw new Error("장바구니에 없는 상품입니다.");
+
+        const productRef = cartSnapshot.data().product;
+        const productSnapshop = await getDoc(productRef);
+        const productData = productSnapshop.data() as Product;
+
+        if (!productData.createdAt)
+          throw new Error(
+            `결제 목록에 품절된 상품(${id})이 포함되어 있습니다.`
+          );
+
+        await deleteDoc(cartRef);
+        return true;
+      });
+
+      return deletedIds;
     },
   },
   CartItem: {
-    product: (cartItem, args, { db }) =>
-      db.products.find((product) => product.id === cartItem.id),
+    product: async (cartItem) => {
+      const product = await getDoc(cartItem.product);
+      const data = product.data() as any;
+
+      return {
+        ...data,
+        id: product.id,
+      };
+    },
   },
 };
 
