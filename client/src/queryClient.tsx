@@ -23,7 +23,7 @@ export const getClient = (() => {
   };
 })();
 
-const BASE_URL = "https://inflearn-shop.herokuapp.com/" || 3000;
+const BASE_URL = "https://inflearn-shop.herokuapp.com" || 3000;
 
 export const graphqlFetcher = async (
   query: RequestDocument,
