@@ -5,6 +5,9 @@
 .env
 .env.*
 
+### package-lock ###
+package-lock.json
+
 ### macOS ###
 # General
 .DS_Store
