@@ -12,15 +12,17 @@ import resolvers from "./resolvers";
     typeDefs: schema,
     resolvers,
   });
-  const PORT =
-    "https://clone-shopping-mall.vercel.app" || "http://localhost:8000";
+  const PORT = process.env.NODE_ENV || "http://localhost:8000";
 
   await server.start();
 
   app.use(
     "/graphql",
     cors<CorsRequest>({
-      origin: [PORT, "https://studio.apollographql.com"],
+      origin: [
+        "https://clone-shopping-mall.vercel.app",
+        "https://studio.apollographql.com",
+      ],
       credentials: true,
     }),
     bodyParser.json(),
