@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "client": "npm workspace client dev",
-    "server": "npm workspace server dev"
+    "server": "npm workspace server dev",
+    "start": "npm workspace server dev"
   },
   "devDependencies": {
     "typescript": "^5.0.4"
