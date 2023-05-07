@@ -1,15 +1,14 @@
-import { ApolloServer } from "@apollo/server";
+import { ApolloServer, BaseContext } from "@apollo/server";
 import { expressMiddleware } from "@apollo/server/express4";
 import express from "express";
 import bodyParser from "body-parser";
 import cors, { CorsRequest } from "cors";
 import schema from "./schema";
 import resolvers from "./resolvers";
-import { DBField, readDB } from "./dbController";
 
 (async () => {
   const app = express();
-  const server = new ApolloServer({
+  const server = new ApolloServer<BaseContext>({
     typeDefs: schema,
     resolvers,
   });
@@ -24,14 +23,7 @@ import { DBField, readDB } from "./dbController";
       credentials: true,
     }),
     bodyParser.json(),
-    expressMiddleware(server, {
-      context: async () => ({
-        db: {
-          products: readDB(DBField.PRODUCTS),
-          cart: readDB(DBField.CART),
-        },
-      }),
-    })
+    expressMiddleware(server)
   );
 
   await app.listen({ port: PORT });

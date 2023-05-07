@@ -23,7 +23,7 @@ export const getClient = (() => {
   };
 })();
 
-const BASE_URL = "http://localhost:8000/graphql";
+const BASE_URL = "https://inflearn-shop.herokuapp.com/graphql";
 // const BASE_URL = "/";
 
 type AnyOBJ = { [key: string]: any };

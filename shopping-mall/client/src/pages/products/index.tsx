@@ -18,17 +18,18 @@ const ProductListPage = () => {
    *    pageParam: [undefined, ...], // 데이터 요청시 파라미터로 전달된 값이 배열로 들어온다.
    *  }
    */
-  const { data, isSuccess, hasNextPage, fetchNextPage, isFetchingNextPage } = useInfiniteQuery<ProductsType>(
-    [QueryKeys.PRODUCTS, "products"],
-    ({ pageParam = "" }) => graphqlFetcher(GET_PRODUCTS, { cursor: pageParam }),
-    {
-      /**
-       * @param lastPage { products: Array(15) }
-       * @param allPages [{ products: Array(15) }]
-       */
-      getNextPageParam: lastPage => lastPage.products.at(-1)?.id,
-    }
-  );
+  const { data, isSuccess, hasNextPage, fetchNextPage, isFetchingNextPage } =
+    useInfiniteQuery<ProductsType>(
+      [QueryKeys.PRODUCTS, "products"],
+      ({ pageParam = "" }) => graphqlFetcher(GET_PRODUCTS, { cursor: pageParam }),
+      {
+        /**
+         * @param lastPage { products: Array(15) }
+         * @param allPages [{ products: Array(15) }]
+         */
+        getNextPageParam: lastPage => lastPage.products.at(-1)?.id,
+      }
+    );
 
   useEffect(() => {
     if (!intersecting || !isSuccess || !hasNextPage || isFetchingNextPage) return;
