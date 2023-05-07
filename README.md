@@ -22,5 +22,7 @@
 
 # 공부한 내용
 
-- [📚 강의 외 공부한 내용 정리](/WHAT_I_LEARN.md)
+- [📙 강의 외 공부한 내용 - Client](/LEARN_CLIENT.md)
+- [📗 강의 외 공부한 내용 - Server](/LEARN_SERVER.md)
+- [📘 강의 외 공부한 내용 - Setting](/LEARN_SETTING.md)
 - [🧨 트러블슈팅](/TROUBLESHOOTING.md)
