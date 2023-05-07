@@ -23,51 +23,16 @@ export const getClient = (() => {
   };
 })();
 
-const BASE_URL = "https://inflearn-shop.herokuapp.com/graphql";
-// const BASE_URL = "/";
-
-type AnyOBJ = { [key: string]: any };
-
-export const resfetcher = async ({
-  method,
-  path,
-  body,
-  params,
-}: {
-  method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
-  path: string;
-  body?: AnyOBJ;
-  params?: AnyOBJ;
-}) => {
-  try {
-    let url = `${BASE_URL}${path}`;
-    const fetchOptions: RequestInit = {
-      method,
-      headers: {
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": BASE_URL,
-      },
-    };
-
-    if (params) {
-      const searchParams = new URLSearchParams(params);
-      url += `?${searchParams.toString()}`;
-    }
-
-    if (body) fetchOptions.body = JSON.stringify(body);
-
-    const res = await fetch(url, fetchOptions);
-    const json = await res.json();
-    return json;
-  } catch (err) {
-    console.error(err);
-  }
-};
+const BASE_URL = "https://inflearn-shop.herokuapp.com/" || 3000;
 
 export const graphqlFetcher = async (
   query: RequestDocument,
   variables = {}
-): Promise<any> => request(BASE_URL, query, variables);
+): Promise<any> =>
+  request(`${BASE_URL}/graphql`, query, variables, {
+    "Content-type": "application/json",
+    "Access-Control-Allow-Origin": BASE_URL,
+  });
 
 /** react-query에서 unique key로 사용되는 값 */
 export const QueryKeys = {
