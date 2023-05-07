@@ -5,6 +5,7 @@ import bodyParser from "body-parser";
 import cors, { CorsRequest } from "cors";
 import schema from "./schema";
 import resolvers from "./resolvers";
+import env from "./envLoader";
 
 (async () => {
   const app = express();
@@ -12,23 +13,22 @@ import resolvers from "./resolvers";
     typeDefs: schema,
     resolvers,
   });
-  const PORT = process.env.NODE_ENV || "http://localhost:8000";
+
+  const clientUrl = env.CLIENT_URL as string;
+  const port = env.PORT || 8000;
 
   await server.start();
 
   app.use(
     "/graphql",
     cors<CorsRequest>({
-      origin: [
-        "https://clone-shopping-mall.vercel.app",
-        "https://studio.apollographql.com",
-      ],
+      origin: [clientUrl, "https://studio.apollographql.com"],
       credentials: true,
     }),
     bodyParser.json(),
     expressMiddleware(server)
   );
 
-  await app.listen({ port: PORT });
-  console.log(`Server listening on ${PORT}...`);
+  await app.listen({ port });
+  console.log(`Server listening on ${port}...`);
 })();
