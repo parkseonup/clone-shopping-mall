@@ -1,10 +1,10 @@
-import { CartType } from "../../graphql/cart";
+import { ProductType } from "../../graphql/products";
 
 const ItemData = ({
   title,
   imageUrl,
   price,
-}: Pick<CartType, "title" | "imageUrl" | "price">) => {
+}: Pick<ProductType, "title" | "imageUrl" | "price">) => {
   return (
     <>
       <p className="cart-item__title">{title}</p>
