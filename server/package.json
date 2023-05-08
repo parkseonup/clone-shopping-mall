@@ -25,7 +25,7 @@
   },
   "devDependencies": {
     "@types/cors": "^2.8.13",
-    "@types/node": "^18.15.11",
+    "@types/node": "^18.16.5",
     "nodemon": "^2.0.22",
     "ts-node": "^10.9.1"
   }

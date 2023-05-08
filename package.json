@@ -15,11 +15,5 @@
   "workspaces": [
     "client",
     "server"
-  ],
-  "dependencies": {
-    "typescript": "^5.0.4"
-  },
-  "devDependencies": {
-    "@types/node": "^20.1.0"
-  }
+  ]
 }
