@@ -22,7 +22,11 @@ import env from "./envLoader";
   app.use(
     "/graphql",
     cors<CorsRequest>({
-      origin: [clientUrl, "https://studio.apollographql.com"],
+      origin: [
+        clientUrl,
+        "https://studio.apollographql.com",
+        "https://clone-shopping-mall.vercel.app",
+      ],
       credentials: true,
     }),
     bodyParser.json(),
