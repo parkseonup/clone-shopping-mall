@@ -13,8 +13,7 @@
     "forceConsistentCasingInFileNames": true,
     "moduleResolution": "node",
     "noEmit": false,
-    "outDir": "dist",
-    "types": ["node", "cors"]
+    "outDir": "dist"
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules"]

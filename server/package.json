@@ -21,10 +21,10 @@
     "firebase": "^9.21.0",
     "graphql": "^16.6.0",
     "graphql-tag": "^2.12.6",
-    "typescript": "^5.0.4"
+    "typescript": "^5.0.4",
+    "@types/cors": "^2.8.13"
   },
   "devDependencies": {
-    "@types/cors": "^2.8.13",
     "@types/node": "^18.16.5",
     "nodemon": "^2.0.22",
     "ts-node": "^10.9.1"
