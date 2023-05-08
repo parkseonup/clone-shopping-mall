@@ -6,7 +6,7 @@
   "scripts": {
     "client": "npm workspace client dev",
     "server": "npm workspace server dev",
-    "start": "cd server && npm run serve"
+    "start": "npm workspace server serve"
   },
   "keywords": [],
   "author": "",
