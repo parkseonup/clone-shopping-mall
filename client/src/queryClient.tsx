@@ -30,7 +30,7 @@ export const graphqlFetcher = async (
   variables = {}
 ): Promise<any> =>
   request(`${BASE_URL}/graphql`, query, variables, {
-    "Content-type": "application/json",
+    "Content-Type": "application/json",
     "Access-Control-Allow-Origin": BASE_URL,
   });
 
