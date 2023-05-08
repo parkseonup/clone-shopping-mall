@@ -1,9 +1,9 @@
 {
-  // "$schema": "https://json.schemastore.org/tsconfig",
-  // "display": "Node 16",
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "display": "Node 16",
   "compilerOptions": {
-    // "lib": ["ESNext"],
-    "target": "ES5",
+    "lib": ["ESNext"],
+    "target": "ESNext",
     "preserveValueImports": false,
     "module": "CommonJS",
     "allowJs": true,

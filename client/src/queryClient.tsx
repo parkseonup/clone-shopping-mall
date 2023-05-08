@@ -31,7 +31,7 @@ export const graphqlFetcher = async (
 ): Promise<any> =>
   request(`${BASE_URL}/graphql`, query, variables, {
     "Content-Type": "application/json",
-    "Access-Control-Allow-Origin": "https://clone-shopping-mall.vercel.app",
+    "Access-Control-Allow-Origin": BASE_URL,
   });
 
 /** react-query에서 unique key로 사용되는 값 */
