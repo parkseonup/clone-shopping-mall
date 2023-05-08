@@ -8,9 +8,6 @@
     "server": "npm workspace server dev",
     "start": "cd server && npm run serve"
   },
-  "devDependencies": {
-    "typescript": "^5.0.4"
-  },
   "keywords": [],
   "author": "",
   "license": "MIT",
