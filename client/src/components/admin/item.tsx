@@ -41,7 +41,7 @@ const AdminItem = ({
       onSuccess: () => {
         queryClient.invalidateQueries([QueryKeys.PRODUCTS], {
           exact: false,
-          type: "all",
+          refetchType: "all",
         });
       },
     }
