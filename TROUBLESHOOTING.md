@@ -13,15 +13,14 @@ useQuery를 사용하여 서버의 data를 받아올 때 type이 overload될 수
 - 에러 메세지
   <img width="494" alt="스크린샷 2023-04-21 오후 3 26 04" src="https://user-images.githubusercontent.com/76897813/233557400-38b489a5-4b36-4800-9027-444fe1ddc369.png">
   <img width="743" alt="스크린샷 2023-03-24 오후 4 31 55" src="https://user-images.githubusercontent.com/76897813/227454258-abc16ec6-ceb7-4bc4-b079-a93a96e8aff8.png">
-  ```
-  No overload matches this call.
-  The last overload gave the following error.
-    Type 'Promise<unknown>' is not assignable to type 'ProductsType | Promise<ProductsType>'.
-      Type 'Promise<unknown>' is not assignable to type 'Promise<ProductsType>'.
-        Type 'unknown' is not assignable to type 'ProductsType'.ts(2769)
-  types.d.ts(9, 89): The expected type comes from the return type of this signature.
-  useQuery.d.ts(23, 25): The last overload is declared here.
-  ```
+
+  > No overload matches this call.
+  > The last overload gave the following error.
+  > Type 'Promise<unknown>' is not assignable to type 'ProductsType | Promise<ProductsType>'.
+  > Type 'Promise<unknown>' is not assignable to type 'Promise<ProductsType>'.
+  > Type 'unknown' is not assignable to type 'ProductsType'.ts(2769)
+  > types.d.ts(9, 89): The expected type comes from the return type of this signature.
+  > useQuery.d.ts(23, 25): The last overload is declared here.
 
 ### 문제 원인 분석
 
@@ -468,3 +467,39 @@ typescript를 사용하지 않을 때, React에서 eslint를 적용하면 아래
 - 때문에 typescript는 JSX를 컴파일 할 때 React 객체 import 구문을 자동으로 생성한다.
 - eslint는 typescript 코드를 해석할 때 TypeScript 컴파일러가 사용하는 내부적인 AST(Abstract Syntax Tree)를 이용한다. 이를 통해 typescript 코드에서 사용되는 React 컴포넌트를 추적할 수 있다.
 - 따라서 Typescript를 사용할 때는 ESLint에 'react/react-in-jsx-scope': 'off' 라고 알리지 않아도 된다.
+
+## heroku로 server 배포시 cors module을 인식하지 못하는 에러
+
+package.json의 `devDependencies`에 @types/cors 패키지가 설치되어 있음에도 불구하고 heroku 배포 시 log에 `cors` 모듈을 찾을 수 없다는 아래와 같은 에러를 띄운다.
+
+- 기존 코드
+  ```json
+  // server/package.json
+  {
+    "devDependencies": {
+      // ...
+      "@types/cors": "^2.8.13"
+    }
+  }
+  ```
+- 에러 메세지
+  > src/index.ts(5,35): error TS7016: Could not find a declaration file for module 'cors'. '/app/node_modules/cors/lib/index.js' implicitly has an 'any' type.
+  > Try `npm i --save-dev @types/cors` if it exists or add a new declaration (.d.ts) file containing `declare module 'cors';`
+
+### 문제 원인 분석
+
+- heroku는 `devDependencies`에 작성된 내용은 개발 단계에서만 필요한 해석하지 않는다. 따라서 배포시 읽어야 할 패키지가 있다면 `dependencies`로 옮겨야 한다.
+- 이외 [NPM_CONFIG_PRODUCTION 또는 YARN_PRODUCTION을 false로 설정](https://devcenter.heroku.com/articles/nodejs-support#package-installation)하여 일부 구성 옵션을 선택할 탐색할 수 있도록 할 수 있지만, `devDependencies`의 목적성에 위배될 수 있으며 잠재적 보안 위험 등을 유발할 수 있으므로 지양하는 것이 좋다.
+
+### 문제 해결
+
+```json
+// server/package.json
+{
+  // ...
+  "dependencies": {
+    // ...
+    "@types/cors": "^2.8.13"
+  }
+}
+```

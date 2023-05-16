@@ -300,7 +300,33 @@ useCallback(fn, dependencies): fn;
 - [vite-plugin-next-react-router](https://www.npmjs.com/package/vite-plugin-next-react-router)는 라우트 폴더 구조를 next와 동일하게 가져갈 수 있도록 도와주는 third-party library이다.
 - vite.config.ts 파일에서 `defineConfig` 인수로 객체를 전달할 때 plugins 프로퍼티의 배열 내부에 `reactRouterPlugin()`을 전달하면 프로젝트 root 폴더에 routes.tsx 파일을 자동 생성해주며, route 경로에 해당하는 페이지들 또한 자동으로 routes.tsx 파일에 추가해준다.
 
-### (미작성) vite-plugin-next-react-router에서 제공하는 소스 분석해보기
+## `<Routes>`
+
+- 위치가 변경될 때마다 모든 `<Route>`를 살펴보고 일치하는 항목을 찾아 해당되는 UI를 렌더링한다.
+- `<Route>`의 props로는 `path`, `element`가 있다.
+- 중첩 라우팅 구현을 위해 `<Route>` 내부에 `<Route>`를 작성할 수 있으며, 내부에 작성된 `<Route>`의 UI는 `<Outlet />`에 의해 표출될 수 있다.
+
+## `<Outlet />`
+
+- 하위 route element가 렌더링되는 부분으로, 하위 route element를 렌더링하기 위해서는 상위 route element에 `<Outlet />`을 전달해야 한다.
+- 중첩 라우팅을 가능하게 하여, 페이지 간에 공통적으로 렌더링되어야 하는 것이 있을 때 유용하게 사용된다.
+
+## `useRoutes()`
+
+```ts
+declare function useRoutes(
+  routes: RouteObject[],
+  location?: Partial<Location> | string;
+): React.ReactElement | null;
+```
+
+- `<Routes>`와 동일한 기능으로, JSX가 아닌 javascript로 사용할 수 있도록 만들어졌다.
+- 객체의 프로퍼티로는 `<Route>`에서 사용하는 props와 동일하게 `path`, `element`, `children`가 있다.
+  - `chldren`을 통해 하위 경로, 즉 중첩라우팅을 구현할 수 있다.
+- v6부터 사용 가능한 hook으로, 이전에는 react-router-config 패키지의 `renderRoutes`로 구현했다.
+- 반환값
+  - `ReactElement`: 인수로 전달된 routes 객체의 배열을 해석하여 현재 위치와 path가 일치하는 `ReactElement`를 반환한다.
+  - `null`: 일치하는 path가 없을 경우.
 
 ## `<Link>` vs. `useNavigate` vs. `redirect`
 
@@ -576,22 +602,18 @@ mutation은 query와 직접적으로 연결되지 않는다. 따라서 mutation�
   1. 기존의 쿼리를 stale data로 변경한다.
   2. 해당 쿼리가 `useQuery`를 통해 렌더링되거나 비슷한 Hooks를 사용하고 있다면 데이터를 refetching한다.
 - 클라이언트에서 사용자의 액션에 의해 어떤 데이터가 변경되면 서버 데이터를 동기화할 필요가 있는데, 이런 경우에 많이 사용한다.
-- (미작성) filter 객체
+- 인수로 [`QueryFilters`](https://tanstack.com/query/v4/docs/react/guides/filters#query-filters)를 전달하여 query 요청의 조건을 지정할 수 있다.
 
   ```ts
-  queryClient.invalidateQueries([QueryKeys.PRODUCTS], {
-    exact: false,
-    refetchType: "all",
-  });
-
-  // or
-
   queryClient.invalidateQueries({
     queryKey: [QueryKeys.PRODUCTS],
     exact: false,
     refetchType: "all",
   });
   ```
+
+  - `exact?: boolean`: 쿼리 키로 쿼리를 검색할 때, 포괄적인 검색을 원하면 `false`를 전달하고 정확한 쿼리 키를 검색하려면 `true`를 전달한다.
+  - `refetchType?: 'active' | 'inactive' | 'all' | 'none'`: 기본값은 `active`로, 어떤 타입의 쿼리를 다룰 것인지 지정할 수 있다.
 
 #### 직접 업데이트
 
@@ -642,20 +664,7 @@ function useInfiniteQuery<
 
 # 🧶 Recoil
 
-참고 문서: [Recoil - 또 다른 React 상태 관리 라이브러리? - Toast UI](https://ui.toast.com/weekly-pick/ko_20200616)
-
 - [Recoil](https://recoiljs.org/ko/)은 Facebook에서 만든 React를 위한 상태 관리 라이브러리로, npm을 이용하여 설치할 수 있다.
-
-## (미작성) Recoil vs Context API vs Redux
-
-### 참고 문서
-
-- [recoil 공식문서](https://recoiljs.org/ko/docs/introduction/motivation/)
-- [Recoil, 리액트의 상태관리 라이브러리](https://tech.osci.kr/2022/06/16/recoil-state-management-of-react/)
-- [Recoil은 Context API를 어떻게 사용하길래 상태 변경이 일어나도 RecoilRoot의 자식 컴포넌트들에 대한 불필요한 리렌더링을 유발하지 않을까?](https://woomin.netlify.app/recoil-context-api-no-rerender/)
-- [Redux, Context, or Recoil: Which One Is Best for Your Modern Web App?](https://betterprogramming.pub/redux-context-or-recoil-which-one-is-best-for-your-modern-web-app-db41be99b448)
-- [Redux, Recoil, and React Context API: Choosing Your State Management Adventure!](https://medium.com/@davidkelley87/redux-recoil-and-react-context-api-choosing-your-state-management-adventure-67fb2355daa2)
-- [React에서 상태관리하기 (feat. Context API, Redux, React Query)](https://mingule.tistory.com/74)
 
 ## API
 
@@ -673,7 +682,7 @@ function useInfiniteQuery<
 - `override` 속성이 `false`일 경우
   - 일반적으로 `override` 속성을 `false`로 하는 것은 recoil에서 제공하는 디버깅 및 개발 도구가 비활성화되므로 권장되지 않는다.
   - 장점
-    - Recoil 개발 도구는 Recoil의 상태 및 액션 로그를 브라우저 콘솔에 표시하는데, 베포 시 보안 이슈가 발생될 수 있다. 이럴 경우 `override` 속성을 `false`로 해서 recoil 개발 도구를 비활성화 할 수 있다.
+    - Recoil 개발 도구는 Recoil의 상태 및 액션 로그를 브라우저 콘솔에 표시하는데, 배포 시 보안 이슈가 발생될 수 있다. 이럴 경우 `override` 속성을 `false`로 해서 recoil 개발 도구를 비활성화 할 수 있다.
   - 단점
     - 상태 변경 알림 없음: `atom` 또는 `selector`의 값이 변경될 때 개발자 도구에서 상태 변경 알림이 표시되지 않는다.
     - 디버깅 모드 제한: 개발자 도구에서 제공하는 상태 디버깅, 스냅샷 등의 기능이 제한된다.
@@ -1200,6 +1209,8 @@ const productItem = {
 - 컴포넌트가 마운트될 때마다 uuid가 호출되어 uuid는 늘 새로운 id값을 반환하기 때문에 기존의 id값을 유지하기 어렵다. (예시: 상품 id를 이용하여 서버에 상품 정보를 GET 요청하는 로직이라면, 해당 페이지에서 새로고침을 했을 경우 uuid가 생성한 상품 id값이 변경되기 때문에 동일한 상품 id를 서버에서 찾지 못한다.)
 
 # 📐 TypeScript
+
+- [ ] TypeScript 파트에서 미작성된 내용은 Learning TypeScript 책을 완독한 뒤 작성하겠음
 
 ## 문법
 

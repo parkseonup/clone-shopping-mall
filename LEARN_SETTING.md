@@ -1,4 +1,4 @@
-# (미작성) ESlint 설치...
+# ESlint 설치
 
 ## package.json
 
@@ -140,22 +140,6 @@ export default defineConfig({
   },
 });
 ```
-
-# (미작성) 환경 변수
-
-## dotenv란?
-
-[dotenv](https://github.com/motdotla/dotenv)
-
-## process.env.NODE_ENV는 어떤 의미인가?
-
-MSW의 application root에 browser integration을 적용할 때 예제에 작성된 `process.env.NODE_ENV`는 어떤 의미일까?
-
-## vite에서 환경 변수 사용하기
-
-vite에는 [env 환경변수](https://vitejs.dev/guide/env-and-mode.html#env-variables-and-modes)를 노출할 때 사용되는 문법이 따로 있다.
-
-- vite는 dotenv를 활용하여 환경 디렉토리의 파일에 추가 환경 변수를 로드한다.
 
 # 모노레포(monorepo)
 
