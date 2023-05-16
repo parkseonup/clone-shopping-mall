@@ -20,13 +20,3 @@ export const routes = [
     ],
   },
 ];
-
-// TODO: pages가 필요한 이유
-export const pages = [
-  { route: "/" },
-  { route: "/cart" },
-  { route: "/payment" },
-  { route: "/products" },
-  { route: "/products/:id" },
-  // { route: "/admin" },
-];
