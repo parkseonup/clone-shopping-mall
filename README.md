@@ -7,9 +7,12 @@
 
 ## stack
 
-- react, react-query, react-router, recoil
-- tools: vite
-- Mocking: MSW, GraphQL
+- [React](https://react.dev/), [TypeScript](https://www.typescriptlang.org/), [SCSS](https://sass-lang.com/)
+- Library: [React Query](https://tanstack.com/query/v3/), [React Router](https://reactrouter.com/en/main), [Recoil](https://recoiljs.org/)
+- Tools: [Vite](https://vitejs-kr.github.io/)
+- Mocking: [MSW](https://mswjs.io/), [GraphQL](https://graphql.org/) - [apollo client](https://www.apollographql.com/docs/react/)
+- Server: [Express](https://expressjs.com/ko/), [Firebase](https://firebase.google.com/)
+- Deploy: [Vercel](https://vercel.com/), [Heroku](https://www.heroku.com/)
 
 ## third-party api
 
