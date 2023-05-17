@@ -2,7 +2,8 @@ import GlobalLayout from './components/globalLayout';
 import MainPage from './pages';
 import AdminPage from './pages/admin';
 import CartPage from './pages/cart';
-import ProductsPage from './pages/product';
+import ProductsPage from './pages/products';
+import ProductDetailPage from './pages/products/[id]';
 
 export const routes = [
   {
@@ -14,15 +15,19 @@ export const routes = [
         element: <MainPage />,
       },
       {
-        path: 'product',
+        path: '/products',
         element: <ProductsPage />,
       },
       {
-        path: 'cart',
+        path: '/products/:id',
+        element: <ProductDetailPage />,
+      },
+      {
+        path: '/cart',
         element: <CartPage />,
       },
       {
-        path: 'admin',
+        path: '/admin',
         element: <AdminPage />,
       },
     ],
