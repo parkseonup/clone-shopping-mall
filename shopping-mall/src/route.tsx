@@ -2,6 +2,7 @@ import GlobalLayout from './components/globalLayout';
 import MainPage from './pages';
 import AdminPage from './pages/admin';
 import CartPage from './pages/cart';
+import PaymentPage from './pages/payment';
 import ProductsPage from './pages/products';
 import ProductDetailPage from './pages/products/[id]';
 
@@ -25,6 +26,10 @@ export const routes = [
       {
         path: '/cart',
         element: <CartPage />,
+      },
+      {
+        path: '/payment',
+        element: <PaymentPage />,
       },
       {
         path: '/admin',
