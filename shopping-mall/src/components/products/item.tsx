@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { ProductType } from '../../types';
+import { ProductType } from '../../graphql/products';
 
 function ProductItem({ id, title, imageUrl, price }: ProductType) {
   return (

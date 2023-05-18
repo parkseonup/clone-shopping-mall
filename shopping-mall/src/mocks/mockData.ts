@@ -1,4 +1,5 @@
-import { CartType, ProductsType } from '../types';
+import { CartType } from '../graphql/cart';
+import { ProductsType } from '../graphql/products';
 
 export const mockProducts: ProductsType = Array.from(
   { length: 60 },

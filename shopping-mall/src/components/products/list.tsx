@@ -1,4 +1,4 @@
-import { ProductsType } from '../../types';
+import { ProductsType } from '../../graphql/products';
 import ProductItem from './item';
 
 function ProductList({ list }: { list: ProductsType }) {

@@ -1,4 +1,4 @@
-import { ProductType } from '../../types';
+import { ProductType } from '../../graphql/products';
 
 function ProductDetail({ title, imageUrl, description, price }: ProductType) {
   return (
