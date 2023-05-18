@@ -14,12 +14,12 @@ export type ProductsType = ProductType[];
 export const GET_PRODUCTS = gql`
   query GET_PRODUCTS {
     products {
-      id: ID!
-      title: String!
-      imageUrl: String!
-      description: String!
-      price: Int!
-      createdAt: Float
+      id
+      title
+      imageUrl
+      description
+      price
+      createdAt
     }
   }
 `;
@@ -27,12 +27,12 @@ export const GET_PRODUCTS = gql`
 export const GET_PRODUCT = gql`
   query GET_PRODUCT($id: ID!) {
     product(id: $id) {
-      id: ID!
-      title: String!
-      imageUrl: String!
-      description: String!
-      price: Int!
-      createdAt: Float
+      id
+      title
+      imageUrl
+      description
+      price
+      createdAt
     }
   }
 `;
@@ -40,37 +40,37 @@ export const GET_PRODUCT = gql`
 export const ADD_PRODUCT = gql`
   mutation ADD_PRODUCT($id: ID!) {
     addProduct(id: $id) {
-      id: ID!
-      title: String!
-      imageUrl: String!
-      description: String!
-      price: Int!
-      createdAt: Float!
+      id
+      title
+      imageUrl
+      description
+      price
+      createdAt
     }
   }
 `;
 
 export const UPDATE_PRODUCT = gql`
   mutation UPDATE_PRODUCT(
-    $id: ID!, 
-    $title: String,
-    $imageUrl: String,
-    $description: String,
+    $id: ID!
+    $title: String
+    $imageUrl: String
+    $description: String
     $price: Int
   ) {
     updateProduct(
-      id: $id,
-      title: $title,
-      imageUrl: $imageUrl,
-      description: $description,
+      id: $id
+      title: $title
+      imageUrl: $imageUrl
+      description: $description
       price: $price
     ) {
-      id: ID!
-      title: String!
-      imageUrl: String!
-      description: String!
-      price: Int!
-      createdAt: Float!
+      id
+      title
+      imageUrl
+      description
+      price
+      createdAt
     }
   }
 `;
