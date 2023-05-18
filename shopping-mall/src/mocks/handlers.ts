@@ -27,7 +27,7 @@ export const handlers = [
 
     mockProducts.push(newProduct);
 
-    return res(ctx.data({ newProduct }));
+    return res(ctx.data({ addProduct: newProduct }));
   }),
   graphql.query('UPDATE_PRODUCT', ({ variables }, res, ctx) => {
     const targetProduct = mockProducts.find(
@@ -42,7 +42,7 @@ export const handlers = [
       ...variables,
     };
 
-    return res(ctx.data({ updatedProduct }));
+    return res(ctx.data({ updateProduct: updatedProduct }));
   }),
   graphql.query('DELETE_PRODUCT', ({ variables }, res, ctx) => {
     const targetIndex = mockProducts.findIndex(
@@ -54,7 +54,7 @@ export const handlers = [
 
     mockProducts.splice(targetIndex, 1);
 
-    return res(ctx.data({ deletedProductId: variables.id }));
+    return res(ctx.data({ deleteProduct: variables.id }));
   }),
 
   // cart
@@ -69,7 +69,9 @@ export const handlers = [
     if (!targetProduct)
       throw new Error(`상품(${variables.productId}})이 존재하지 않습니다.`);
     if (!targetProduct.createdAt)
-      throw new Error(`상품(${variables.productId}})은 품절되었습니다.`);
+      throw new Error(
+        `장바구니에 품절된 상품(${variables.productId}})이 포함되어 있습니다.`
+      );
 
     const targetCart = mockCart.find(cart => cart.product === targetProduct);
     let newCartItem = null;
@@ -90,7 +92,7 @@ export const handlers = [
 
     mockCart.push(newCartItem);
 
-    return res(ctx.data({ newCartItem }));
+    return res(ctx.data({ addCart: newCartItem }));
   }),
   graphql.query('UPDATE_CART', ({ variables }, res, ctx) => {
     const { cartId, amount } = variables;
@@ -100,6 +102,10 @@ export const handlers = [
       throw new Error(
         `장바구니에 상품(${variables.cartId}})이 존재하지 않습니다.`
       );
+    if (!mockCart[targetIndex].product.createdAt)
+      throw new Error(
+        `장바구니에 품절된 상품(${cartId}})이 포함되어 있습니다.`
+      );
 
     const newCartItem = {
       ...mockCart[targetIndex],
@@ -108,7 +114,7 @@ export const handlers = [
 
     mockCart[targetIndex] = newCartItem;
 
-    return res(ctx.data({ newCartItem }));
+    return res(ctx.data({ updateCart: newCartItem }));
   }),
   graphql.query('DELETE_CART', ({ variables }, res, ctx) => {
     const targetIndex = mockCart.findIndex(
@@ -116,7 +122,7 @@ export const handlers = [
     );
 
     mockCart.splice(targetIndex, 1);
-    return res(ctx.data({ deletedCartId: variables.cartId }));
+    return res(ctx.data({ deleteCart: variables.cartId }));
   }),
 
   // payment
@@ -135,6 +141,6 @@ export const handlers = [
       return true;
     });
 
-    return res(ctx.data({ deletedIds }));
+    return res(ctx.data({ executePay: deletedIds }));
   }),
 ];
