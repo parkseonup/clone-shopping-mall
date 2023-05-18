@@ -32,5 +32,8 @@
     "msw": "^1.2.1",
     "typescript": "^5.0.2",
     "vite": "^4.3.2"
+  },
+  "msw": {
+    "workerDirectory": "public"
   }
 }

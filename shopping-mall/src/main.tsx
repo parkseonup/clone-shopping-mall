@@ -2,9 +2,9 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App.tsx';
 import { BrowserRouter } from 'react-router-dom';
+import { worker } from './mocks/browser';
 
 if (import.meta.env.DEV) {
-  const { worker } = require('./mocks/browser');
   worker.start();
 }
 
