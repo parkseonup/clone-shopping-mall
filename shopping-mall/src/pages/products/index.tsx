@@ -1,23 +1,27 @@
+import { useQuery } from 'react-query';
 import ProductList from '../../components/products/list';
+import { QueryKeys, fetchData } from '../../fetcher';
+import { GET_PRODUCTS, ProductsType } from '../../graphql/products';
 
 function ProductsPage() {
-  const list = [
-    {
-      id: 'id...',
-      title: '제목...',
-      imageUrl: 'https://...',
-      price: 3000,
-      description: '설명...',
-      createdAt: Date.now(),
-    },
-  ]; // TODO: fetch 받아서 상품 목록 출력
+  const { data } = useQuery<
+    Promise<unknown>,
+    Error,
+    { products: ProductsType }
+  >([QueryKeys.PRODUCTS], () => fetchData(GET_PRODUCTS));
+
+  if (!data)
+    return (
+      <>
+        <h2>상품 목록 페이지</h2>
+        <p>상품이 없습니다.</p>
+      </>
+    );
 
   return (
     <>
-      <h2>상품 목록 페이지</h2>
-
       <main>
-        <ProductList list={list} />
+        <ProductList list={data.products} />
       </main>
     </>
   );

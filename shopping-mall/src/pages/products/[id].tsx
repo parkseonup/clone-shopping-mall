@@ -1,24 +1,24 @@
-import { useParams } from 'react-router-dom';
+import { redirect, useParams } from 'react-router-dom';
 import ProductDetail from '../../components/products/detail';
+import { useQuery } from 'react-query';
+import { QueryKeys, fetchData } from '../../fetcher';
+import { GET_PRODUCT, ProductType } from '../../graphql/products';
 
 function ProductDetailPage() {
   const { id } = useParams();
+  const { data } = useQuery<Promise<unknown>, Error, { product: ProductType }>(
+    [QueryKeys.PRODUCTS, id],
+    async () => await fetchData(GET_PRODUCT, { id })
+  );
 
-  const product = {
-    id: 'id...',
-    title: '제목...',
-    imageUrl: 'https://...',
-    price: 3000,
-    description: '설명...',
-    createdAt: Date.now(),
-  }; // TODO: product id로 data fetch 받아오기
+  if (!data) return null;
 
   return (
     <>
       <h2>상품 상세 페이지</h2>
 
       <main>
-        <ProductDetail {...product} />
+        <ProductDetail {...data.product} />
       </main>
     </>
   );
