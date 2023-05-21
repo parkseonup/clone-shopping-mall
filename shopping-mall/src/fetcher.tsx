@@ -1,6 +1,19 @@
 import request from 'graphql-request';
+import { QueryClient } from 'react-query';
 
-const BASE_URL = import.meta.env.BASE_URL;
+export const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: Infinity,
+      cacheTime: Infinity,
+      refetchOnWindowFocus: false,
+      refetchOnMount: false,
+    },
+  },
+});
+
+// const BASE_URL = import.meta.env.BASE_URL;
+const BASE_URL = 'http://localhost:3000';
 
 export const QueryKeys = {
   PRODUCTS: 'PRODUCTS',

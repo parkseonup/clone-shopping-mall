@@ -1,18 +1,8 @@
 import { useRoutes } from 'react-router-dom';
 import { routes } from './route';
 import Gnb from './components/gnb';
-import { QueryClient, QueryClientProvider } from 'react-query';
-
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: Infinity,
-      cacheTime: Infinity,
-      refetchOnWindowFocus: false,
-      refetchOnMount: false,
-    },
-  },
-});
+import { QueryClientProvider } from 'react-query';
+import { queryClient } from './fetcher';
 
 function App() {
   const element = useRoutes(routes);
