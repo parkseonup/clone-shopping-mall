@@ -13,17 +13,4 @@ export const mockProducts: ProductsType = Array.from(
   })
 );
 
-export const mockCart: CartType = [
-  {
-    id: '1',
-    amount: 3,
-    product: {
-      id: '2',
-      title: '제목_2',
-      description: '설명_2',
-      imageUrl: 'https://picsum.photos/id/32/200/300.jpg',
-      price: 3000,
-      createdAt: 1684381913374,
-    },
-  },
-];
+export const mockCart: CartType = [];

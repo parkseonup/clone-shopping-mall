@@ -13,7 +13,7 @@ export const handlers = [
 
     return res(ctx.data({ product }));
   }),
-  graphql.query('ADD_PRODUCT', ({ variables }, res, ctx) => {
+  graphql.mutation('ADD_PRODUCT', ({ variables }, res, ctx) => {
     const { title, imageUrl, description, price } = variables;
     const id = !mockProducts.at(-1) ? '1' : +mockProducts.at(-1)!.id + 1 + '';
     const newProduct = {
@@ -29,7 +29,7 @@ export const handlers = [
 
     return res(ctx.data({ addProduct: newProduct }));
   }),
-  graphql.query('UPDATE_PRODUCT', ({ variables }, res, ctx) => {
+  graphql.mutation('UPDATE_PRODUCT', ({ variables }, res, ctx) => {
     const targetProduct = mockProducts.find(
       product => product.id === variables.id
     );
@@ -44,7 +44,7 @@ export const handlers = [
 
     return res(ctx.data({ updateProduct: updatedProduct }));
   }),
-  graphql.query('DELETE_PRODUCT', ({ variables }, res, ctx) => {
+  graphql.mutation('DELETE_PRODUCT', ({ variables }, res, ctx) => {
     const targetIndex = mockProducts.findIndex(
       product => product.id === variables.id
     );
@@ -61,7 +61,7 @@ export const handlers = [
   graphql.query('GET_CART', (req, res, ctx) => {
     return res(ctx.data({ cart: mockCart }));
   }),
-  graphql.query('ADD_CART', ({ variables }, res, ctx) => {
+  graphql.mutation('ADD_CART', ({ variables }, res, ctx) => {
     const targetProduct = mockProducts.find(
       product => product.id === variables.productId
     );
@@ -73,14 +73,17 @@ export const handlers = [
         `장바구니에 품절된 상품(${variables.productId}})이 포함되어 있습니다.`
       );
 
-    const targetCart = mockCart.find(cart => cart.product === targetProduct);
+    const targetCartIndex = mockCart.findIndex(
+      cart => cart.product === targetProduct
+    );
     let newCartItem = null;
 
-    if (targetCart) {
+    if (targetCartIndex > -1) {
       newCartItem = {
-        ...targetCart,
-        amount: targetCart.amount + 1,
+        ...mockCart[targetCartIndex],
+        amount: mockCart[targetCartIndex].amount + 1,
       };
+      mockCart.splice(targetCartIndex, 1, newCartItem);
     } else {
       const id = !mockCart.at(-1) ? '1' : +mockCart.at(-1)!.id + 1 + '';
       newCartItem = {
@@ -88,19 +91,19 @@ export const handlers = [
         amount: 1,
         product: targetProduct,
       };
+      mockCart.push(newCartItem);
     }
-
-    mockCart.push(newCartItem);
 
     return res(ctx.data({ addCart: newCartItem }));
   }),
-  graphql.query('UPDATE_CART', ({ variables }, res, ctx) => {
+  graphql.mutation('UPDATE_CART', ({ variables }, res, ctx) => {
     const { cartId, amount } = variables;
     const targetIndex = mockCart.findIndex(cart => cart.id === cartId);
+    console.log(cartId, targetIndex, mockCart);
 
     if (targetIndex < 0)
       throw new Error(
-        `장바구니에 상품(${variables.cartId}})이 존재하지 않습니다.`
+        `장바구니에 상품(${variables.cartId})이 존재하지 않습니다.`
       );
     if (!mockCart[targetIndex].product.createdAt)
       throw new Error(
@@ -112,11 +115,11 @@ export const handlers = [
       amount,
     };
 
-    mockCart[targetIndex] = newCartItem;
+    mockCart.splice(targetIndex, 1, newCartItem);
 
     return res(ctx.data({ updateCart: newCartItem }));
   }),
-  graphql.query('DELETE_CART', ({ variables }, res, ctx) => {
+  graphql.mutation('DELETE_CART', ({ variables }, res, ctx) => {
     const targetIndex = mockCart.findIndex(
       cart => cart.id === variables.cartId
     );
@@ -126,7 +129,7 @@ export const handlers = [
   }),
 
   // payment
-  graphql.query('EXECUTE_PAY', ({ variables }, res, ctx) => {
+  graphql.mutation('EXECUTE_PAY', ({ variables }, res, ctx) => {
     const { ids } = variables; // cartId[]
 
     const deletedIds = ids.filter((id: string) => {

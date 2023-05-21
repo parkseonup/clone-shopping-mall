@@ -4,6 +4,10 @@
   box-sizing: border-box;
 }
 
+body {
+  margin: 10px;
+}
+
 a {
   text-decoration: none;
 }
@@ -12,4 +16,13 @@ ul {
   list-style: none;
   margin: 0;
   padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+li {
+  padding: 10px;
+  border: 1px solid #ddd;
 }
