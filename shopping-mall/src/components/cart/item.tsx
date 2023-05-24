@@ -1,13 +1,28 @@
 import { useMutation } from 'react-query';
 import { CartItemType, DELETE_CART, UPDATE_CART } from '../../graphql/cart';
 import { QueryKeys, fetchData, queryClient } from '../../fetcher';
-import { SyntheticEvent } from 'react';
+import { ForwardedRef, SyntheticEvent, forwardRef } from 'react';
+import ItemData from './itemData';
 
-function CartItem({
-  id,
-  amount,
-  product: { title, imageUrl, price },
-}: CartItemType) {
+function CartItem(
+  {
+    cartItem,
+    checkedItemState,
+    changeCheckedState,
+    deleteCheckedState,
+  }: {
+    cartItem: CartItemType;
+    checkedItemState: boolean;
+    changeCheckedState: (item: CartItemType, isChecked: boolean) => void;
+    deleteCheckedState: (item: CartItemType) => void;
+  },
+  ref: ForwardedRef<HTMLInputElement>
+) {
+  const {
+    id,
+    amount,
+    product: { title, imageUrl, price, createdAt },
+  } = cartItem;
   const { mutate: updateCart } = useMutation(
     ({ id, amount }: { id: string; amount: number }) =>
       fetchData(UPDATE_CART, { cartId: id, amount })
@@ -21,35 +36,57 @@ function CartItem({
     }
   );
 
+  const handleCheckItem = (e: SyntheticEvent) => {
+    const isChecked = (e.target as HTMLInputElement).checked;
+    changeCheckedState(cartItem, isChecked);
+  };
+
   const handleChangeAmount = (e: SyntheticEvent) => {
     const amount = +(e.target as HTMLInputElement).value;
     updateCart({ id, amount });
   };
 
+  const handleDeleteItem = () => {
+    deleteCart(id);
+    deleteCheckedState(cartItem);
+  };
+
   return (
     <li>
       <label>
-        <input type="checkbox" name="" id="" />
-      </label>
-      <h3>{title}</h3>
-      <img src={imageUrl} alt="" />
-      <p>가격: {price}</p>
-
-      <label>
-        개수:
         <input
-          type="number"
+          type="checkbox"
           name=""
           id=""
-          defaultValue={amount}
-          onChange={handleChangeAmount}
+          onChange={handleCheckItem}
+          ref={ref}
+          defaultChecked={checkedItemState}
+          disabled={!createdAt}
+          className="cartItemCheckbox"
         />
       </label>
-      <button type="button" onClick={() => deleteCart(id)}>
+
+      <ItemData title={title} imageUrl={imageUrl} price={price} />
+
+      {createdAt ? (
+        <label>
+          개수:
+          <input
+            type="number"
+            name=""
+            id=""
+            defaultValue={amount}
+            onChange={handleChangeAmount}
+          />
+        </label>
+      ) : (
+        <strong>품절된 상품입니다.</strong>
+      )}
+      <button type="button" onClick={handleDeleteItem}>
         삭제
       </button>
     </li>
   );
 }
 
-export default CartItem;
+export default forwardRef(CartItem);

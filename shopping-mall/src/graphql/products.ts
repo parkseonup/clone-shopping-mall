@@ -6,7 +6,7 @@ export type ProductType = {
   imageUrl: string;
   description: string;
   price: number;
-  createdAt: number;
+  createdAt: number | null;
 };
 
 export type ProductsType = ProductType[];

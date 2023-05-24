@@ -74,7 +74,7 @@ export const handlers = [
       );
 
     const targetCartIndex = mockCart.findIndex(
-      cart => cart.product === targetProduct
+      cart => cart.product.id === targetProduct.id
     );
     let newCartItem = null;
 
@@ -93,6 +93,7 @@ export const handlers = [
       };
       mockCart.push(newCartItem);
     }
+    console.log('[mockCart]', mockCart);
 
     return res(ctx.data({ addCart: newCartItem }));
   }),
