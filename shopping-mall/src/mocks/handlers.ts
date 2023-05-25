@@ -93,14 +93,12 @@ export const handlers = [
       };
       mockCart.push(newCartItem);
     }
-    console.log('[mockCart]', mockCart);
 
     return res(ctx.data({ addCart: newCartItem }));
   }),
   graphql.mutation('UPDATE_CART', ({ variables }, res, ctx) => {
     const { cartId, amount } = variables;
     const targetIndex = mockCart.findIndex(cart => cart.id === cartId);
-    console.log(cartId, targetIndex, mockCart);
 
     if (targetIndex < 0)
       throw new Error(
