@@ -1,12 +1,14 @@
-import { SyntheticEvent, createRef, useEffect, useRef, useState } from 'react';
+import { SyntheticEvent, createRef, useEffect, useRef } from 'react';
 import { CartType } from '../../graphql/cart';
 import CartItem from './item';
+import { useRecoilState } from 'recoil';
+import { productsToPay } from '../../recoil/atoms';
 
 function CartList({ cart }: { cart: CartType }) {
   const formRef = useRef<HTMLFormElement>(null);
   const cartCheckboxRef = useRef<HTMLInputElement>(null);
   const cartItemCheckboxRefs = cart.map(() => createRef<HTMLInputElement>());
-  const [checkedItems, setCheckedItems] = useState<CartType>([]);
+  const [checkedItems, setCheckedItems] = useRecoilState(productsToPay);
 
   const changeCartCheckbox = (targetInput: HTMLInputElement) => {
     // 개별 선택시 전체 선택 change function
@@ -37,7 +39,7 @@ function CartList({ cart }: { cart: CartType }) {
     setCheckedItems(newCheckedItems);
   };
 
-  const handleChangeCheckbox = (e: SyntheticEvent) => {
+  const onChangeCheckbox = (e: SyntheticEvent) => {
     // Form Change Event Handler
     if (!formRef.current) return;
 
@@ -49,6 +51,21 @@ function CartList({ cart }: { cart: CartType }) {
       changeCartCheckbox(targetInput);
     }
   };
+
+  useEffect(() => {
+    const newCheckedItems = [...checkedItems];
+
+    newCheckedItems.forEach((checkedItem, i) => {
+      const cartItem = cart.find(
+        cartItem => cartItem.id === checkedItem.id && cartItem.product.createdAt
+      );
+
+      if (cartItem) newCheckedItems[i] = cartItem;
+      else newCheckedItems.splice(i, 1);
+    });
+
+    setCheckedItems(newCheckedItems);
+  }, [cart]);
 
   useEffect(() => {
     if (!cartCheckboxRef.current) return;
@@ -66,34 +83,34 @@ function CartList({ cart }: { cart: CartType }) {
     cartCheckboxRef.current.checked =
       checkedItems.length ===
       cart.filter(cartItem => cartItem.product.createdAt).length;
-  }, [cart, checkedItems]);
+  }, [checkedItems]);
 
   /* --------------------------------- return --------------------------------- */
   if (cart.length < 1) return null;
 
   return (
-    <form ref={formRef} onChange={handleChangeCheckbox}>
-      <label>
-        <input
-          type="checkbox"
-          name="cart__checkbox"
-          className="cart__checkbox"
-          ref={cartCheckboxRef}
-        />
-      </label>
-
-      <ul>
-        {cart.map((cartItem, i) => (
-          <CartItem
-            {...cartItem}
-            key={cartItem.id}
-            ref={cartItemCheckboxRefs[i]}
+    <>
+      <form ref={formRef} onChange={onChangeCheckbox}>
+        <label>
+          <input
+            type="checkbox"
+            name="cart__checkbox"
+            className="cart__checkbox"
+            ref={cartCheckboxRef}
           />
-        ))}
-      </ul>
+        </label>
 
-      <button type="submit">결제 창으로</button>
-    </form>
+        <ul>
+          {cart.map((cartItem, i) => (
+            <CartItem
+              {...cartItem}
+              key={cartItem.id}
+              ref={cartItemCheckboxRefs[i]}
+            />
+          ))}
+        </ul>
+      </form>
+    </>
   );
 }
 
