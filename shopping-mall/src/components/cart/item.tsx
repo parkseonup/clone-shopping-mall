@@ -4,13 +4,18 @@ import { QueryKeys, fetchData, queryClient } from '../../fetcher';
 import { ForwardedRef, SyntheticEvent, forwardRef } from 'react';
 import ItemData from './itemData';
 
-function CartItem(
+const CartItem = forwardRef(function CartItem(
   { id, amount, product: { title, imageUrl, price, createdAt } }: CartItemType,
   ref: ForwardedRef<HTMLInputElement>
 ) {
   const { mutate: updateCart } = useMutation(
     ({ id, amount }: { id: string; amount: number }) =>
-      fetchData(UPDATE_CART, { cartId: id, amount })
+      fetchData(UPDATE_CART, { cartId: id, amount }),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries([QueryKeys.CART]);
+      },
+    }
   );
   const { mutate: deleteCart } = useMutation(
     (id: string) => fetchData(DELETE_CART, { cartId: id }),
@@ -21,12 +26,12 @@ function CartItem(
     }
   );
 
-  const handleChangeAmount = (e: SyntheticEvent) => {
+  const onChangeAmount = (e: SyntheticEvent) => {
     const amount = +(e.target as HTMLInputElement).value;
     updateCart({ id, amount });
   };
 
-  const handleDeleteItem = () => {
+  const onDeleteItem = () => {
     deleteCart(id);
   };
 
@@ -50,17 +55,18 @@ function CartItem(
           <input
             type="number"
             defaultValue={amount}
-            onChange={handleChangeAmount}
+            onChange={onChangeAmount}
+            min={1}
           />
         </label>
       ) : (
         <strong>품절된 상품입니다.</strong>
       )}
-      <button type="button" onClick={handleDeleteItem}>
+      <button type="button" onClick={onDeleteItem}>
         삭제
       </button>
     </li>
   );
-}
+});
 
-export default forwardRef(CartItem);
+export default CartItem;
