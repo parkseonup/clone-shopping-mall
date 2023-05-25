@@ -1,105 +1,93 @@
 import { SyntheticEvent, createRef, useEffect, useRef, useState } from 'react';
-import { CartItemType, CartType } from '../../graphql/cart';
+import { CartType } from '../../graphql/cart';
 import CartItem from './item';
 
-// TODO: formData 활용해서 코드 분리하기...
 function CartList({ cart }: { cart: CartType }) {
-  const allCheckboxRef = useRef<HTMLInputElement>(null);
-  const checkboxRefs = cart.map(() => createRef<HTMLInputElement>());
-  const [checkedTarget, setCheckedTarget] = useState<'Item' | 'All'>();
-  const [checkedState, setCheckedState] = useState<CartType>([]);
-  const existentCart = cart.filter(cartItem => cartItem.product.createdAt);
+  const formRef = useRef<HTMLFormElement>(null);
+  const cartCheckboxRef = useRef<HTMLInputElement>(null);
+  const cartItemCheckboxRefs = cart.map(() => createRef<HTMLInputElement>());
+  const [checkedItems, setCheckedItems] = useState<CartType>([]);
 
-  /* ------------------------------ 전체 선택 event handler ----------------------------- */
-  const handleCheckAll = (e: SyntheticEvent) => {
-    const isChecked = (e.target as HTMLInputElement).checked;
-    const newCheckedState: CartType = [];
+  const changeCartCheckbox = (targetInput: HTMLInputElement) => {
+    // 개별 선택시 전체 선택 change function
+    const targetInputId = targetInput.name.replace('cart-item__checkbox', '');
+    const cartItem = cart.find(cartItem => cartItem.id === targetInputId);
 
-    if (isChecked) {
-      existentCart.forEach(cartItem => {
-        if (cartItem.product.createdAt) newCheckedState.push(cartItem);
-      });
+    let newCheckedItems = [...checkedItems];
+
+    if (!cartItem) return;
+
+    if (targetInput.checked) {
+      if (!checkedItems.includes(cartItem)) newCheckedItems.push(cartItem);
+    } else {
+      newCheckedItems = newCheckedItems.filter(
+        checkedItem => checkedItem.id !== targetInputId
+      );
     }
 
-    setCheckedTarget('All');
-    setCheckedState(newCheckedState);
+    setCheckedItems(newCheckedItems);
   };
 
-  /* ------------------------------ 개별 선택 event handler ----------------------------- */
-  const changeCheckedState = (item: CartItemType, isChecked: boolean) => {
-    const newCheckedState = [...checkedState];
-    const targetIndex = newCheckedState.findIndex(
-      checkedItem => checkedItem.id === item.id
-    );
+  const changeCartItemsCheckbox = (targetInput: HTMLInputElement) => {
+    // 전체 선택시 개별 선택 change function
+    const newCheckedItems = targetInput.checked
+      ? cart.filter(cartItem => cartItem.product.createdAt)
+      : [];
 
-    if (isChecked && targetIndex < 0) newCheckedState.push(item);
-    if (!isChecked && targetIndex > -1) newCheckedState.splice(targetIndex, 1);
-
-    setCheckedTarget('Item');
-    setCheckedState(newCheckedState);
+    setCheckedItems(newCheckedItems);
   };
 
-  const deleteCheckedState = (item: CartItemType) => {
-    const newCheckedState = [...checkedState];
-    const targetIndex = newCheckedState.findIndex(
-      checkedItem => checkedItem.id === item.id
-    );
+  const handleChangeCheckbox = (e: SyntheticEvent) => {
+    // Form Change Event Handler
+    if (!formRef.current) return;
 
-    if (targetIndex < 0) return;
+    const targetInput = e.target as HTMLInputElement;
 
-    newCheckedState.splice(targetIndex, 1);
-    setCheckedTarget('Item');
-    setCheckedState(newCheckedState);
+    if (targetInput.className === 'cart__checkbox') {
+      changeCartItemsCheckbox(targetInput);
+    } else if (targetInput.className === 'cart-item__checkbox') {
+      changeCartCheckbox(targetInput);
+    }
   };
 
   useEffect(() => {
-    if (!allCheckboxRef.current || !checkedTarget || existentCart.length < 1)
-      return;
+    if (!cartCheckboxRef.current) return;
 
-    if (checkedTarget === 'Item') {
-      const checkedStateIds = checkedState.map(checkedItem =>
-        checkedItem.product.createdAt ? checkedItem.product.id : null
-      );
+    cartItemCheckboxRefs.forEach(ref => {
+      if (!ref.current || ref.current.disabled) return;
 
-      allCheckboxRef.current.checked = existentCart.every(cartItem =>
-        checkedStateIds.includes(cartItem.product.id)
+      const refId = ref.current.name.replace('cart-item__checkbox', '');
+
+      ref.current.checked = !!checkedItems.find(
+        checkedItem => checkedItem.id === refId
       );
-    } else if (checkedTarget === 'All') {
-      checkboxRefs.forEach(ref => {
-        if (ref.current && allCheckboxRef.current && !ref.current.disabled)
-          ref.current.checked = allCheckboxRef.current.checked;
-      });
-    }
-  }, [existentCart, checkedState, checkedTarget]);
+    });
+
+    cartCheckboxRef.current.checked =
+      checkedItems.length ===
+      cart.filter(cartItem => cartItem.product.createdAt).length;
+  }, [cart, checkedItems]);
 
   /* --------------------------------- return --------------------------------- */
   if (cart.length < 1) return null;
 
   return (
-    <form>
+    <form ref={formRef} onChange={handleChangeCheckbox}>
       <label>
         <input
           type="checkbox"
-          name=""
-          id=""
-          ref={allCheckboxRef}
-          onChange={handleCheckAll}
-          disabled={existentCart.length < 1}
-          className="cartAllCheckbox"
+          name="cart__checkbox"
+          className="cart__checkbox"
+          ref={cartCheckboxRef}
         />
       </label>
 
       <ul>
         {cart.map((cartItem, i) => (
           <CartItem
-            cartItem={cartItem}
+            {...cartItem}
             key={cartItem.id}
-            checkedItemState={
-              !!checkedState.find(checkedItem => checkedItem.id === cartItem.id)
-            }
-            changeCheckedState={changeCheckedState}
-            deleteCheckedState={deleteCheckedState}
-            ref={checkboxRefs[i]}
+            ref={cartItemCheckboxRefs[i]}
           />
         ))}
       </ul>

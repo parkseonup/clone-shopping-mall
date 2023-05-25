@@ -5,24 +5,9 @@ import { ForwardedRef, SyntheticEvent, forwardRef } from 'react';
 import ItemData from './itemData';
 
 function CartItem(
-  {
-    cartItem,
-    checkedItemState,
-    changeCheckedState,
-    deleteCheckedState,
-  }: {
-    cartItem: CartItemType;
-    checkedItemState: boolean;
-    changeCheckedState: (item: CartItemType, isChecked: boolean) => void;
-    deleteCheckedState: (item: CartItemType) => void;
-  },
+  { id, amount, product: { title, imageUrl, price, createdAt } }: CartItemType,
   ref: ForwardedRef<HTMLInputElement>
 ) {
-  const {
-    id,
-    amount,
-    product: { title, imageUrl, price, createdAt },
-  } = cartItem;
   const { mutate: updateCart } = useMutation(
     ({ id, amount }: { id: string; amount: number }) =>
       fetchData(UPDATE_CART, { cartId: id, amount })
@@ -36,11 +21,6 @@ function CartItem(
     }
   );
 
-  const handleCheckItem = (e: SyntheticEvent) => {
-    const isChecked = (e.target as HTMLInputElement).checked;
-    changeCheckedState(cartItem, isChecked);
-  };
-
   const handleChangeAmount = (e: SyntheticEvent) => {
     const amount = +(e.target as HTMLInputElement).value;
     updateCart({ id, amount });
@@ -48,7 +28,6 @@ function CartItem(
 
   const handleDeleteItem = () => {
     deleteCart(id);
-    deleteCheckedState(cartItem);
   };
 
   return (
@@ -56,13 +35,10 @@ function CartItem(
       <label>
         <input
           type="checkbox"
-          name=""
-          id=""
-          onChange={handleCheckItem}
+          name={`cart-item__checkbox${id}`}
           ref={ref}
-          defaultChecked={checkedItemState}
           disabled={!createdAt}
-          className="cartItemCheckbox"
+          className="cart-item__checkbox"
         />
       </label>
 
@@ -73,8 +49,6 @@ function CartItem(
           개수:
           <input
             type="number"
-            name=""
-            id=""
             defaultValue={amount}
             onChange={handleChangeAmount}
           />
