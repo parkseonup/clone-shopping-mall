@@ -1,4 +1,4 @@
-import ItemData from '../cart/itemData';
+import ItemData from '../itemData';
 import { styled } from 'styled-components';
 import { CartType } from '../../graphql/cart';
 

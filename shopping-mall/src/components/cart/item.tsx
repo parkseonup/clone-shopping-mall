@@ -2,7 +2,7 @@ import { useMutation } from 'react-query';
 import { CartItemType, DELETE_CART, UPDATE_CART } from '../../graphql/cart';
 import { QueryKeys, fetchData, queryClient } from '../../fetcher';
 import { ForwardedRef, SyntheticEvent, forwardRef } from 'react';
-import ItemData from './itemData';
+import ItemData from '../itemData';
 
 const CartItem = forwardRef(function CartItem(
   { id, amount, product: { title, imageUrl, price, createdAt } }: CartItemType,
