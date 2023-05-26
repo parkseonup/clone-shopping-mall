@@ -8,7 +8,7 @@ function ProductsPage() {
     Promise<unknown>,
     Error,
     { products: ProductsType }
-  >([QueryKeys.PRODUCTS], () => fetchData(GET_PRODUCTS));
+  >([QueryKeys.PRODUCTS, 'products'], () => fetchData(GET_PRODUCTS));
 
   if (!data)
     return (
