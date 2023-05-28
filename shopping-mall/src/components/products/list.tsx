@@ -2,23 +2,13 @@ import { useInfiniteQuery } from 'react-query';
 import { GET_PRODUCTS, ProductsType } from '../../graphql/products';
 import ProductItem from './item';
 import { QueryKeys, fetchData } from '../../fetcher';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
+import useIntersect from '../hooks/useIntersect';
 
-/**
- * TODO: 너무 잦은 컴포넌트 리렌더링. 리팩토링 할 때 수정해보기 (총 5번 렌더링 -> fetch 요청 GET 받고 추가 호출)
- *
- * 1. 초기 렌더링
- * 2. JSX 만들어지고 리렌더링 (setSpinner로 상태 변경)
- * ---- fetch
- * 3. data 변경으로 리렌더링
- *
- * -> 초기 렌더링 시 fetch 2번 일어나는 문제임. 나머지는 정상 동작함.
- */
+// TODO: ref 타입 에러 잡기
 function ProductList() {
-  const observerRef = useRef<IntersectionObserver>();
   const hasNextPageRef = useRef<boolean>();
   const isFetchingNextPageRef = useRef<boolean>();
-  const [spinner, setSpinner] = useState<HTMLDivElement>();
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useInfiniteQuery<
@@ -41,29 +31,13 @@ function ProductList() {
       }
     );
 
-  const getObserver = useCallback(() => {
-    observerRef.current = new IntersectionObserver(entries => {
-      const isIntersecting = entries.some(entry => entry.isIntersecting);
+  const executeFetchNextPage = () => {
+    if (!hasNextPageRef.current || isFetchingNextPageRef.current) return;
 
-      if (
-        isIntersecting &&
-        hasNextPageRef.current &&
-        !isFetchingNextPageRef.current
-      ) {
-        console.log(
-          '[isFetchingNextPageRef.current]',
-          isFetchingNextPageRef.current
-        );
-        fetchNextPage();
-      }
-    });
+    fetchNextPage();
+  };
 
-    return observerRef.current;
-  }, [observerRef.current]);
-
-  useEffect(() => {
-    if (spinner) getObserver().observe(spinner);
-  }, [spinner]);
+  const [_, setTarget] = useIntersect(executeFetchNextPage);
 
   useEffect(() => {
     hasNextPageRef.current = hasNextPage;
@@ -71,8 +45,6 @@ function ProductList() {
   }, [hasNextPage, isFetchingNextPage]);
 
   if (!data) return null;
-
-  console.log('[data.pages]', data.pages);
 
   return (
     <div>
@@ -84,12 +56,7 @@ function ProductList() {
           ))}
       </ul>
 
-      <div
-        ref={node => {
-          if (node) setSpinner(node);
-        }}>
-        spinner
-      </div>
+      <div ref={setTarget}>spinner</div>
     </div>
   );
 }
