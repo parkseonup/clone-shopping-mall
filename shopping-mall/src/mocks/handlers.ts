@@ -3,8 +3,16 @@ import { mockProducts, mockCart } from './mockData';
 
 export const handlers = [
   // product
-  graphql.query('GET_PRODUCTS', (req, res, ctx) => {
-    return res(ctx.data({ products: mockProducts }));
+  graphql.query('GET_PRODUCTS', ({ variables }, res, ctx) => {
+    const COUNT_TO_EXPORT_PRODUCT = 15;
+    const startIndex =
+      mockProducts.findIndex(product => product.id === variables.cursor) + 1;
+    const gotProducts = mockProducts.slice(
+      startIndex,
+      startIndex + COUNT_TO_EXPORT_PRODUCT
+    );
+
+    return res(ctx.data({ products: gotProducts }));
   }),
   graphql.query('GET_PRODUCT', ({ variables }, res, ctx) => {
     const product = mockProducts.find(product => product.id === variables.id);

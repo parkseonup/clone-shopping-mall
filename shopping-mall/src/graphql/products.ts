@@ -12,8 +12,8 @@ export type ProductType = {
 export type ProductsType = ProductType[];
 
 export const GET_PRODUCTS = gql`
-  query GET_PRODUCTS {
-    products {
+  query GET_PRODUCTS($cursor: ID!) {
+    products(cursor: $cursor) {
       id
       title
       imageUrl
