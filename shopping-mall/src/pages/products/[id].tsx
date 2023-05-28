@@ -1,4 +1,4 @@
-import { redirect, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import ProductDetail from '../../components/products/detail';
 import { useQuery } from 'react-query';
 import { QueryKeys, fetchData } from '../../fetcher';
@@ -6,10 +6,11 @@ import { GET_PRODUCT, ProductType } from '../../graphql/products';
 
 function ProductDetailPage() {
   const { id } = useParams();
-  const { data } = useQuery<Promise<unknown>, Error, { product: ProductType }>(
-    [QueryKeys.PRODUCTS, id],
-    async () => await fetchData(GET_PRODUCT, { id })
-  );
+  const { data } = useQuery<
+    Promise<unknown> | { product: ProductType },
+    Error,
+    { product: ProductType }
+  >([QueryKeys.PRODUCTS, id], async () => await fetchData(GET_PRODUCT, { id }));
 
   if (!data) return null;
 

@@ -8,14 +8,14 @@ import { useNavigate } from 'react-router-dom';
 import { productsToPay } from '../recoil/atoms';
 
 function CartPage() {
-  const { data } = useQuery<Promise<unknown>, Error, { cart: CartType }>(
-    [QueryKeys.CART],
-    () => fetchData(GET_CART),
-    {
-      staleTime: 1,
-      cacheTime: 1,
-    }
-  );
+  const { data } = useQuery<
+    Promise<unknown> | { cart: CartType },
+    Error,
+    { cart: CartType }
+  >([QueryKeys.CART], () => fetchData(GET_CART), {
+    staleTime: 1,
+    cacheTime: 1,
+  });
   const paymentList = useRecoilValue(productsToPay);
   const navigate = useNavigate();
 
