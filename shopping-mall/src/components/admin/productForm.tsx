@@ -8,8 +8,10 @@ function ProductForm({
   price = 0,
   description = '',
   onSubmit,
+  onCancel,
 }: Partial<ProductType> & {
   onSubmit: (formData: Omit<ProductType, 'id' | 'createdAt'>) => void;
+  onCancel?: () => void;
 }) {
   const onSubmitForm = (e: SyntheticEvent) => {
     e.preventDefault();
@@ -48,6 +50,9 @@ function ProductForm({
       </label>
 
       <button type="submit">등록</button>
+      <button type="reset" onClick={onCancel}>
+        취소
+      </button>
     </form>
   );
 }

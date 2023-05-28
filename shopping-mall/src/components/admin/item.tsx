@@ -6,17 +6,20 @@ function AdminItem({
   product: { id, title, imageUrl, description, price },
   editingId,
   onEditMode,
+  offEditMode,
   onSubmitEdit,
 }: {
   product: ProductType;
   editingId: string;
   onEditMode: () => void;
+  offEditMode: () => void;
   onSubmitEdit: (formData: Omit<ProductType, 'id' | 'createdAt'>) => void;
 }) {
   if (id === editingId)
     return (
       <li>
         <ProductForm
+          onCancel={offEditMode}
           onSubmit={onSubmitEdit}
           title={title}
           imageUrl={imageUrl}

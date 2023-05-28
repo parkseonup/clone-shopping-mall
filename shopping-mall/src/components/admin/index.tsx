@@ -4,9 +4,9 @@ import {
   GET_PRODUCTS,
   ProductType,
   ProductsType,
+  UPDATE_PRODUCT,
 } from '../../graphql/products';
 import AdminItem from './item';
-import { UPDATE_CART } from '../../graphql/cart';
 import { useState } from 'react';
 
 function AdminList() {
@@ -18,7 +18,7 @@ function AdminList() {
   >([QueryKeys.PRODUCTS, 'admin'], () => fetchData(GET_PRODUCTS));
   const { mutate: updateProduct } = useMutation(
     (editInfo: Omit<ProductType, 'createdAt'>) =>
-      fetchData(UPDATE_CART, editInfo),
+      fetchData(UPDATE_PRODUCT, editInfo),
     {
       onSuccess: () => {
         queryClient.invalidateQueries([QueryKeys.PRODUCTS], {
@@ -31,6 +31,10 @@ function AdminList() {
 
   const onEditMode = (id: string) => () => {
     setEditingId(id);
+  };
+
+  const offEditMode = () => {
+    setEditingId('');
   };
 
   const onSubmitEdit =
@@ -53,6 +57,7 @@ function AdminList() {
           product={product}
           editingId={editingId}
           onEditMode={onEditMode(product.id)}
+          offEditMode={offEditMode}
           onSubmitEdit={onSubmitEdit(product.id)}
           key={product.id}
         />

@@ -30,17 +30,18 @@ export const handlers = [
     return res(ctx.data({ addProduct: newProduct }));
   }),
   graphql.mutation('UPDATE_PRODUCT', ({ variables }, res, ctx) => {
-    const targetProduct = mockProducts.find(
+    const targetIndex = mockProducts.findIndex(
       product => product.id === variables.id
     );
 
-    if (!targetProduct)
+    if (targetIndex < 0)
       throw new Error(`업데이트할 상품(${variables.id})이 존재하지 않습니다.`);
 
     const updatedProduct = {
-      ...targetProduct,
+      ...mockProducts[targetIndex],
       ...variables,
     };
+    mockProducts.splice(targetIndex, 1, updatedProduct);
 
     return res(ctx.data({ updateProduct: updatedProduct }));
   }),
