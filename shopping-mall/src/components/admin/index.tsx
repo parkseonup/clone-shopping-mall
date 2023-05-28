@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from 'react-query';
+import { useInfiniteQuery, useMutation, useQuery } from 'react-query';
 import { QueryKeys, fetchData, queryClient } from '../../fetcher';
 import {
   GET_PRODUCTS,
@@ -7,15 +7,46 @@ import {
   UPDATE_PRODUCT,
 } from '../../graphql/products';
 import AdminItem from './item';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import useIntersect from '../hooks/useIntersect';
 
+// TODO: ref 속성 타입 에러 해결
 function AdminList() {
+  /* ------------------------------ GET_PRODUCTS ------------------------------ */
+  const hasNextPageRef = useRef<boolean>();
+  const isFetchingNextPageRef = useRef<boolean>();
+
+  const { data, fetchNextPage, isFetchingNextPage, hasNextPage } =
+    useInfiniteQuery<
+      Promise<unknown> | { products: ProductsType },
+      Error,
+      { products: ProductsType }
+    >(
+      [QueryKeys.PRODUCTS, 'admin'],
+      ({ pageParam = '' }) => fetchData(GET_PRODUCTS, { cursor: pageParam }),
+      {
+        getNextPageParam: lastPage => {
+          if ('products' in lastPage) return lastPage.products.at(-1)?.id;
+        },
+      }
+    );
+
+  const executeFetchNextPage = () => {
+    if (!hasNextPageRef.current || isFetchingNextPageRef.current) return;
+
+    fetchNextPage();
+  };
+
+  const [_, setTarget] = useIntersect(executeFetchNextPage);
+
+  useEffect(() => {
+    hasNextPageRef.current = hasNextPage;
+    isFetchingNextPageRef.current = isFetchingNextPage;
+  }, [hasNextPage, isFetchingNextPage]);
+
+  /* ------------------------------ UPDATE_PRODUCT ----------------------------- */
   const [editingId, setEditingId] = useState('');
-  const { data } = useQuery<
-    Promise<unknown>,
-    Error,
-    { products: ProductsType }
-  >([QueryKeys.PRODUCTS, 'admin'], () => fetchData(GET_PRODUCTS));
+
   const { mutate: updateProduct } = useMutation(
     (editInfo: Omit<ProductType, 'createdAt'>) =>
       fetchData(UPDATE_PRODUCT, editInfo),
@@ -48,21 +79,29 @@ function AdminList() {
       setEditingId('');
     };
 
+  /* --------------------------------- return --------------------------------- */
+
   if (!data) return null;
 
   return (
-    <ul>
-      {data.products.map(product => (
-        <AdminItem
-          product={product}
-          editingId={editingId}
-          onEditMode={onEditMode(product.id)}
-          offEditMode={offEditMode}
-          onSubmitEdit={onSubmitEdit(product.id)}
-          key={product.id}
-        />
-      ))}
-    </ul>
+    <>
+      <ul>
+        {data.pages
+          .flatMap(page => page.products)
+          .map(product => (
+            <AdminItem
+              product={product}
+              editingId={editingId}
+              onEditMode={onEditMode(product.id)}
+              offEditMode={offEditMode}
+              onSubmitEdit={onSubmitEdit(product.id)}
+              key={product.id}
+            />
+          ))}
+      </ul>
+
+      <div ref={setTarget}>spinner</div>
+    </>
   );
 }
 
