@@ -21,15 +21,14 @@ export default function AdminList() {
       Promise<unknown> | { products: ProductsType },
       Error,
       { products: ProductsType }
-    >(
-      [QueryKeys.PRODUCTS, 'admin'],
-      ({ pageParam = '' }) => fetchData(GET_PRODUCTS, { cursor: pageParam }),
-      {
-        getNextPageParam: lastPage => {
-          if ('products' in lastPage) return lastPage.products.at(-1)?.id;
-        },
-      }
-    );
+    >({
+      queryKey: [QueryKeys.PRODUCTS, 'admin'],
+      queryFn: ({ pageParam = '' }) =>
+        fetchData(GET_PRODUCTS, { cursor: pageParam }),
+      getNextPageParam: lastPage => {
+        if ('products' in lastPage) return lastPage.products.at(-1)?.id;
+      },
+    });
 
   const executeFetchNextPage = () => {
     if (!hasNextPageRef.current || isFetchingNextPageRef.current) return;

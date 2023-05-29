@@ -5,18 +5,16 @@ import { QueryKeys, fetchData, queryClient } from '../fetcher';
 import { ADD_PRODUCT, ProductType } from '../graphql/products';
 
 export default function AdminPage() {
-  const { mutate: addProduct } = useMutation(
-    (addedInfo: Omit<ProductType, 'id' | 'createdAt'>) =>
+  const { mutate: addProduct } = useMutation({
+    mutationFn: (addedInfo: Omit<ProductType, 'id' | 'createdAt'>) =>
       fetchData(ADD_PRODUCT, addedInfo),
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries([QueryKeys.PRODUCTS], {
-          exact: false,
-          refetchInactive: true,
-        });
-      },
-    }
-  );
+    onSuccess: () => {
+      queryClient.invalidateQueries([QueryKeys.PRODUCTS], {
+        exact: false,
+        refetchInactive: true,
+      });
+    },
+  });
 
   const onSubmitAddedProduct = (
     formData: Omit<ProductType, 'id' | 'createdAt'>

@@ -8,23 +8,19 @@ const CartItem = forwardRef(function CartItem(
   { id, amount, product: { title, imageUrl, price, createdAt } }: CartItemType,
   ref: ForwardedRef<HTMLInputElement>
 ) {
-  const { mutate: updateCart } = useMutation(
-    ({ id, amount }: { id: string; amount: number }) =>
+  const { mutate: updateCart } = useMutation({
+    mutationFn: ({ id, amount }: { id: string; amount: number }) =>
       fetchData(UPDATE_CART, { cartId: id, amount }),
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries([QueryKeys.CART]);
-      },
-    }
-  );
-  const { mutate: deleteCart } = useMutation(
-    (id: string) => fetchData(DELETE_CART, { cartId: id }),
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries([QueryKeys.CART]);
-      },
-    }
-  );
+    onSuccess: () => {
+      queryClient.invalidateQueries([QueryKeys.CART]);
+    },
+  });
+  const { mutate: deleteCart } = useMutation({
+    mutationFn: (id: string) => fetchData(DELETE_CART, { cartId: id }),
+    onSuccess: () => {
+      queryClient.invalidateQueries([QueryKeys.CART]);
+    },
+  });
 
   const onChangeAmount = (e: SyntheticEvent) => {
     const amount = +(e.target as HTMLInputElement).value;

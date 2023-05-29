@@ -10,9 +10,9 @@ export default function ProductDetail({
   description,
   price,
 }: ProductType) {
-  const { mutate: addCart } = useMutation((id: string) =>
-    fetchData(ADD_CART, { productId: id })
-  );
+  const { mutate: addCart } = useMutation({
+    mutationFn: (id: string) => fetchData(ADD_CART, { productId: id }),
+  });
 
   return (
     <div>

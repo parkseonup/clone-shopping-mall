@@ -13,16 +13,14 @@ export default function PaymentPage() {
   if (!setPaymentList)
     throw new Error('Cannot find ProductsToPayDispatchContext');
 
-  const { mutate: executePay } = useMutation(
-    (ids: string[]) => fetchData(EXECUTE_PAY, { ids }),
-    {
-      onSuccess: () => {
-        setPaymentList({ type: 'deletedAll' });
-        alert('결제가 완료되었습니다.');
-        navigate('/products', { replace: true });
-      },
-    }
-  );
+  const { mutate: executePay } = useMutation({
+    mutationFn: (ids: string[]) => fetchData(EXECUTE_PAY, { ids }),
+    onSuccess: () => {
+      setPaymentList({ type: 'deletedAll' });
+      alert('결제가 완료되었습니다.');
+      navigate('/products', { replace: true });
+    },
+  });
 
   const onExecutePay = (ids: string[] = []) => {
     executePay(ids);

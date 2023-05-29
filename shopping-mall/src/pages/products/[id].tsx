@@ -10,7 +10,10 @@ export default function ProductDetailPage() {
     Promise<unknown> | { product: ProductType },
     Error,
     { product: ProductType }
-  >([QueryKeys.PRODUCTS, id], async () => await fetchData(GET_PRODUCT, { id }));
+  >({
+    queryKey: [QueryKeys.PRODUCTS, id],
+    queryFn: () => fetchData(GET_PRODUCT, { id }),
+  });
 
   if (!data) return null;
 

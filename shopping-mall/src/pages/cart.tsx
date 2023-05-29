@@ -10,7 +10,9 @@ export default function CartPage() {
     Promise<unknown> | { cart: CartType },
     Error,
     { cart: CartType }
-  >([QueryKeys.CART], () => fetchData(GET_CART), {
+  >({
+    queryKey: [QueryKeys.CART],
+    queryFn: () => fetchData(GET_CART),
     staleTime: 1,
     cacheTime: 1,
   });
