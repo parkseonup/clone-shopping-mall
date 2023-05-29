@@ -3,17 +3,21 @@ import { useMutation } from 'react-query';
 import { fetchData } from '../fetcher';
 import { EXECUTE_PAY } from '../graphql/payment';
 import { useNavigate } from 'react-router-dom';
-import { useSetRecoilState } from 'recoil';
-import { productsToPay } from '../recoil/atoms';
+import { useContext } from 'react';
+import { ProductsToPayDispatchContext } from '../context/productsToPay';
 
 function PaymentPage() {
   const navigate = useNavigate();
-  const setPaymentList = useSetRecoilState(productsToPay);
+  const setPaymentList = useContext(ProductsToPayDispatchContext);
+
+  if (!setPaymentList)
+    throw new Error('Cannot find ProductsToPayDispatchContext');
+
   const { mutate: executePay } = useMutation(
     (ids: string[]) => fetchData(EXECUTE_PAY, { ids }),
     {
       onSuccess: () => {
-        setPaymentList([]);
+        setPaymentList({ type: 'deletedAll' });
         alert('결제가 완료되었습니다.');
         navigate('/products', { replace: true });
       },

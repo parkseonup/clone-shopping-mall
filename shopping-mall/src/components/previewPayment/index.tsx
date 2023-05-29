@@ -1,7 +1,7 @@
+import { useContext } from 'react';
+import { ProductsToPayContext } from '../../context/productsToPay';
 import ItemData from '../itemData';
 import { styled } from 'styled-components';
-import { useRecoilValue } from 'recoil';
-import { productsToPay } from '../../recoil/atoms';
 
 const PreviewWrapper = styled.div`
   margin: 10px;
@@ -16,8 +16,9 @@ function PreviewPayment({
   onClick: (ids?: string[]) => void;
   buttonText: string;
 }) {
-  const paymentList = useRecoilValue(productsToPay);
+  const paymentList = useContext(ProductsToPayContext);
 
+  if (!paymentList) throw new Error('Cannot find ProductsToPayContext');
   if (paymentList.length < 1) return null;
 
   const ids = paymentList.map(paymentItem => paymentItem.id);

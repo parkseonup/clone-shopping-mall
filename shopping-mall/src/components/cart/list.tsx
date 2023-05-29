@@ -1,42 +1,55 @@
-import { SyntheticEvent, createRef, useEffect, useRef } from 'react';
+import {
+  SyntheticEvent,
+  createRef,
+  useContext,
+  useEffect,
+  useRef,
+} from 'react';
 import { CartType } from '../../graphql/cart';
 import CartItem from './item';
-import { useRecoilState } from 'recoil';
-import { productsToPay } from '../../recoil/atoms';
+import {
+  ProductsToPayContext,
+  ProductsToPayDispatchContext,
+} from '../../context/productsToPay';
 
 function CartList({ cart }: { cart: CartType }) {
+  console.log('[CartList]');
   const formRef = useRef<HTMLFormElement>(null);
   const cartCheckboxRef = useRef<HTMLInputElement>(null);
   const cartItemCheckboxRefs = cart.map(() => createRef<HTMLInputElement>());
-  const [checkedItems, setCheckedItems] = useRecoilState(productsToPay);
+  const checkedItems = useContext(ProductsToPayContext);
+  const setCheckedItems = useContext(ProductsToPayDispatchContext);
+
+  if (!checkedItems) throw new Error('Cannot find ProductsToPayContext');
+  if (!setCheckedItems)
+    throw new Error('Cannot find ProductsToPayDispatchContext');
 
   const changeCartCheckbox = (targetInput: HTMLInputElement) => {
     // 개별 선택시 전체 선택 change function
     const targetInputId = targetInput.name.replace('cart-item__checkbox', '');
     const cartItem = cart.find(cartItem => cartItem.id === targetInputId);
 
-    let newCheckedItems = [...checkedItems];
-
     if (!cartItem) return;
 
     if (targetInput.checked) {
-      if (!checkedItems.includes(cartItem)) newCheckedItems.push(cartItem);
+      setCheckedItems({
+        type: 'added',
+        items: [cartItem],
+      });
     } else {
-      newCheckedItems = newCheckedItems.filter(
-        checkedItem => checkedItem.id !== targetInputId
-      );
+      setCheckedItems({
+        type: 'deleted',
+        items: [cartItem],
+      });
     }
-
-    setCheckedItems(newCheckedItems);
   };
 
   const changeCartItemsCheckbox = (targetInput: HTMLInputElement) => {
     // 전체 선택시 개별 선택 change function
-    const newCheckedItems = targetInput.checked
-      ? cart.filter(cartItem => cartItem.product.createdAt)
-      : [];
-
-    setCheckedItems(newCheckedItems);
+    setCheckedItems({
+      type: targetInput.checked ? 'added' : 'deleted',
+      items: cart.filter(cartItem => cartItem.product.createdAt),
+    });
   };
 
   const onChangeCheckbox = (e: SyntheticEvent) => {
@@ -54,18 +67,10 @@ function CartList({ cart }: { cart: CartType }) {
 
   useEffect(() => {
     // cart가 변경되었을 경우
-    const newCheckedItems = [...checkedItems];
-
-    newCheckedItems.forEach((checkedItem, i) => {
-      const cartItem = cart.find(
-        cartItem => cartItem.id === checkedItem.id && cartItem.product.createdAt
-      );
-
-      if (cartItem) newCheckedItems[i] = cartItem;
-      else newCheckedItems.splice(i, 1);
+    setCheckedItems({
+      type: 'updated',
+      items: cart.filter(cartItem => cartItem.product.createdAt),
     });
-
-    setCheckedItems(newCheckedItems);
   }, [cart]);
 
   useEffect(() => {
