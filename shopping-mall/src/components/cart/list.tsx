@@ -53,6 +53,7 @@ function CartList({ cart }: { cart: CartType }) {
   };
 
   useEffect(() => {
+    // cart가 변경되었을 경우
     const newCheckedItems = [...checkedItems];
 
     newCheckedItems.forEach((checkedItem, i) => {
@@ -68,6 +69,7 @@ function CartList({ cart }: { cart: CartType }) {
   }, [cart]);
 
   useEffect(() => {
+    // 결제 항목이 변경되었을 경우
     if (!cartCheckboxRef.current) return;
 
     cartItemCheckboxRefs.forEach(ref => {
@@ -80,9 +82,14 @@ function CartList({ cart }: { cart: CartType }) {
       );
     });
 
+    const existentCartLength = cart.filter(
+      cartItem => cartItem.product.createdAt
+    ).length;
+
     cartCheckboxRef.current.checked =
-      checkedItems.length ===
-      cart.filter(cartItem => cartItem.product.createdAt).length;
+      checkedItems.length === existentCartLength && existentCartLength > 0;
+    cartCheckboxRef.current.disabled =
+      cart.filter(cartItem => cartItem.product.createdAt).length === 0;
   }, [checkedItems]);
 
   /* --------------------------------- return --------------------------------- */

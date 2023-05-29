@@ -1,6 +1,7 @@
 import ItemData from '../itemData';
 import { styled } from 'styled-components';
-import { CartType } from '../../graphql/cart';
+import { useRecoilValue } from 'recoil';
+import { productsToPay } from '../../recoil/atoms';
 
 const PreviewWrapper = styled.div`
   margin: 10px;
@@ -9,17 +10,19 @@ const PreviewWrapper = styled.div`
 `;
 
 function PreviewPayment({
-  products,
   onClick,
   buttonText,
 }: {
-  products: CartType;
-  onClick: () => void;
+  onClick: (ids?: string[]) => void;
   buttonText: string;
 }) {
-  if (products.length < 1) return null;
+  const paymentList = useRecoilValue(productsToPay);
 
-  const totalAmount = products.reduce(
+  if (paymentList.length < 1) return null;
+
+  const ids = paymentList.map(paymentItem => paymentItem.id);
+
+  const totalAmount = paymentList.reduce(
     (result, { amount, product: { price, createdAt } }) => {
       if (createdAt) result += amount * price;
       return result;
@@ -31,7 +34,7 @@ function PreviewPayment({
     <PreviewWrapper>
       <h3>결제 목록</h3>
       <ul>
-        {products.map(
+        {paymentList.map(
           ({ id, amount, product: { title, imageUrl, price, createdAt } }) => (
             <li key={id}>
               <ItemData title={title} imageUrl={imageUrl} price={price} />
@@ -51,7 +54,7 @@ function PreviewPayment({
 
       <p>총 금액: {totalAmount}원</p>
 
-      <button type="button" onClick={onClick}>
+      <button type="button" onClick={() => onClick(ids)}>
         {buttonText}
       </button>
     </PreviewWrapper>

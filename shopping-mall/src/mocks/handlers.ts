@@ -148,6 +148,11 @@ export const handlers = [
           `결제 목록에 품절된 상품(${variables.id}})이 포함되어 있습니다.`
         );
 
+      if (targetCartIndex < 0)
+        throw new Error(
+          `장바구니에 존재하지 않는 상품(${variables.id}})입니다.`
+        );
+
       mockCart.splice(targetCartIndex, 1);
       return true;
     });
