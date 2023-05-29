@@ -1,4 +1,4 @@
-import { useInfiniteQuery, useMutation, useQuery } from 'react-query';
+import { useInfiniteQuery, useMutation } from 'react-query';
 import { QueryKeys, fetchData, queryClient } from '../../fetcher';
 import {
   GET_PRODUCTS,
@@ -37,6 +37,7 @@ function AdminList() {
     fetchNextPage();
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_, setTarget] = useIntersect(executeFetchNextPage);
 
   useEffect(() => {

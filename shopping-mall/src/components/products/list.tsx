@@ -37,6 +37,7 @@ function ProductList() {
     fetchNextPage();
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_, setTarget] = useIntersect(executeFetchNextPage);
 
   useEffect(() => {
