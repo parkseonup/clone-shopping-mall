@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { useContext } from 'react';
 import { ProductsToPayDispatchContext } from '../context/productsToPay';
 
-function PaymentPage() {
+export default function PaymentPage() {
   const navigate = useNavigate();
   const setPaymentList = useContext(ProductsToPayDispatchContext);
 
@@ -39,5 +39,3 @@ function PaymentPage() {
     </>
   );
 }
-
-export default PaymentPage;

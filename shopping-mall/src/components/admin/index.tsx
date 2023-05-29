@@ -11,7 +11,7 @@ import { useEffect, useRef, useState } from 'react';
 import useIntersect from '../hooks/useIntersect';
 
 // TODO: ref 속성 타입 에러 해결
-function AdminList() {
+export default function AdminList() {
   /* ------------------------------ GET_PRODUCTS ------------------------------ */
   const hasNextPageRef = useRef<boolean>();
   const isFetchingNextPageRef = useRef<boolean>();
@@ -105,5 +105,3 @@ function AdminList() {
     </>
   );
 }
-
-export default AdminList;

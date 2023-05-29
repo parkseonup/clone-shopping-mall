@@ -1,6 +1,6 @@
 import ProductList from '../../components/products/list';
 
-function ProductsPage() {
+export default function ProductsPage() {
   return (
     <>
       <h2>상품 페이지</h2>
@@ -9,5 +9,3 @@ function ProductsPage() {
     </>
   );
 }
-
-export default ProductsPage;

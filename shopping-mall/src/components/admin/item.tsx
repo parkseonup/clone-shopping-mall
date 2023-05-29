@@ -2,7 +2,7 @@ import { ProductType } from '../../graphql/products';
 import ItemData from '../itemData';
 import ProductForm from './productForm';
 
-function AdminItem({
+export default function AdminItem({
   product: { id, title, imageUrl, description, price },
   editingId,
   onEditMode,
@@ -41,5 +41,3 @@ function AdminItem({
     </li>
   );
 }
-
-export default AdminItem;

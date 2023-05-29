@@ -4,7 +4,7 @@ import { useQuery } from 'react-query';
 import { QueryKeys, fetchData } from '../../fetcher';
 import { GET_PRODUCT, ProductType } from '../../graphql/products';
 
-function ProductDetailPage() {
+export default function ProductDetailPage() {
   const { id } = useParams();
   const { data } = useQuery<
     Promise<unknown> | { product: ProductType },
@@ -24,5 +24,3 @@ function ProductDetailPage() {
     </>
   );
 }
-
-export default ProductDetailPage;

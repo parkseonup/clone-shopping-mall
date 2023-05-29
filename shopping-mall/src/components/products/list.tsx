@@ -6,7 +6,7 @@ import { useEffect, useRef } from 'react';
 import useIntersect from '../hooks/useIntersect';
 
 // TODO: ref 타입 에러 잡기
-function ProductList() {
+export default function ProductList() {
   const hasNextPageRef = useRef<boolean>();
   const isFetchingNextPageRef = useRef<boolean>();
 
@@ -61,5 +61,3 @@ function ProductList() {
     </div>
   );
 }
-
-export default ProductList;

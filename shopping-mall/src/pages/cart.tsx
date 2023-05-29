@@ -5,7 +5,7 @@ import { CartType, GET_CART } from '../graphql/cart';
 import PreviewPayment from '../components/previewPayment';
 import { useNavigate } from 'react-router-dom';
 
-function CartPage() {
+export default function CartPage() {
   const { data } = useQuery<
     Promise<unknown> | { cart: CartType },
     Error,
@@ -30,5 +30,3 @@ function CartPage() {
     </>
   );
 }
-
-export default CartPage;

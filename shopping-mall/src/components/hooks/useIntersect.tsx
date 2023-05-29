@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 
-function useIntersect(
+export default function useIntersect(
   onIntersect: (
     entry: IntersectionObserverEntry,
     observer: IntersectionObserver
@@ -30,5 +30,3 @@ function useIntersect(
 
   return [target, setTarget];
 }
-
-export default useIntersect;

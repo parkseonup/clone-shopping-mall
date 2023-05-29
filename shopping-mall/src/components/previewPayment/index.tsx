@@ -3,13 +3,7 @@ import { ProductsToPayContext } from '../../context/productsToPay';
 import ItemData from '../itemData';
 import { styled } from 'styled-components';
 
-const PreviewWrapper = styled.div`
-  margin: 10px;
-  padding: 10px;
-  border: 1px solid #000;
-`;
-
-function PreviewPayment({
+export default function PreviewPayment({
   onClick,
   buttonText,
 }: {
@@ -62,4 +56,8 @@ function PreviewPayment({
   );
 }
 
-export default PreviewPayment;
+const PreviewWrapper = styled.div`
+  margin: 10px;
+  padding: 10px;
+  border: 1px solid #000;
+`;

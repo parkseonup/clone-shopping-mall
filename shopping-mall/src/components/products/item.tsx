@@ -5,7 +5,12 @@ import { fetchData } from '../../fetcher';
 import { ADD_CART } from '../../graphql/cart';
 import ItemData from '../itemData';
 
-function ProductItem({ id, title, imageUrl, price }: ProductType) {
+export default function ProductItem({
+  id,
+  title,
+  imageUrl,
+  price,
+}: ProductType) {
   const { mutate: addCart } = useMutation((id: string) =>
     fetchData(ADD_CART, { productId: id })
   );
@@ -22,5 +27,3 @@ function ProductItem({ id, title, imageUrl, price }: ProductType) {
     </li>
   );
 }
-
-export default ProductItem;

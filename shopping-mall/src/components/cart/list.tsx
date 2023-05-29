@@ -12,7 +12,7 @@ import {
   ProductsToPayDispatchContext,
 } from '../../context/productsToPay';
 
-function CartList({ cart }: { cart: CartType }) {
+export default function CartList({ cart }: { cart: CartType }) {
   console.log('[CartList]');
   const formRef = useRef<HTMLFormElement>(null);
   const cartCheckboxRef = useRef<HTMLInputElement>(null);
@@ -125,5 +125,3 @@ function CartList({ cart }: { cart: CartType }) {
     </>
   );
 }
-
-export default CartList;

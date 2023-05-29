@@ -3,7 +3,7 @@ import { ProductType } from '../../graphql/products';
 import { fetchData } from '../../fetcher';
 import { ADD_CART } from '../../graphql/cart';
 
-function ProductDetail({
+export default function ProductDetail({
   id,
   title,
   imageUrl,
@@ -27,5 +27,3 @@ function ProductDetail({
     </div>
   );
 }
-
-export default ProductDetail;

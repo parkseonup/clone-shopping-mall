@@ -4,7 +4,7 @@ import ProductForm from '../components/admin/productForm';
 import { QueryKeys, fetchData, queryClient } from '../fetcher';
 import { ADD_PRODUCT, ProductType } from '../graphql/products';
 
-function AdminPage() {
+export default function AdminPage() {
   const { mutate: addProduct } = useMutation(
     (addedInfo: Omit<ProductType, 'id' | 'createdAt'>) =>
       fetchData(ADD_PRODUCT, addedInfo),
@@ -35,5 +35,3 @@ function AdminPage() {
     </>
   );
 }
-
-export default AdminPage;

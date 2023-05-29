@@ -1,6 +1,6 @@
 import { ProductType } from '../graphql/products';
 
-function ItemData({
+export default function ItemData({
   title,
   imageUrl,
   price,
@@ -13,5 +13,3 @@ function ItemData({
     </>
   );
 }
-
-export default ItemData;

@@ -1,29 +1,7 @@
 import { Link } from 'react-router-dom';
 import { styled } from 'styled-components';
 
-const HiddenTitle = styled.h3`
-  overflow: hidden;
-  position: absolute;
-  clip: rect(0, 0, 0, 0);
-  clip-path: circle(0);
-  width: 1px;
-  height: 1px;
-  margin: -1px;
-  border: 0;
-  padding: 0;
-  white-space: nowrap;
-`;
-
-const GnbList = styled.ul`
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-`;
-
-function Gnb() {
+export default function Gnb() {
   return (
     <nav>
       <HiddenTitle>카테고리</HiddenTitle>
@@ -49,4 +27,24 @@ function Gnb() {
   );
 }
 
-export default Gnb;
+const HiddenTitle = styled.h3`
+  overflow: hidden;
+  position: absolute;
+  clip: rect(0, 0, 0, 0);
+  clip-path: circle(0);
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  border: 0;
+  padding: 0;
+  white-space: nowrap;
+`;
+
+const GnbList = styled.ul`
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`;

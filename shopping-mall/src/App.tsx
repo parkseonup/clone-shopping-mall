@@ -5,9 +5,8 @@ import { QueryClientProvider } from 'react-query';
 import { queryClient } from './fetcher';
 import { ProductsToPayProvider } from './context/productsToPay';
 
-function App() {
+export default function App() {
   const element = useRoutes(routes);
-
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -19,5 +18,3 @@ function App() {
     </QueryClientProvider>
   );
 }
-
-export default App;

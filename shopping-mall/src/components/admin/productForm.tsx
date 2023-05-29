@@ -2,7 +2,7 @@ import { SyntheticEvent } from 'react';
 import { ProductType } from '../../graphql/products';
 import arrayToObject from '../../utils/arrayToObject';
 
-function ProductForm({
+export default function ProductForm({
   title = '',
   imageUrl = '',
   price = 0,
@@ -56,5 +56,3 @@ function ProductForm({
     </form>
   );
 }
-
-export default ProductForm;
