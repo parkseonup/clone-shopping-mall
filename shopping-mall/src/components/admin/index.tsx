@@ -9,6 +9,7 @@ import {
 import AdminItem from './item';
 import { useEffect, useRef, useState } from 'react';
 import useIntersect from '../hooks/useIntersect';
+import { DELETE_PRODUCT } from '../../graphql/products';
 
 // TODO: ref 속성 타입 에러 해결
 export default function AdminList() {
@@ -51,12 +52,11 @@ export default function AdminList() {
     (editInfo: Omit<ProductType, 'createdAt'>) =>
       fetchData(UPDATE_PRODUCT, editInfo),
     {
-      onSuccess: () => {
+      onSuccess: () =>
         queryClient.invalidateQueries([QueryKeys.PRODUCTS], {
           exact: false,
           refetchInactive: true, // TODO: TanStack Query v4로 마이그레이션 하면서 refecthType 옵션으로 통합됐는데 왜 에러 뜨는지 알아보기
-        });
-      },
+        }),
     }
   );
 
@@ -79,6 +79,21 @@ export default function AdminList() {
       setEditingId('');
     };
 
+  /* ------------------------------- DELETE_PRODUCT ------------------------------ */
+
+  const { mutate: deleteProduct } = useMutation({
+    mutationFn: (id: string) => fetchData(DELETE_PRODUCT, { id }),
+    onSuccess: () =>
+      queryClient.invalidateQueries([QueryKeys.PRODUCTS], {
+        exact: false,
+        refetchInactive: true,
+      }),
+  });
+
+  const onDelete = (id: string) => {
+    deleteProduct(id);
+  };
+
   /* --------------------------------- return --------------------------------- */
 
   if (!data) return null;
@@ -95,6 +110,7 @@ export default function AdminList() {
               onEditMode={onEditMode(product.id)}
               offEditMode={offEditMode}
               onSubmitEdit={onSubmitEdit(product.id)}
+              onDelete={onDelete}
               key={product.id}
             />
           ))}

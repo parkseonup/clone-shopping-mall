@@ -8,12 +8,14 @@ export default function AdminItem({
   onEditMode,
   offEditMode,
   onSubmitEdit,
+  onDelete,
 }: {
   product: ProductType;
   editingId: string;
   onEditMode: () => void;
   offEditMode: () => void;
   onSubmitEdit: (formData: Omit<ProductType, 'id' | 'createdAt'>) => void;
+  onDelete: (id: string) => void;
 }) {
   if (id === editingId)
     return (
@@ -37,7 +39,9 @@ export default function AdminItem({
       <button type="button" onClick={onEditMode}>
         수정
       </button>
-      <button type="button">삭제</button>
+      <button type="button" onClick={() => onDelete(id)}>
+        삭제
+      </button>
     </li>
   );
 }

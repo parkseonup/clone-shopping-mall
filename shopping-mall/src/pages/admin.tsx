@@ -8,12 +8,11 @@ export default function AdminPage() {
   const { mutate: addProduct } = useMutation({
     mutationFn: (addedInfo: Omit<ProductType, 'id' | 'createdAt'>) =>
       fetchData(ADD_PRODUCT, addedInfo),
-    onSuccess: () => {
+    onSuccess: () =>
       queryClient.invalidateQueries([QueryKeys.PRODUCTS], {
         exact: false,
         refetchInactive: true,
-      });
-    },
+      }),
   });
 
   const onSubmitAddedProduct = (
