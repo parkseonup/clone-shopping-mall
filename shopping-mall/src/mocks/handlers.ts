@@ -3,17 +3,35 @@ import { mockProducts, mockCart } from './mockData';
 
 export const handlers = [
   // product
-  graphql.query('GET_PRODUCTS', ({ variables }, res, ctx) => {
-    const COUNT_TO_EXPORT_PRODUCT = 15;
-    const startIndex =
-      mockProducts.findIndex(product => product.id === variables.cursor) + 1;
-    const gotProducts = mockProducts.slice(
-      startIndex,
-      startIndex + COUNT_TO_EXPORT_PRODUCT
-    );
+  graphql.query(
+    'GET_PRODUCTS',
+    ({ variables: { count = 15, cursor, page } }, res, ctx) => {
+      let startIndex = 0;
+      let responseData;
 
-    return res(ctx.data({ products: gotProducts }));
-  }),
+      if (cursor !== undefined) {
+        // 무한 스크롤인 경우
+        startIndex =
+          mockProducts.findIndex(product => product.id === cursor) + 1;
+        responseData = {
+          products: mockProducts.slice(startIndex, startIndex + count),
+        };
+      }
+
+      if (page) {
+        // 페이지네이션인 경우
+        startIndex = Math.ceil(mockProducts.length / count) * (page - 1);
+        responseData = {
+          products: mockProducts.slice(startIndex, startIndex + count),
+          lastPageNumber: Math.ceil(mockProducts.length / count),
+        };
+      }
+
+      if (!responseData) throw new Error('잘못된 접근입니다.');
+
+      return res(ctx.data(responseData));
+    }
+  ),
   graphql.query('GET_PRODUCT', ({ variables }, res, ctx) => {
     const product = mockProducts.find(product => product.id === variables.id);
 
