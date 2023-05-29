@@ -1,4 +1,4 @@
-import { ProductType } from '../graphql/products';
+import { ProductType } from '../../graphql/products';
 
 export default function ItemData({
   title,

@@ -3,7 +3,7 @@ import { ProductType } from '../../graphql/products';
 import { useMutation } from 'react-query';
 import { fetchData } from '../../fetcher';
 import { ADD_CART } from '../../graphql/cart';
-import ItemData from '../itemData';
+import ItemData from '../common/itemData';
 
 export default function ProductItem({
   id,

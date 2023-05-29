@@ -1,6 +1,6 @@
 import { useRoutes } from 'react-router-dom';
 import { routes } from './route';
-import Gnb from './components/gnb';
+import Gnb from './components/common/gnb';
 import { QueryClientProvider } from 'react-query';
 import { queryClient } from './fetcher';
 import { ProductsToPayProvider } from './context/productsToPay';

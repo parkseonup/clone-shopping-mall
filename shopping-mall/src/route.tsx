@@ -1,4 +1,4 @@
-import GlobalLayout from './components/globalLayout';
+import GlobalLayout from './components/common/globalLayout';
 import MainPage from './pages';
 import AdminPage from './pages/admin';
 import CartPage from './pages/cart';

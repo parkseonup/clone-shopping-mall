@@ -1,5 +1,5 @@
 import { ProductType } from '../../graphql/products';
-import ItemData from '../itemData';
+import ItemData from '../common/itemData';
 import ProductForm from './productForm';
 
 export default function AdminItem({

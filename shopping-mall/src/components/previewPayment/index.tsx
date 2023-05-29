@@ -1,6 +1,6 @@
 import { useContext } from 'react';
 import { ProductsToPayContext } from '../../context/productsToPay';
-import ItemData from '../itemData';
+import ItemData from '../common/itemData';
 import { styled } from 'styled-components';
 
 export default function PreviewPayment({
