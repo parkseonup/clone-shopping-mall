@@ -1,29 +1,48 @@
 import { graphql } from 'msw';
 import { mockProducts, mockCart } from './mockData';
+import { ProductsType } from '../graphql/products';
 
 export const handlers = [
   // product
   graphql.query(
     'GET_PRODUCTS',
-    ({ variables: { count = 15, cursor, page } }, res, ctx) => {
+    (
+      { variables: { count = 15, cursor, page, isShownDeleted = false } },
+      res,
+      ctx
+    ) => {
+      const [existentProducts, deletedProducts] = mockProducts.reduce<
+        ProductsType[]
+      >(
+        (result, current) => {
+          result = current.createdAt
+            ? [[...result[0], current], result[1]]
+            : [result[0], [...result[1], current]];
+          return result;
+        },
+        [[], []]
+      );
+      const filteredProducts = isShownDeleted
+        ? [...existentProducts, ...deletedProducts]
+        : existentProducts;
       let startIndex = 0;
       let responseData;
 
       if (cursor !== undefined) {
         // 무한 스크롤인 경우
         startIndex =
-          mockProducts.findIndex(product => product.id === cursor) + 1;
+          filteredProducts.findIndex(product => product.id === cursor) + 1;
         responseData = {
-          products: mockProducts.slice(startIndex, startIndex + count),
+          products: filteredProducts.slice(startIndex, startIndex + count),
         };
       }
 
       if (page) {
         // 페이지네이션인 경우
-        startIndex = Math.ceil(mockProducts.length / count) * (page - 1);
+        startIndex = Math.ceil(filteredProducts.length / count) * (page - 1);
         responseData = {
-          products: mockProducts.slice(startIndex, startIndex + count),
-          lastPageNumber: Math.ceil(mockProducts.length / count),
+          products: filteredProducts.slice(startIndex, startIndex + count),
+          lastPageNumber: Math.ceil(filteredProducts.length / count),
         };
       }
 
@@ -78,8 +97,7 @@ export const handlers = [
     if (targetIndex < 0)
       throw new Error(`삭제할 상품(${id})이 존재하지 않습니다.`);
 
-    mockProducts.splice(targetIndex, 1);
-
+    mockProducts[targetIndex].createdAt = null;
     return res(ctx.data({ deleteProduct: id }));
   }),
 

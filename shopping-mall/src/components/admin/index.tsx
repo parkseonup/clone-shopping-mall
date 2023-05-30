@@ -15,7 +15,7 @@ export default function AdminList() {
   const [editingId, setEditingId] = useState('');
 
   const { data, fetchNextPage, isFetchingNextPage, hasNextPage } =
-    useGetInfiniteProducts({ key: 'admin' });
+    useGetInfiniteProducts({ key: 'admin', isShownDeleted: true });
   const { mutate: updateProduct } = useUpdateProduct();
   const { mutate: deleteProduct } = useDeleteProduct();
 

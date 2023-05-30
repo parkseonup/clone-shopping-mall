@@ -23,10 +23,12 @@ export const useGetProuctsByPage = ({
   page,
   key,
   count,
+  isShownDeleted,
 }: {
   page: number;
   key?: SecondKey;
   count?: number;
+  isShownDeleted?: boolean;
 }) =>
   useQuery<{ products: ProductsType; lastPageNumber: number }>({
     queryKey: [QueryKeys.PRODUCTS, key, page],
@@ -34,7 +36,7 @@ export const useGetProuctsByPage = ({
       request({
         url: API_URL,
         document: GET_PRODUCTS,
-        variables: { page, count },
+        variables: { page, count, isShownDeleted },
       }),
     keepPreviousData: true,
   });
@@ -42,9 +44,11 @@ export const useGetProuctsByPage = ({
 export const useGetInfiniteProducts = ({
   key,
   count,
+  isShownDeleted,
 }: {
   key?: SecondKey;
   count?: number;
+  isShownDeleted?: boolean;
 }) =>
   useInfiniteQuery<{ products: ProductsType }>({
     queryKey: [QueryKeys.PRODUCTS, key],
@@ -52,7 +56,7 @@ export const useGetInfiniteProducts = ({
       await request({
         url: API_URL,
         document: GET_PRODUCTS,
-        variables: { cursor: pageParam, count },
+        variables: { cursor: pageParam, count, isShownDeleted },
       }),
     getNextPageParam: lastPage => lastPage.products.at(-1)?.id,
   });
