@@ -1,22 +1,14 @@
-import { useMutation } from 'react-query';
-import { CartItemType, DELETE_CART, UPDATE_CART } from '../../graphql/cart';
-import { QueryKeys, fetchData, queryClient } from '../../fetcher';
+import { CartItemType } from '../../graphql/cart';
 import { ForwardedRef, SyntheticEvent, forwardRef } from 'react';
 import ItemData from '../common/itemData';
+import { useDeleteCart, useUpdateCart } from '../../servies/mutations/cart';
 
 const CartItem = forwardRef(function CartItem(
   { id, amount, product: { title, imageUrl, price, createdAt } }: CartItemType,
   ref: ForwardedRef<HTMLInputElement>
 ) {
-  const { mutate: updateCart } = useMutation({
-    mutationFn: ({ id, amount }: { id: string; amount: number }) =>
-      fetchData(UPDATE_CART, { cartId: id, amount }),
-    onSuccess: () => queryClient.invalidateQueries([QueryKeys.CART]),
-  });
-  const { mutate: deleteCart } = useMutation({
-    mutationFn: (id: string) => fetchData(DELETE_CART, { cartId: id }),
-    onSuccess: () => queryClient.invalidateQueries([QueryKeys.CART]),
-  });
+  const { mutate: updateCart } = useUpdateCart();
+  const { mutate: deleteCart } = useDeleteCart();
 
   const onChangeAmount = (e: SyntheticEvent) => {
     const amount = +(e.target as HTMLInputElement).value;

@@ -1,19 +1,10 @@
 import { useParams } from 'react-router-dom';
 import ProductDetail from '../../components/products/detail';
-import { useQuery } from 'react-query';
-import { QueryKeys, fetchData } from '../../fetcher';
-import { GET_PRODUCT, ProductType } from '../../graphql/products';
+import { useGetProduct } from '../../servies/queries/products';
 
 export default function ProductDetailPage() {
   const { id } = useParams();
-  const { data } = useQuery<
-    Promise<unknown> | { product: ProductType },
-    Error,
-    { product: ProductType }
-  >({
-    queryKey: [QueryKeys.PRODUCTS, id],
-    queryFn: () => fetchData(GET_PRODUCT, { id }),
-  });
+  const { data } = useGetProduct(id);
 
   if (!data) return null;
 

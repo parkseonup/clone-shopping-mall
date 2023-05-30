@@ -13,7 +13,6 @@ import {
 } from '../../context/productsToPay';
 
 export default function CartList({ cart }: { cart: CartType }) {
-  console.log('[CartList]');
   const formRef = useRef<HTMLFormElement>(null);
   const cartCheckboxRef = useRef<HTMLInputElement>(null);
   const cartItemCheckboxRefs = cart.map(() => createRef<HTMLInputElement>());

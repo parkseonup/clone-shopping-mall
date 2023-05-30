@@ -1,21 +1,10 @@
-import { useQuery } from 'react-query';
 import CartList from '../components/cart/list';
-import { QueryKeys, fetchData } from '../fetcher';
-import { CartType, GET_CART } from '../graphql/cart';
 import PreviewPayment from '../components/previewPayment';
 import { useNavigate } from 'react-router-dom';
+import { useGetCart } from '../servies/queries/cart';
 
 export default function CartPage() {
-  const { data } = useQuery<
-    Promise<unknown> | { cart: CartType },
-    Error,
-    { cart: CartType }
-  >({
-    queryKey: [QueryKeys.CART],
-    queryFn: () => fetchData(GET_CART),
-    staleTime: 1,
-    cacheTime: 1,
-  });
+  const { data } = useGetCart();
   const navigate = useNavigate();
 
   if (!data) return null;

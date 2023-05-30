@@ -72,16 +72,15 @@ export const handlers = [
     return res(ctx.data({ updateProduct: updatedProduct }));
   }),
   graphql.mutation('DELETE_PRODUCT', ({ variables }, res, ctx) => {
-    const targetIndex = mockProducts.findIndex(
-      product => product.id === variables.id
-    );
+    const { id } = variables;
+    const targetIndex = mockProducts.findIndex(product => product.id === id);
 
     if (targetIndex < 0)
-      throw new Error(`삭제할 상품(${variables.id})이 존재하지 않습니다.`);
+      throw new Error(`삭제할 상품(${id})이 존재하지 않습니다.`);
 
     mockProducts.splice(targetIndex, 1);
 
-    return res(ctx.data({ deleteProduct: variables.id }));
+    return res(ctx.data({ deleteProduct: id }));
   }),
 
   // cart
@@ -89,15 +88,16 @@ export const handlers = [
     return res(ctx.data({ cart: mockCart }));
   }),
   graphql.mutation('ADD_CART', ({ variables }, res, ctx) => {
+    const { productId } = variables;
     const targetProduct = mockProducts.find(
-      product => product.id === variables.productId
+      product => product.id === productId
     );
 
     if (!targetProduct)
-      throw new Error(`상품(${variables.productId}})이 존재하지 않습니다.`);
+      throw new Error(`상품(${productId}})이 존재하지 않습니다.`);
     if (!targetProduct.createdAt)
       throw new Error(
-        `장바구니에 품절된 상품(${variables.productId}})이 포함되어 있습니다.`
+        `장바구니에 품절된 상품(${productId}})이 포함되어 있습니다.`
       );
 
     const targetCartIndex = mockCart.findIndex(
@@ -128,9 +128,7 @@ export const handlers = [
     const targetIndex = mockCart.findIndex(cart => cart.id === cartId);
 
     if (targetIndex < 0)
-      throw new Error(
-        `장바구니에 상품(${variables.cartId})이 존재하지 않습니다.`
-      );
+      throw new Error(`장바구니에 상품(${cartId})이 존재하지 않습니다.`);
     if (!mockCart[targetIndex].product.createdAt)
       throw new Error(
         `장바구니에 품절된 상품(${cartId}})이 포함되어 있습니다.`
@@ -156,20 +154,14 @@ export const handlers = [
 
   // payment
   graphql.mutation('EXECUTE_PAY', ({ variables }, res, ctx) => {
-    const { ids } = variables; // cartId[]
-
-    const deletedIds = ids.filter((id: string) => {
+    const deletedIds = variables.ids.filter((id: string) => {
       const targetCartIndex = mockCart.findIndex(cart => cart.id === id);
 
       if (!mockCart[targetCartIndex].product.createdAt)
-        throw new Error(
-          `결제 목록에 품절된 상품(${variables.id}})이 포함되어 있습니다.`
-        );
+        throw new Error(`결제 목록에 품절된 상품(${id}})이 포함되어 있습니다.`);
 
       if (targetCartIndex < 0)
-        throw new Error(
-          `장바구니에 존재하지 않는 상품(${variables.id}})입니다.`
-        );
+        throw new Error(`장바구니에 존재하지 않는 상품(${id}})입니다.`);
 
       mockCart.splice(targetCartIndex, 1);
       return true;

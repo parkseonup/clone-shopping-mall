@@ -1,7 +1,5 @@
-import { useMutation } from 'react-query';
 import { ProductType } from '../../graphql/products';
-import { fetchData } from '../../fetcher';
-import { ADD_CART } from '../../graphql/cart';
+import { useAddCart } from '../../servies/mutations/cart';
 
 export default function ProductDetail({
   id,
@@ -10,9 +8,7 @@ export default function ProductDetail({
   description,
   price,
 }: ProductType) {
-  const { mutate: addCart } = useMutation({
-    mutationFn: (id: string) => fetchData(ADD_CART, { productId: id }),
-  });
+  const { mutate: addCart } = useAddCart();
 
   return (
     <div>

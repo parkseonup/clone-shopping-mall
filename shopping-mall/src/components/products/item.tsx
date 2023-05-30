@@ -1,9 +1,7 @@
 import { Link } from 'react-router-dom';
 import { ProductType } from '../../graphql/products';
-import { useMutation } from 'react-query';
-import { fetchData } from '../../fetcher';
-import { ADD_CART } from '../../graphql/cart';
 import ItemData from '../common/itemData';
+import { useAddCart } from '../../servies/mutations/cart';
 
 export default function ProductItem({
   id,
@@ -11,9 +9,7 @@ export default function ProductItem({
   imageUrl,
   price,
 }: ProductType) {
-  const { mutate: addCart } = useMutation({
-    mutationFn: (id: string) => fetchData(ADD_CART, { productId: id }),
-  });
+  const { mutate: addCart } = useAddCart();
 
   return (
     <li>
