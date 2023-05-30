@@ -1,5 +1,5 @@
 import { SyntheticEvent } from 'react';
-import { ProductType } from '../../graphql/products';
+import { ProductOmitType, ProductType } from '../../graphql/products';
 import arrayToObject from '../../utils/arrayToObject';
 
 export default function ProductForm({
@@ -10,7 +10,7 @@ export default function ProductForm({
   onSubmit,
   onCancel,
 }: Partial<ProductType> & {
-  onSubmit: (formData: Omit<ProductType, 'id' | 'createdAt'>) => void;
+  onSubmit: (formData: ProductOmitType) => void;
   onCancel?: () => void;
 }) {
   const onSubmitForm = (e: SyntheticEvent) => {

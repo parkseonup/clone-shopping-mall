@@ -1,4 +1,4 @@
-import { ProductType } from '../../graphql/products';
+import { ProductOmitType } from '../../graphql/products';
 import AdminItem from './item';
 import { useEffect, useRef, useState } from 'react';
 import useIntersect from '../hooks/useIntersect';
@@ -36,14 +36,13 @@ export default function AdminList() {
     setEditingId('');
   };
 
-  const onSubmitEdit =
-    (id: string) => (formData: Omit<ProductType, 'id' | 'createdAt'>) => {
-      updateProduct({
-        id,
-        ...formData,
-      });
-      setEditingId('');
-    };
+  const onSubmitEdit = (id: string) => (formData: ProductOmitType) => {
+    updateProduct({
+      id,
+      ...formData,
+    });
+    setEditingId('');
+  };
 
   const onDelete = (id: string) => {
     deleteProduct(id);

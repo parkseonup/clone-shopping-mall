@@ -9,6 +9,8 @@ export type ProductType = {
   createdAt: number | null;
 };
 
+export type ProductOmitType = Omit<ProductType, 'id' | 'createdAt'>;
+
 export type ProductsType = ProductType[];
 
 export const GET_PRODUCTS = gql`

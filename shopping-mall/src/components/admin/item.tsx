@@ -1,4 +1,4 @@
-import { ProductType } from '../../graphql/products';
+import { ProductOmitType, ProductType } from '../../graphql/products';
 import ItemData from '../common/itemData';
 import ProductForm from './productForm';
 
@@ -14,7 +14,7 @@ export default function AdminItem({
   editingId: string;
   onEditMode: () => void;
   offEditMode: () => void;
-  onSubmitEdit: (formData: Omit<ProductType, 'id' | 'createdAt'>) => void;
+  onSubmitEdit: (formData: ProductOmitType) => void;
   onDelete: (id: string) => void;
 }) {
   if (id === editingId)

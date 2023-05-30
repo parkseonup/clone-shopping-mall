@@ -1,14 +1,12 @@
 import AdminList from '../components/admin';
 import ProductForm from '../components/admin/productForm';
-import { ProductType } from '../graphql/products';
+import { ProductOmitType } from '../graphql/products';
 import { useAddProduct } from '../servies/mutations/products';
 
 export default function AdminPage() {
   const { mutate: addProduct } = useAddProduct();
 
-  const onSubmitAddedProduct = (
-    formData: Omit<ProductType, 'id' | 'createdAt'>
-  ) => {
+  const onSubmitAddedProduct = (formData: ProductOmitType) => {
     addProduct(formData);
   };
 

@@ -5,12 +5,13 @@ import {
   ProductType,
   UPDATE_PRODUCT,
   DELETE_PRODUCT,
+  ProductOmitType,
 } from '../../graphql/products';
 import { useMutation } from '@tanstack/react-query';
 
 export const useAddProduct = () =>
   useMutation({
-    mutationFn: async (productInfo: Omit<ProductType, 'id' | 'createdAt'>) =>
+    mutationFn: async (productInfo: ProductOmitType) =>
       await request({
         url: API_URL,
         document: ADD_PRODUCT,
