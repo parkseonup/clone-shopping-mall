@@ -1,4 +1,3 @@
-import { useInfiniteQuery, useQuery } from 'react-query';
 import { API_URL, QueryKeys, SecondKey } from '../common';
 import request from 'graphql-request';
 import {
@@ -7,6 +6,7 @@ import {
   ProductType,
   ProductsType,
 } from '../../graphql/products';
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 
 export const useGetProduct = (id: string | undefined) =>
   useQuery<{ product: ProductType }>({

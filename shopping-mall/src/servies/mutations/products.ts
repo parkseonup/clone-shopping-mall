@@ -1,5 +1,4 @@
 import request from 'graphql-request';
-import { useMutation } from 'react-query';
 import { API_URL, QueryKeys, queryClient } from '../common';
 import {
   ADD_PRODUCT,
@@ -7,6 +6,7 @@ import {
   UPDATE_PRODUCT,
   DELETE_PRODUCT,
 } from '../../graphql/products';
+import { useMutation } from '@tanstack/react-query';
 
 export const useAddProduct = () =>
   useMutation({
@@ -19,7 +19,7 @@ export const useAddProduct = () =>
     onSuccess: () =>
       queryClient.invalidateQueries([QueryKeys.PRODUCTS], {
         exact: false,
-        refetchInactive: true,
+        refetchType: 'all',
       }),
   });
 
@@ -34,7 +34,7 @@ export const useUpdateProduct = () =>
     onSuccess: () =>
       queryClient.invalidateQueries([QueryKeys.PRODUCTS], {
         exact: false,
-        refetchInactive: true,
+        refetchType: 'all',
       }),
   });
 
@@ -49,6 +49,6 @@ export const useDeleteProduct = () =>
     onSuccess: () =>
       queryClient.invalidateQueries([QueryKeys.PRODUCTS], {
         exact: false,
-        refetchInactive: true,
+        refetchType: 'all',
       }),
   });

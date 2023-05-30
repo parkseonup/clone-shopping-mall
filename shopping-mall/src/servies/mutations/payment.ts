@@ -1,7 +1,7 @@
 import request from 'graphql-request';
-import { useMutation } from 'react-query';
 import { API_URL } from '../common';
 import { EXECUTE_PAY } from '../../graphql/payment';
+import { useMutation } from '@tanstack/react-query';
 
 export const useDeletePaidCart = (onSuccess: (...args: any) => void) =>
   useMutation({

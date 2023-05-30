@@ -1,7 +1,7 @@
 import request from 'graphql-request';
-import { useMutation } from 'react-query';
 import { API_URL, QueryKeys, queryClient } from '../common';
 import { ADD_CART, DELETE_CART, UPDATE_CART } from '../../graphql/cart';
+import { useMutation } from '@tanstack/react-query';
 
 export const useAddCart = () =>
   useMutation({

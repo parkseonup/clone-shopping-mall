@@ -1,9 +1,10 @@
 import { useRoutes } from 'react-router-dom';
 import { routes } from './route';
 import Gnb from './components/common/gnb';
-import { QueryClientProvider } from 'react-query';
 import { queryClient } from './servies/common';
 import { ProductsToPayProvider } from './context/productsToPay';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 
 export default function App() {
   const element = useRoutes(routes);
@@ -15,6 +16,7 @@ export default function App() {
         <Gnb />
         {element}
       </ProductsToPayProvider>
+      <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
   );
 }
