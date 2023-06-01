@@ -937,3 +937,54 @@ ESLint는 기본적으로 JavaScript 코드를 분석하고 검사하기 위해 
 
 1. package.json의 `devDependencies`에 `eslint-plugin-html` 설치
 2. .eslintrc의 `plugins` 속성에 `"html"` 추가
+
+# 배운 내용
+
+## react query의 queryFn은 언제 async 함수로 호출되어야 할까?
+
+기존 강의 코드에서는 react query로 쿼리 요청을 할 때 queryFn를 async 함수로 만들지 않았다. 게다가 공식 문서나 다른 여러 포스팅을 살펴보면 queryFn이 async 함수로 만들어진 것도 있고 아닌 것도 있어 어떤 경우에 async 키워드를 사용해야 하는지 궁금해져 알아보았다.
+
+### React Query의 queryFn은 Promise를 반환해야 한다.
+
+> _"A query function can be literally any function that returns a promise. The promise that is returned should either resolve the data or throw an error." - TanStack
+> Query_
+
+Tastack Query 공식문서에서 Query Functions에 게시된 글을 읽어보면, 제일 첫 줄에 query function은 promise를 반환해야 한다고 작성되어 있다. query function는 resolve되어 데이터 정보를 담고 있거나 reject되어 에러 정보를 가지고 있는 Promise만을 반환할 수 있는 것이다.
+
+### async 함수는 늘 Promise 객체를 반환한다.
+
+> _"async 함수는 이벤트 루프를 통해 비동기적으로 작동하는 함수로, 암시적으로 Promise를 사용하여 결과를 반환합니다." - MDN_
+
+mdn 문서에 따르면 async 함수는 늘 Promise를 반환한다. 앞서 설명했던 Query Function의 조건과 결합해서 생각해보면, query function으로 작성한 api 요청 함수가 Promise를 반환하지 않을 경우에만 async 함수로 만들어주면 된다는 것을 알 수 있다. (await 키워드를 사용하여 Promise 객체를 해석한 다음 후처리가 필요하다면 이 또한 async 함수로 만들어줘야 한다.)
+
+그럼 이제 어떤 요청이 Promise를 반환하고, Promise를 반환하지 않는지만 파악을 하면 되지 않을까?
+
+### Promise를 반환하는 요청
+
+- Fetch API
+  - Promise 기반으로 만들어져있으며, 반환값은 Promise 객체이다.
+  - 서버 응답이 HTTP 오류 상태인 경우(응답코드: 5xx)나 클라이언트 에러 응답(응답 코드: 4xx)일 경우에도 에러를 발생시키지 않고 해당 요청에 대한 응답으로 확인되는 Promise를 반환한다.
+- axios: node.js와 브라우저를 위한 Promise 기반 HTTP 클라이언트 라이브러리로, HTTP 요청이 실패하면 자동으로 에러를 발생시킨다.
+- graphql-request: Promise 기반 api로 동작하며, HTTP 요청이 실패하면 자동으로 에러를 발생시킨다.
+
+### 정말 query function은 Promise를 반환하기만 하면 되는걸까? ❌
+
+query function에 대해 작성된 공식문서를 읽어보면 쿼리 요청의 에러 처리를 위해 필요한 조건이 있다. 쿼리 요청의 에러 처리를 위해서는 query function이 반드시 rejected된 Promise를 반환해야 한다는 것이다. rejected된 Promise는 Promise 함수 내부에서 에러가 발생했을 경우 Promise가 거부된 상태를 말한다.
+
+> _For TanStack Query to determine a query has errored, the query function must throw or return a rejected Promise. - Tanstack Query_
+
+Fetch API는 HTTP 요청 오류가 발생했을 때에도 에러를 발생시키지 않고 resolve된 Promise에 ok 프로퍼티 값을 false로 표시하여 반환한다. 이렇게 에러가 발생했을 때 rejected된 Promise를 반환하지 않는 api들이 있다. 이럴 경우에는 async/await 키워드를 사용하여 Promise를 해석하도록 하고 ok 프로퍼티를 검증하도록 하는 등 추가 작업이 필요하다.
+
+### 결론
+
+- async 함수는 내가 사용하는 api가 Promise를 반환하는 지 체크하고 사용하자.
+- api 요청이 반환한 정보를 해석하여 추가적인 작업을 처리해야 하는 경우, 즉 await 키워드가 필요한 경우 async 함수로 만든다. (Fetch API의 에러 핸들링 등)
+
+### 참고
+
+- [async function](https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Statements/async_function)
+- [Tanstack Query](https://tanstack.com/)
+- [Why are async api calls necessary with react-query? - Stack Overflow](https://stackoverflow.com/questions/70388520/why-are-async-api-calls-necessary-with-react-query)
+- [About async functions - TKDodo's blog](https://tkdodo.eu/blog/about-async-functions#syntactic-sugar)
+- [React Query Error Handling](https://tkdodo.eu/blog/react-query-error-handling)
+- [Query Cancellation](https://tanstack.com/query/v4/docs/react/guides/query-cancellation)

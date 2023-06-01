@@ -11,8 +11,8 @@ import { useMutation } from '@tanstack/react-query';
 
 export const useAddProduct = () =>
   useMutation({
-    mutationFn: async (productInfo: ProductOmitType) =>
-      await request({
+    mutationFn: (productInfo: ProductOmitType) =>
+      request({
         url: API_URL,
         document: ADD_PRODUCT,
         variables: { ...productInfo },
@@ -26,8 +26,8 @@ export const useAddProduct = () =>
 
 export const useUpdateProduct = () =>
   useMutation({
-    mutationFn: async (productInfo: Omit<ProductType, 'createdAt'>) =>
-      await request({
+    mutationFn: (productInfo: Omit<ProductType, 'createdAt'>) =>
+      request({
         url: API_URL,
         document: UPDATE_PRODUCT,
         variables: { ...productInfo },
@@ -41,8 +41,8 @@ export const useUpdateProduct = () =>
 
 export const useDeleteProduct = () =>
   useMutation({
-    mutationFn: async (id: string) =>
-      await request({
+    mutationFn: (id: string) =>
+      request({
         url: API_URL,
         document: DELETE_PRODUCT,
         variables: { id },

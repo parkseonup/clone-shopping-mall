@@ -11,8 +11,8 @@ import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 export const useGetProduct = (id: string | undefined) =>
   useQuery<{ product: ProductType }>({
     queryKey: [QueryKeys.PRODUCTS, 'product', id],
-    queryFn: async () =>
-      await request({
+    queryFn: () =>
+      request({
         url: API_URL,
         document: GET_PRODUCT,
         variables: { id },
@@ -32,7 +32,7 @@ export const useGetProuctsByPage = ({
 }) =>
   useQuery<{ products: ProductsType; lastPageNumber: number }>({
     queryKey: [QueryKeys.PRODUCTS, key, page],
-    queryFn: async () =>
+    queryFn: () =>
       request({
         url: API_URL,
         document: GET_PRODUCTS,
@@ -52,8 +52,8 @@ export const useGetInfiniteProducts = ({
 }) =>
   useInfiniteQuery<{ products: ProductsType }>({
     queryKey: [QueryKeys.PRODUCTS, key],
-    queryFn: async ({ pageParam = '' }) =>
-      await request({
+    queryFn: ({ pageParam = '' }) =>
+      request({
         url: API_URL,
         document: GET_PRODUCTS,
         variables: { cursor: pageParam, count, isShownDeleted },

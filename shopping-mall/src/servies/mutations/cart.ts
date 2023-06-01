@@ -5,8 +5,8 @@ import { useMutation } from '@tanstack/react-query';
 
 export const useAddCart = () =>
   useMutation({
-    mutationFn: async (id: string) =>
-      await request({
+    mutationFn: (id: string) =>
+      request({
         url: API_URL,
         document: ADD_CART,
         variables: { productId: id },
@@ -15,8 +15,8 @@ export const useAddCart = () =>
 
 export const useUpdateCart = () =>
   useMutation({
-    mutationFn: async ({ id, amount }: { id: string; amount: number }) =>
-      await request({
+    mutationFn: ({ id, amount }: { id: string; amount: number }) =>
+      request({
         url: API_URL,
         document: UPDATE_CART,
         variables: { cartId: id, amount },
@@ -26,8 +26,8 @@ export const useUpdateCart = () =>
 
 export const useDeleteCart = () =>
   useMutation({
-    mutationFn: async (id: string) =>
-      await request({
+    mutationFn: (id: string) =>
+      request({
         url: API_URL,
         document: DELETE_CART,
         variables: { cartId: id },
