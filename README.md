@@ -14,41 +14,15 @@ clone-shopping-mall 레포지토리에서 만들었던 shopping-mall을 강의 �
   - formData를 사용하지 않고 구현
   - 강의에서는 결제 항목이 선택되면 선택된 내용으로 formData state를 업데이트 하고 useEffect 내부에서 checkbox ref를 확인하여 선택된 결제 항목을 Recoil 전역 상태로 업데이트함 -> 결제 항목이 선택되면 선택된 내용으로 결제 항목 recoil 전역 상태를 업데이트하고 useEffect로 결제 항목 전역 상태를 확인하여 checkbox ref에 checked를 값을 변경함
 - ProductForm 컴포넌트: AddForm 컴포넌트를 admin 페이지의 edit form과 add form에 공통으로 사용할 수 있도록 변경
-- fetch 함수 하나로 관리하던 것을 요청하는 용도에 따라 분리함.
-
-# TODO
-
-## 클라이언트
-
-- [] admin에서 수정한 거 장바구니에도 반영되게 하기
-
-## 클라이언트 - 씹고 뜯고 맛보고 즐기고~~~~
-
-- [] 에러 핸들링 읽고 try/catch 추가
-- [] tanstack query에서 async/await를 붙이는 상황과 안붙이는 상황 뭐가 다른지 알아보기
-
-## 서버 - 구현
-
-- [] monorepo: express + json
-- [] firebase
-
-## 서버 - 씹고 뜯고 맛보고 즐기고~~~~
-
-- [] graphql을 REST API로 바꿔보기(with client) -> 뭐가 더 나은지 비교하고 기록하기
-- [] vite에서 알려주는 "백엔드 프레임워크와 함께 사용하기" 적용해서 프로덕션 빌드 실행해보기
-
-## 마무리
-
-- [] 리팩토링
-- [] 배포
+- fetch 함수 하나로 관리하던 것을 요청하는 용도에 따라 분리: fetch 데이터에 따라 용도를 분리하여 명확한 type 관리의 용이성을 높임
 
 # 🎛️ 구현 과정
 
 ## React에서 Intersection Observer API로 Infinity scroll 만들기
 
-### isIntersecting을 state로 관리
+### 강의: isIntersecting을 state로 관리
 
-IntersectionObserver에서 관찰한 entry의 isIntersecting를 React의 state로 관리하고, isIntersecting 결과에 따라 fetchNextPage를 호출하는 useEffect로 구현한다.
+강의에서는 IntersectionObserver에서 관찰한 entry의 isIntersecting를 React의 state로 관리하고, isIntersecting 결과에 따라 fetchNextPage를 호출하는 useEffect로 구현한다.
 
 ```tsx
 function ProductList() {
@@ -113,7 +87,7 @@ function ProductList() {
 }
 ```
 
-### observer에서 entry의 isIntersecting 결과에 따라 fetchNextPage를 호출하는 executeFetchNextPage 함수 호출
+### 변경: observer에서 entry의 isIntersecting 결과에 따라 fetchNextPage를 호출하는 executeFetchNextPage 함수 호출
 
 isIntersecting 결과는 자주 변경될 수 있기 때문에 너무 잦은 컴포넌트 리렌더링을 일으킨다고 판단했다. 이를 대체하기 위해 isIntersecting을 state 값으로 등록하지 않고, observe에서 isIntersecting 결과에 따라 executeFetchNextPage 함수를 호출하면 함수 내부에서 useInfiniteQuery가 반환하는 hasNextPage, isFetchingNextPage의 값을 판단하여 fetchNextPage 함수를 호출하도록 만들고자 했다.
 
@@ -201,11 +175,28 @@ isIntersecting 결과는 자주 변경될 수 있기 때문에 너무 잦은 컴
 
 #### 문제 원인 분석
 
-Intersection Observer는 React가 아닌 Browser API, 즉 외부 시스템이기 때문에 React의 state나 query에는 접근할 수 없다. 때문에 IntersectionObserver는 useInfiniteQuery에서 반환한 hasNextPage나 isFetchingNextPage를 참조할 수 없고, React의 state로 선언한 hasNextPageState, isFetchingNextPageState도 참조할 수 없다.
+~~Intersection Observer는 React가 아닌 Browser API, 즉 외부 시스템이기 때문에 React의 state나 query에는 접근할 수 없다. 때문에 IntersectionObserver는 useInfiniteQuery에서 반환한 hasNextPage나 isFetchingNextPage를 참조할 수 없고, React의 state로 선언한 hasNextPageState, isFetchingNextPageState도 참조할 수 없다.~~
+
+위 해석 중 "외부 시스템이기때문에 접근할 수 없다"라는 내용은 해석의 혼동을 가져올 수 있어 아래와 같이 변경합니다.
+
+먼저, 실행 순서를 살펴보면,
+
+- useQuery는 렌더링 과정에서 실행된다.
+- Intersection Observer API는 비동기로 동작한디. 따라서 렌더링 도중이 아닌 렌더링 이후에 실행된다.
+
+즉, observer에 의해 호출되는 함수는 렌더링 프로세스 이후에 호출된다. 따라서 해당 함수 내부에서 참조하는 값은 렌더링 이후에 참조할 수 있는 값이어야 한다.
+
+그렇다면 어떤 것을 사용해야 렌더링 이후에 값을 참조할 수 있을까?
+
+1. ❌ query 요청이 반환한 isFetchingNextPage와 hasNextPage를 직접 참조: query 요청은 렌더링 과정에서 발생하기 때문에 렌더링이 끝나면 해당 실행 컨텍스트는 사라진다. 따라서 렌더링 이후에는 isFetchingNextPage와 hasNextPage 값을 참조할 수 없다.
+2. ❌ isFetchingNextPage와 hasNextPage를 state로 관리: state는 렌더링 과정에서 참조할 때 사용하므로, 렌더링 이후에 참조하는 것은 옳바른 접근 방법이 아니다. (state는 queue를 이용하여 snapshot으로 관리되기 때문에 다음 렌더링까지 변경된 state를 참조하지 못할 수 있다.)
+3. ⭕️ isFetchingNextPage와 hasNextPage를 ref로 관리: ref는 렌더링 프로세스 외부에서 값을 참조할 수 있다. 따라서 외부 API인 Intersection Observer API가 렌더링 이후에 어떠한 값을 참조하길 원한다면 ref를 사용할 수 있다.
+
+위에서 배운 내용으로 코드를 작성해보자.
 
 #### 해결 방법
 
-React에는 외부 API와 동기화 할 수 있도록 useRef hook이 제공된다. 따라서 useRef Hook을 이용하여 hasNextPage나 isFetchingNextPage의 결과를 ref로 등록하고, 값이 변경될 때마다 useEffect를 통해 동기화 시켜주면 IntersectionObserver에서 참조할 수 있게 된다.
+React에는 외부 API와 동기화 할 수 있도록 useRef hook이 제공된다. 따라서 useRef Hook을 이용하여 hasNextPage나 isFetchingNextPage의 결과를 ref로 등록하고, hasNextPage, isFetchingNextPage 값이 변경될 때마다 useEffect를 통해 ref 값을 동기화 시켜주면 IntersectionObserver에서 참조할 수 있게 된다.
 
 ```tsx
 function ProductList() {
