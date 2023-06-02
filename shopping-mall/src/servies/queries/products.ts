@@ -10,7 +10,7 @@ import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 
 export const useGetProduct = (id: string | undefined) =>
   useQuery<{ product: ProductType }>({
-    queryKey: [QueryKeys.PRODUCTS, 'product', id],
+    queryKey: QueryKeys.PRODUCTS.product(id),
     queryFn: () =>
       request({
         url: API_URL,
@@ -21,17 +21,17 @@ export const useGetProduct = (id: string | undefined) =>
 
 export const useGetProuctsByPage = ({
   page,
-  key,
+  category,
   count,
   isShownDeleted,
 }: {
   page: number;
-  key?: SecondKey;
+  category: SecondKey;
   count?: number;
   isShownDeleted?: boolean;
 }) =>
   useQuery<{ products: ProductsType; lastPageNumber: number }>({
-    queryKey: [QueryKeys.PRODUCTS, key, page],
+    queryKey: QueryKeys.PRODUCTS.productsOfPage(category, page),
     queryFn: () =>
       request({
         url: API_URL,
@@ -42,16 +42,16 @@ export const useGetProuctsByPage = ({
   });
 
 export const useGetInfiniteProducts = ({
-  key,
+  category,
   count,
   isShownDeleted,
 }: {
-  key?: SecondKey;
+  category: SecondKey;
   count?: number;
   isShownDeleted?: boolean;
 }) =>
   useInfiniteQuery<{ products: ProductsType }>({
-    queryKey: [QueryKeys.PRODUCTS, key],
+    queryKey: QueryKeys.PRODUCTS.products(category),
     queryFn: ({ pageParam = '' }) =>
       request({
         url: API_URL,

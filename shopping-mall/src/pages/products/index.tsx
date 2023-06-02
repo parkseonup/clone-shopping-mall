@@ -8,7 +8,7 @@ export default function ProductsPage() {
   const PRODUCTS_COUNT_TO_DISPLAY = 8;
   const { data } = useGetProuctsByPage({
     page: currentPage,
-    key: 'products',
+    category: 'products',
     count: PRODUCTS_COUNT_TO_DISPLAY,
   });
 

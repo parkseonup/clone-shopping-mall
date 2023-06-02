@@ -18,7 +18,7 @@ export const useAddProduct = () =>
         variables: { ...productInfo },
       }),
     onSuccess: () =>
-      queryClient.invalidateQueries([QueryKeys.PRODUCTS], {
+      queryClient.invalidateQueries(QueryKeys.PRODUCTS.default, {
         exact: false,
         refetchType: 'all',
       }),
@@ -33,7 +33,7 @@ export const useUpdateProduct = () =>
         variables: { ...productInfo },
       }),
     onSuccess: () =>
-      queryClient.invalidateQueries([QueryKeys.PRODUCTS], {
+      queryClient.invalidateQueries(QueryKeys.PRODUCTS.default, {
         exact: false,
         refetchType: 'all',
       }),
@@ -48,7 +48,7 @@ export const useDeleteProduct = () =>
         variables: { id },
       }),
     onSuccess: () =>
-      queryClient.invalidateQueries([QueryKeys.PRODUCTS], {
+      queryClient.invalidateQueries(QueryKeys.PRODUCTS.default, {
         exact: false,
         refetchType: 'all',
       }),
