@@ -1,5 +1,7 @@
 import AdminList from '../components/admin';
 import ProductForm from '../components/admin/productForm';
+import ErrorBoundaryWrapper from '../components/common/errorBoundaryWrapper';
+import ErrorFallback from '../components/common/errorFallback';
 import { ProductOmitType } from '../graphql/products';
 import { useAddProduct } from '../servies/mutations/products';
 
@@ -15,8 +17,10 @@ export default function AdminPage() {
       <h2>관리자 페이지</h2>
 
       <div>
-        <ProductForm onSubmit={onSubmitAddedProduct} />
-        <AdminList />
+        <ErrorBoundaryWrapper fallbackComponent={ErrorFallback}>
+          <ProductForm onSubmit={onSubmitAddedProduct} />
+          <AdminList />
+        </ErrorBoundaryWrapper>
       </div>
     </>
   );
