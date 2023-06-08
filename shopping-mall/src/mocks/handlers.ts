@@ -2,6 +2,33 @@ import { graphql } from 'msw';
 import { mockProducts, mockCart } from './mockData';
 import { ProductsType } from '../graphql/products';
 
+const getNotFoundError = (
+  id: string,
+  message = '존재하지 않는 상품입니다.'
+) => {
+  return {
+    message,
+    extensions: {
+      code: 'NOT_FOUND',
+      metadata: {
+        id,
+      },
+    },
+  };
+};
+
+const getGoneError = (id: string, message = '존재하지 않는 상품입니다.') => {
+  return {
+    message,
+    extensions: {
+      code: 'GONE',
+      metadata: {
+        id,
+      },
+    },
+  };
+};
+
 export const handlers = [
   // product
   graphql.query(
@@ -46,15 +73,27 @@ export const handlers = [
         };
       }
 
-      if (!responseData) throw new Error('잘못된 접근입니다.');
+      if (!responseData)
+        return res(
+          ctx.status(400),
+          ctx.errors([
+            {
+              message: '잘못된 요청입니다.',
+              extensions: {
+                code: 'BAD_REQUEST',
+              },
+            },
+          ])
+        );
 
-      return res(ctx.data(responseData));
+      return res(ctx.data(responseData!));
     }
   ),
   graphql.query('GET_PRODUCT', ({ variables }, res, ctx) => {
     const product = mockProducts.find(product => product.id === variables.id);
 
-    if (!product) throw new Error(`상품(${variables.id})이 존재하지 않습니다.`);
+    if (!product)
+      return res(ctx.status(404), ctx.errors([getNotFoundError(variables.id)]));
 
     return res(ctx.data({ product }));
   }),
@@ -80,12 +119,13 @@ export const handlers = [
     );
 
     if (targetIndex < 0)
-      throw new Error(`업데이트할 상품(${variables.id})이 존재하지 않습니다.`);
+      return res(ctx.status(404), ctx.errors([getNotFoundError(variables.id)]));
 
     const updatedProduct = {
       ...mockProducts[targetIndex],
       ...variables,
     };
+    updatedProduct.createdAt = Date.now();
     mockProducts.splice(targetIndex, 1, updatedProduct);
 
     return res(ctx.data({ updateProduct: updatedProduct }));
@@ -95,7 +135,7 @@ export const handlers = [
     const targetIndex = mockProducts.findIndex(product => product.id === id);
 
     if (targetIndex < 0)
-      throw new Error(`삭제할 상품(${id})이 존재하지 않습니다.`);
+      return res(ctx.status(410), ctx.errors([getGoneError(id)]));
 
     mockProducts[targetIndex].createdAt = null;
     return res(ctx.data({ deleteProduct: id }));
@@ -112,10 +152,11 @@ export const handlers = [
     );
 
     if (!targetProduct)
-      throw new Error(`상품(${productId}})이 존재하지 않습니다.`);
+      return res(ctx.status(410), ctx.errors([getGoneError(productId)]));
     if (!targetProduct.createdAt)
-      throw new Error(
-        `장바구니에 품절된 상품(${productId}})이 포함되어 있습니다.`
+      return res(
+        ctx.status(404),
+        ctx.errors([getNotFoundError(productId, '품절된 상품입니다.')])
       );
 
     const targetCartIndex = mockCart.findIndex(
@@ -146,10 +187,14 @@ export const handlers = [
     const targetIndex = mockCart.findIndex(cart => cart.id === cartId);
 
     if (targetIndex < 0)
-      throw new Error(`장바구니에 상품(${cartId})이 존재하지 않습니다.`);
+      return res(
+        ctx.status(410),
+        ctx.errors([getGoneError(cartId, '장바구니에 없는 상품입니다.')])
+      );
     if (!mockCart[targetIndex].product.createdAt)
-      throw new Error(
-        `장바구니에 품절된 상품(${cartId}})이 포함되어 있습니다.`
+      return res(
+        ctx.status(404),
+        ctx.errors([getNotFoundError(cartId, '품절된 상품입니다.')])
       );
 
     const newCartItem = {
@@ -175,11 +220,26 @@ export const handlers = [
     const deletedIds = variables.ids.filter((id: string) => {
       const targetCartIndex = mockCart.findIndex(cart => cart.id === id);
 
-      if (!mockCart[targetCartIndex].product.createdAt)
-        throw new Error(`결제 목록에 품절된 상품(${id}})이 포함되어 있습니다.`);
-
       if (targetCartIndex < 0)
-        throw new Error(`장바구니에 존재하지 않는 상품(${id}})입니다.`);
+        return res(
+          ctx.status(410),
+          ctx.errors([
+            getGoneError(
+              id,
+              '결제 목록에 장바구니에 없는 상품이 포함되어 있습니다.'
+            ),
+          ])
+        );
+      if (!mockCart[targetCartIndex].product.createdAt)
+        return res(
+          ctx.status(404),
+          ctx.errors([
+            getNotFoundError(
+              id,
+              '결제 목록에 품절된 상품이 포함되어 있습니다.'
+            ),
+          ])
+        );
 
       mockCart.splice(targetCartIndex, 1);
       return true;

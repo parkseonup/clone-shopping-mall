@@ -32,3 +32,18 @@ export const QueryKeys = {
 } as const;
 
 export type SecondKey = 'products' | 'admin';
+
+export type ResponseError = {
+  response: {
+    status: number;
+    errors: {
+      message: string;
+      extensions: {
+        code: string;
+        metadata?: {
+          id: string;
+        };
+      };
+    }[];
+  };
+};
