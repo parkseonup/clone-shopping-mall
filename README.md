@@ -4,6 +4,7 @@ clone-shopping-mall 레포지토리에서 만들었던 shopping-mall을 강의 �
 
 ## 강의와 다른 점
 
+- 강의에서는 QueryClient 인스턴스를 생성할 때 export 하여 인스턴스 참조가 필요한 곳에 import로 사용하는 방법이었으면, useQueryClient 메서드를 사용하는 방식으로 변경.
 - Styled Component를 사용하여 css 적용
 - ItemData 컴포넌트를 product, cart, admin에 공통으로 사용할 수 있도록 변경.
 - Infinite scroll

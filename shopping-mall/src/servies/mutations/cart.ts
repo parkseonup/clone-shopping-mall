@@ -1,10 +1,10 @@
 import request from 'graphql-request';
-import { API_URL, QueryKeys, queryClient } from '../common';
+import { API_URL, QueryKeys } from '../common';
 import { ADD_CART, DELETE_CART, UPDATE_CART } from '../../graphql/cart';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-export const useAddCart = () =>
-  useMutation({
+export const useAddCart = () => {
+  return useMutation({
     mutationFn: (id: string) =>
       request({
         url: API_URL,
@@ -12,9 +12,12 @@ export const useAddCart = () =>
         variables: { productId: id },
       }),
   });
+};
 
-export const useUpdateCart = () =>
-  useMutation({
+export const useUpdateCart = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
     mutationFn: ({ id, amount }: { id: string; amount: number }) =>
       request({
         url: API_URL,
@@ -23,9 +26,12 @@ export const useUpdateCart = () =>
       }),
     onSuccess: () => queryClient.invalidateQueries([QueryKeys.CART]),
   });
+};
 
-export const useDeleteCart = () =>
-  useMutation({
+export const useDeleteCart = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
     mutationFn: (id: string) =>
       request({
         url: API_URL,
@@ -34,3 +40,4 @@ export const useDeleteCart = () =>
       }),
     onSuccess: () => queryClient.invalidateQueries([QueryKeys.CART]),
   });
+};

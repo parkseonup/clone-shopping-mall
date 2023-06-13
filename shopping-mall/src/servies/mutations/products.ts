@@ -1,5 +1,5 @@
 import request from 'graphql-request';
-import { API_URL, QueryKeys, queryClient } from '../common';
+import { API_URL, QueryKeys } from '../common';
 import {
   ADD_PRODUCT,
   ProductType,
@@ -7,10 +7,12 @@ import {
   DELETE_PRODUCT,
   ProductOmitType,
 } from '../../graphql/products';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-export const useAddProduct = () =>
-  useMutation({
+export const useAddProduct = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
     mutationFn: (productInfo: ProductOmitType) =>
       request({
         url: API_URL,
@@ -23,9 +25,12 @@ export const useAddProduct = () =>
         refetchType: 'all',
       }),
   });
+};
 
-export const useUpdateProduct = () =>
-  useMutation({
+export const useUpdateProduct = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
     mutationFn: (productInfo: Omit<ProductType, 'createdAt'>) =>
       request({
         url: API_URL,
@@ -38,9 +43,12 @@ export const useUpdateProduct = () =>
         refetchType: 'all',
       }),
   });
+};
 
-export const useDeleteProduct = () =>
-  useMutation({
+export const useDeleteProduct = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
     mutationFn: (id: string) =>
       request({
         url: API_URL,
@@ -53,3 +61,4 @@ export const useDeleteProduct = () =>
         refetchType: 'all',
       }),
   });
+};
