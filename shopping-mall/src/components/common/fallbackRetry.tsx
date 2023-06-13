@@ -1,4 +1,4 @@
-export default function ErrorFallback({
+export default function FallbackRetry({
   resetErrorBoundary,
 }: {
   resetErrorBoundary: (...args: any[]) => void;

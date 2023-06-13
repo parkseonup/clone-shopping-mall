@@ -9,10 +9,8 @@ export default function ErrorBoundaryWrapper({
   fallbackComponent: ComponentType<FallbackProps>;
 }) {
   return (
-    <Suspense>
-      <ErrorBoundary FallbackComponent={fallbackComponent}>
-        {children}
-      </ErrorBoundary>
-    </Suspense>
+    <ErrorBoundary FallbackComponent={fallbackComponent}>
+      <Suspense fallback={<p>Loading...</p>}>{children}</Suspense>
+    </ErrorBoundary>
   );
 }

@@ -1,4 +1,4 @@
-import { API_URL, QueryKeys, SecondKey } from '../common';
+import { API_URL, QueryKeys, ResponseError, SecondKey } from '../common';
 import request from 'graphql-request';
 import {
   GET_PRODUCT,
@@ -8,8 +8,8 @@ import {
 } from '../../graphql/products';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 
-export const useGetProduct = (id: string | undefined) =>
-  useQuery<{ product: ProductType }>({
+export const useGetProduct = (id: string) =>
+  useQuery<{ product: ProductType }, ResponseError>({
     queryKey: QueryKeys.PRODUCTS.product(id),
     queryFn: () =>
       request({
@@ -30,7 +30,7 @@ export const useGetProuctsByPage = ({
   count?: number;
   isShownDeleted?: boolean;
 }) =>
-  useQuery<{ products: ProductsType; lastPageNumber: number }>({
+  useQuery<{ products: ProductsType; lastPageNumber: number }, ResponseError>({
     queryKey: QueryKeys.PRODUCTS.productsOfPage(category, page),
     queryFn: () =>
       request({
@@ -50,7 +50,7 @@ export const useGetInfiniteProducts = ({
   count?: number;
   isShownDeleted?: boolean;
 }) =>
-  useInfiniteQuery<{ products: ProductsType }>({
+  useInfiniteQuery<{ products: ProductsType }, ResponseError>({
     queryKey: QueryKeys.PRODUCTS.products(category),
     queryFn: ({ pageParam = '' }) =>
       request({
