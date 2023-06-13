@@ -1,4 +1,4 @@
-import { Dispatch, createContext, useReducer } from 'react';
+import { Dispatch, ReactNode, createContext, useReducer } from 'react';
 import { CartType } from '../graphql/cart';
 
 type Action =
@@ -17,7 +17,7 @@ export const ProductsToPayDispatchContext = createContext<DispatchType | null>(
 export function ProductsToPayProvider({
   children,
 }: {
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   const [productsToPay, dispatch] = useReducer(
     productsToPayReducer,
