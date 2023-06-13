@@ -39,6 +39,8 @@ export const useGetProuctsByPage = ({
         variables: { page, count, isShownDeleted },
       }),
     keepPreviousData: true,
+    suspense: true,
+    useErrorBoundary: true,
   });
 
 export const useGetInfiniteProducts = ({
@@ -59,4 +61,6 @@ export const useGetInfiniteProducts = ({
         variables: { cursor: pageParam, count, isShownDeleted },
       }),
     getNextPageParam: lastPage => lastPage.products.at(-1)?.id,
+    suspense: true,
+    useErrorBoundary: true,
   });

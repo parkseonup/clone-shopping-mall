@@ -1,4 +1,5 @@
-import { QueryClient } from '@tanstack/react-query';
+import { QueryCache, QueryClient } from '@tanstack/react-query';
+import toast from 'react-hot-toast';
 
 export const queryClient = new QueryClient({
   defaultOptions: {
@@ -8,10 +9,13 @@ export const queryClient = new QueryClient({
       refetchOnWindowFocus: false,
       refetchOnMount: false,
       retry: 0,
-      suspense: true,
-      useErrorBoundary: true,
     },
   },
+  queryCache: new QueryCache({
+    onError: error => {
+      toast.error((error as ResponseError).response.errors[0].message);
+    },
+  }),
 });
 
 export const BASE_URL = 'http://localhost:3000';
