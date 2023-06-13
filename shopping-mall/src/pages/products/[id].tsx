@@ -4,7 +4,7 @@ import { useGetProduct } from '../../servies/queries/products';
 
 export default function ProductDetailPage() {
   const { id } = useParams();
-  const { data } = useGetProduct(id);
+  const { data } = useGetProduct(id!);
 
   if (!data) return null;
 
