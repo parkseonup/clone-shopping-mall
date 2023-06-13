@@ -15,6 +15,9 @@ clone-shopping-mall 레포지토리에서 만들었던 shopping-mall을 강의 �
   - 강의에서는 결제 항목이 선택되면 선택된 내용으로 formData state를 업데이트 하고 useEffect 내부에서 checkbox ref를 확인하여 선택된 결제 항목을 Recoil 전역 상태로 업데이트함 -> 결제 항목이 선택되면 선택된 내용으로 결제 항목 recoil 전역 상태를 업데이트하고 useEffect로 결제 항목 전역 상태를 확인하여 checkbox ref에 checked를 값을 변경함
 - ProductForm 컴포넌트: AddForm 컴포넌트를 admin 페이지의 edit form과 add form에 공통으로 사용할 수 있도록 변경
 - fetch 함수 하나로 관리하던 것을 요청하는 용도에 따라 분리: fetch 데이터에 따라 용도를 분리하여 명확한 type 관리의 용이성을 높임
+- 에러 처리 추가
+  - Error Boundary를 이용한 fallback UI 출력 (react-error-boundary 사용)
+  - toast를 이용한 에러 처리 (react-hot-toast 사용)
 
 # 🎛️ 구현 과정
 
@@ -928,6 +931,197 @@ ESLint는 기본적으로 JavaScript 코드를 분석하고 검사하기 위해 
 
 1. package.json의 `devDependencies`에 `eslint-plugin-html` 설치
 2. .eslintrc의 `plugins` 속성에 `"html"` 추가
+
+## query 요청에서 에러 발생시 onError 콜백에서 toast.error()가 동작하지 않음.
+
+### 기존 코드
+
+- src/pages/products/[id].tsx
+
+  ```ts
+  import { Toaster } from "react-hot-toast";
+  // ...
+
+  export default function ProductDetailPage() {
+    const { id } = useParams();
+
+    if (id === undefined) return null;
+
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    const { data } = useGetProduct(id);
+
+    if (!data) return null;
+
+    return (
+      <>
+        <h2>상품 상세 페이지</h2>
+
+        <main>
+          <ProductDetail {...data.product} />
+          <Toaster />
+        </main>
+      </>
+    );
+  }
+  ```
+
+- src/servies/common.ts
+
+  ```ts
+  import { toast } from "react-hot-toast";
+  // ...
+
+  export const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        staleTime: Infinity,
+        cacheTime: Infinity,
+        refetchOnWindowFocus: false,
+        refetchOnMount: false,
+        retry: 0,
+        suspense: true,
+        useErrorBoundary: true,
+      },
+    },
+    queryCache: new QueryCache({
+      onError: (error) => {
+        console.log(
+          "[에러]",
+          (error as ResponseError).response.errors[0].message
+        ); // 여기까지는 잘 찍힘
+
+        toast.error((error as ResponseError).response.errors[0].message); // FIXME: 안됨!!!!!!
+      },
+      onSuccess: () => {
+        toast.success("성공"); // 이 toast는 잘 동작함
+      },
+    }),
+  });
+  ```
+
+- src/servies/queries/products.ts
+
+  ```ts
+  export const useGetProduct = (id: string) =>
+    useQuery<{ product: ProductType }, ResponseError>({
+      queryKey: QueryKeys.PRODUCTS.product(id),
+      queryFn: () =>
+        request({
+          url: API_URL,
+          document: GET_PRODUCT,
+          variables: { id },
+        }),
+    });
+  ```
+
+### 문제 원인 분석
+
+1. <Toaster /> 선언 위치의 오류
+
+   - 문제: 기존에는 <Toaster /> 컴포넌트를 에러가 발생하는 컴포넌트에 선언해주었다.
+   - 원인: react query는 query Function에서 에러가 캐치되면 컴포넌트의 렌더링을 멈추고 onError 콜백 함수를 실행한다. 즉, 에러가 발생하는 컴포넌트에서 <Toaster />를 선언해주면 에러 발생시 렌더링이 멈추기 때문에 <Toaster /> 컴포넌트가 렌더링되지 않는다.
+
+2. 잘못된 `useErrorBoundary` 옵션값
+
+   - 문제: 쿼리 캐시를 생성하는 전역에 `useErrorBoundary` 옵션을 `true`로 지정했다.
+   - 원인: useErrorBoundary는 에러가 발생할 경우 가장 가까운 상위의 에러 바운더리에 에러가 전파되도록 하겠다 라는 의미의 옵션인데, 본 페이지는 에러 바운더리를 사용하지 않았다. 즉, 에러 처리를 할 에러 경계(Error Boundary)를 찾지 못해 애플리케이션이 동작을 멈췄다.
+
+### 문제 해결
+
+<Toaster /> 컴포넌트를 에러가 발생하는 컴포넌트의 상위에 선언하고 query 요청시 useErrorBoundary 옵션을 false로 변경한다.
+
+- src/App.ts
+
+  ```ts
+  import { ToastContainer } from "react-toastify";
+  // ...
+
+  export default function App() {
+    const element = useRoutes(routes);
+
+    return (
+      <QueryClientProvider client={queryClient}>
+        <ProductsToPayProvider>
+          <h1>Shopping Mall</h1>
+          <Gnb />
+          {element}
+          <ToastContainer />
+        </ProductsToPayProvider>
+        <ReactQueryDevtools initialIsOpen={false} />
+      </QueryClientProvider>
+    );
+  }
+  ```
+
+- src/pages/products/[id].tsx
+
+  ```ts
+  export default function ProductDetailPage() {
+    const { id } = useParams();
+
+    if (id === undefined) return null;
+
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    const { data } = useGetProduct(id);
+
+    if (!data) return null;
+
+    return (
+      <>
+        <h2>상품 상세 페이지</h2>
+
+        <main>
+          <ProductDetail {...data.product} />
+        </main>
+      </>
+    );
+  }
+  ```
+
+- src/servies/common.ts
+
+  ```ts
+  import { toast } from "react-toastify";
+  // ...
+
+  export const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        staleTime: Infinity,
+        cacheTime: Infinity,
+        refetchOnWindowFocus: false,
+        refetchOnMount: false,
+        retry: 0,
+        suspense: true,
+        useErrorBoundary: true,
+      },
+    },
+    queryCache: new QueryCache({
+      onError: (error) => {
+        toast.error((error as ResponseError).response.errors[0].message);
+      },
+      onSuccess: () => {
+        toast.success("성공");
+      },
+    }),
+  });
+  ```
+
+- src/servies/queries/products.ts
+
+  ```ts
+  export const useGetProduct = (id: string) =>
+    useQuery<{ product: ProductType }, ResponseError>({
+      queryKey: QueryKeys.PRODUCTS.product(id),
+      queryFn: () =>
+        request({
+          url: API_URL,
+          document: GET_PRODUCT,
+          variables: { id },
+        }),
+      useErrorBoundary: false,
+    });
+  ```
 
 # 배운 내용
 
