@@ -1,5 +1,4 @@
 import { ProductOmitType } from '../../graphql/products';
-import AdminItem from './item';
 import { useEffect, useRef, useState } from 'react';
 import useIntersect from '../hooks/useIntersect';
 import { useGetInfiniteProducts } from '../../servies/queries/products';
@@ -7,6 +6,8 @@ import {
   useDeleteProduct,
   useUpdateProduct,
 } from '../../servies/mutations/products';
+import ProductCard from '../product/productCard';
+import ProductForm from './productForm';
 
 // TODO: ref 속성 타입 에러 해결
 export default function AdminList() {
@@ -28,10 +29,6 @@ export default function AdminList() {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_, setTarget] = useIntersect(executeFetchNextPage);
 
-  const onEditMode = (id: string) => () => {
-    setEditingId(id);
-  };
-
   const offEditMode = () => {
     setEditingId('');
   };
@@ -42,10 +39,6 @@ export default function AdminList() {
       ...formData,
     });
     setEditingId('');
-  };
-
-  const onDelete = (id: string) => {
-    deleteProduct(id);
   };
 
   useEffect(() => {
@@ -61,15 +54,33 @@ export default function AdminList() {
         {data.pages
           .flatMap(page => page.products)
           .map(product => (
-            <AdminItem
-              product={product}
-              editingId={editingId}
-              onEditMode={onEditMode(product.id)}
-              offEditMode={offEditMode}
-              onSubmitEdit={onSubmitEdit(product.id)}
-              onDelete={onDelete}
-              key={product.id}
-            />
+            <li key={product.id}>
+              {product.id === editingId ? (
+                <ProductForm
+                  data={product}
+                  onCancel={offEditMode}
+                  onSubmit={onSubmitEdit(product.id)}
+                />
+              ) : (
+                <ProductCard
+                  data={product}
+                  controls={
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => setEditingId(product.id)}>
+                        수정
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => deleteProduct(product.id)}>
+                        삭제
+                      </button>
+                    </>
+                  }
+                />
+              )}
+            </li>
           ))}
       </ul>
 

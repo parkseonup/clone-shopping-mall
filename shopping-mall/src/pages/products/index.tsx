@@ -36,14 +36,16 @@ export default function ProductsPage() {
     <>
       <h2>상품 페이지</h2>
 
-      <ProductList products={data.products} />
-      <Pagination
-        currentPage={currentPage}
-        lastPage={data.lastPageNumber}
-        onClickPrevPage={fetchPrevPage}
-        onClickNextPage={fetchNextPage}
-        onClickPage={fetchPage}
-      />
+      <main>
+        <ProductList products={data.products} />
+        <Pagination
+          currentPage={currentPage}
+          lastPage={data.lastPageNumber}
+          onClickPrevPage={fetchPrevPage}
+          onClickNextPage={fetchNextPage}
+          onClickPage={fetchPage}
+        />
+      </main>
     </>
   );
 }

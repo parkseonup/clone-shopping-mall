@@ -1,6 +1,7 @@
 import { useParams } from 'react-router-dom';
-import ProductDetail from '../../components/products/detail';
 import { useGetProduct } from '../../servies/queries/products';
+import ProductCard from '../../components/product/productCard';
+import ButtonToAddCart from '../../components/cart/buttonToAddCart';
 
 export default function ProductDetailPage() {
   const { id } = useParams();
@@ -13,7 +14,10 @@ export default function ProductDetailPage() {
       <h2>상품 상세 페이지</h2>
 
       <main>
-        <ProductDetail {...data.product} />
+        <ProductCard
+          data={data.product}
+          controls={<ButtonToAddCart id={data.product.id} />}
+        />
       </main>
     </>
   );
