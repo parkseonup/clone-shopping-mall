@@ -6,7 +6,12 @@ import {
   ProductType,
   ProductsType,
 } from '../../graphql/products';
-import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
+import {
+  FetchNextPageOptions,
+  InfiniteQueryObserverResult,
+  useInfiniteQuery,
+  useQuery,
+} from '@tanstack/react-query';
 
 export const useGetProduct = (id: string) => {
   const { data } = useQuery<{ product: ProductType }, ResponseError>({
@@ -60,16 +65,39 @@ export const useGetInfiniteProducts = ({
   category: SecondKey;
   count?: number;
   isShownDeleted?: boolean;
-}) =>
-  useInfiniteQuery<{ products: ProductsType }, ResponseError>({
-    queryKey: QueryKeys.PRODUCTS.products(category),
-    queryFn: ({ pageParam = '' }) =>
-      request({
-        url: API_URL,
-        document: GET_PRODUCTS,
-        variables: { cursor: pageParam, count, isShownDeleted },
-      }),
-    getNextPageParam: lastPage => lastPage.products.at(-1)?.id,
-    suspense: true,
-    useErrorBoundary: true,
-  });
+}): {
+  data: ProductsType;
+  fetchNextPage?: (options?: FetchNextPageOptions | undefined) => Promise<
+    InfiniteQueryObserverResult<
+      {
+        products: ProductsType;
+      },
+      ResponseError
+    >
+  >;
+  isFetchingNextPage?: boolean;
+  hasNextPage?: boolean;
+} => {
+  const { data, fetchNextPage, isFetchingNextPage, hasNextPage } =
+    useInfiniteQuery<{ products: ProductsType }, ResponseError>({
+      queryKey: QueryKeys.PRODUCTS.products(category),
+      queryFn: ({ pageParam = '' }) =>
+        request({
+          url: API_URL,
+          document: GET_PRODUCTS,
+          variables: { cursor: pageParam, count, isShownDeleted },
+        }),
+      getNextPageParam: lastPage => lastPage.products.at(-1)?.id,
+      suspense: true,
+      useErrorBoundary: true,
+    });
+
+  return data
+    ? {
+        data: data.pages.flatMap(page => page.products),
+        fetchNextPage,
+        isFetchingNextPage,
+        hasNextPage,
+      }
+    : { data: [] };
+};
