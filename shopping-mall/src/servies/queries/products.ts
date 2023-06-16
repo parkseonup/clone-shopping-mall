@@ -8,8 +8,8 @@ import {
 } from '../../graphql/products';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 
-export const useGetProduct = (id: string) =>
-  useQuery<{ product: ProductType }, ResponseError>({
+export const useGetProduct = (id: string) => {
+  const { data } = useQuery<{ product: ProductType }, ResponseError>({
     queryKey: QueryKeys.PRODUCTS.product(id),
     queryFn: () =>
       request({
@@ -18,6 +18,9 @@ export const useGetProduct = (id: string) =>
         variables: { id },
       }),
   });
+
+  return data ? { product: data.product } : { product: {} };
+};
 
 export const useGetProuctsByPage = ({
   page,
