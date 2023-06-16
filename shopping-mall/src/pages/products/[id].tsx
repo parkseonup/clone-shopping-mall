@@ -1,11 +1,11 @@
 import { useParams } from 'react-router-dom';
 import { useGetProduct } from '../../servies/queries/products';
 import ProductCard from '../../components/product/productCard';
-import ButtonToAddCart from '../../components/cart/buttonToAddCart';
+import ButtonToAddCart from '../../components/cart/buttons';
 
 export default function ProductDetailPage() {
   const { id } = useParams() as { id: string };
-  const { product } = useGetProduct(id);
+  const { data: product } = useGetProduct(id);
 
   return (
     <>

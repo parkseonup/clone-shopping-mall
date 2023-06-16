@@ -19,7 +19,7 @@ export const useGetProduct = (id: string) => {
       }),
   });
 
-  return data ? { product: data.product } : { product: {} };
+  return data ? { data: data.product } : { data: {} };
 };
 
 export const useGetProuctsByPage = ({

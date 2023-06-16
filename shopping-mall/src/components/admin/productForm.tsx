@@ -14,11 +14,11 @@ const useDefaultValues = (name: string, data?: ProductType) => {
 export default function ProductForm({
   data,
   onSubmit,
-  onCancel,
+  onReset,
 }: {
   data?: ProductType;
   onSubmit: (formData: ProductOmitType) => void;
-  onCancel?: () => void;
+  onReset?: () => void;
 }) {
   const onSubmitForm = (e: SyntheticEvent) => {
     e.preventDefault();
@@ -71,7 +71,7 @@ export default function ProductForm({
       </label>
 
       <button type="submit">등록</button>
-      <button type="reset" onClick={onCancel}>
+      <button type="reset" onClick={onReset}>
         취소
       </button>
     </form>
