@@ -69,7 +69,7 @@ export const handlers = [
         startIndex = Math.ceil(filteredProducts.length / count) * (page - 1);
         responseData = {
           products: filteredProducts.slice(startIndex, startIndex + count),
-          lastPageNumber: Math.ceil(filteredProducts.length / count),
+          totalPage: Math.ceil(filteredProducts.length / count),
         };
       }
 

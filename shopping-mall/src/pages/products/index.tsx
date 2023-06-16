@@ -12,23 +12,7 @@ export default function ProductsPage() {
     count: PRODUCTS_COUNT_TO_DISPLAY,
   });
 
-  if (!data)
-    return (
-      <>
-        <h2>상품 페이지</h2>
-        <p>상품이 없습니다.</p>
-      </>
-    );
-
-  const fetchPrevPage = () => {
-    if (currentPage > 1) setCurrentPage(currentPage - 1);
-  };
-
-  const fetchNextPage = () => {
-    if (currentPage < data.lastPageNumber) setCurrentPage(currentPage + 1);
-  };
-
-  const fetchPage = (page: number) => {
+  const onPageChange = (page: number) => {
     setCurrentPage(page);
   };
 
@@ -40,10 +24,8 @@ export default function ProductsPage() {
         <ProductList products={data.products} />
         <Pagination
           currentPage={currentPage}
-          lastPage={data.lastPageNumber}
-          onClickPrevPage={fetchPrevPage}
-          onClickNextPage={fetchNextPage}
-          onClickPage={fetchPage}
+          totalPage={data.totalPage}
+          onPageChange={onPageChange}
         />
       </main>
     </>

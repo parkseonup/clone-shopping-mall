@@ -29,8 +29,11 @@ export const useGetProuctsByPage = ({
   category: SecondKey;
   count?: number;
   isShownDeleted?: boolean;
-}) =>
-  useQuery<{ products: ProductsType; lastPageNumber: number }, ResponseError>({
+}): { data: { products: ProductsType; totalPage: number } } => {
+  const { data } = useQuery<
+    { products: ProductsType; totalPage: number },
+    ResponseError
+  >({
     queryKey: QueryKeys.PRODUCTS.productsOfPage(category, page),
     queryFn: () =>
       request({
@@ -42,6 +45,9 @@ export const useGetProuctsByPage = ({
     suspense: true,
     useErrorBoundary: true,
   });
+
+  return data ? { data } : { data: { products: [], totalPage: 0 } };
+};
 
 export const useGetInfiniteProducts = ({
   category,

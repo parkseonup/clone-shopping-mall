@@ -2,30 +2,34 @@ import styled from 'styled-components';
 
 export default function Pagination({
   currentPage,
-  lastPage,
-  onClickPrevPage,
-  onClickNextPage,
-  onClickPage,
+  totalPage,
+  onPageChange,
 }: {
   currentPage: number;
-  lastPage: number;
-  onClickPrevPage: () => void;
-  onClickNextPage: () => void;
-  onClickPage: (page: number) => void;
+  totalPage: number;
+  onPageChange: (page: number) => void;
 }) {
-  if (lastPage <= 1) return null;
+  if (totalPage <= 1) return null;
+
+  const onChangeToPrevPage = () => {
+    if (currentPage > 1) onPageChange(currentPage - 1);
+  };
+
+  const onChangeToNextPage = () => {
+    if (currentPage < totalPage) onPageChange(currentPage + 1);
+  };
 
   return (
     <ButtonWrapper>
-      <Button onClick={onClickPrevPage} disabled={currentPage <= 1}>
+      <Button onClick={onChangeToPrevPage} disabled={currentPage <= 1}>
         이전
       </Button>
-      {Array.from({ length: lastPage }, (_, i) => (
-        <Button onClick={() => onClickPage(i + 1)} key={i}>
+      {Array.from({ length: totalPage }, (_, i) => (
+        <Button onClick={() => onPageChange(i + 1)} key={i}>
           {i + 1}
         </Button>
       ))}
-      <Button onClick={onClickNextPage} disabled={currentPage >= lastPage}>
+      <Button onClick={onChangeToNextPage} disabled={currentPage >= totalPage}>
         다음
       </Button>
     </ButtonWrapper>
