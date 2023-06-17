@@ -39,27 +39,19 @@ export default function AdminItem({
           onReset={handleInactiveEditMode}
           onSubmit={handleSubmitEdit(product.id)}
         />
-      ) : product.createdAt ? (
-        <ProductCard
-          data={product}
-          controls={
-            <>
-              <button type="button" onClick={handleActiveEditMode(product.id)}>
-                수정
-              </button>
-              <DeleteProductButton id={product.id} />
-            </>
-          }
-        />
       ) : (
         <ProductCard
           data={product}
           controls={
             <>
-              <strong>삭제된 상품입니다.</strong>
               <button type="button" onClick={handleActiveEditMode(product.id)}>
                 수정
               </button>
+              {product.createdAt ? (
+                <DeleteProductButton id={product.id} />
+              ) : (
+                <strong>삭제된 상품입니다.</strong>
+              )}
             </>
           }
         />
