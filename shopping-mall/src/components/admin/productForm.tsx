@@ -2,15 +2,6 @@ import { SyntheticEvent } from 'react';
 import { ProductOmitType, ProductType } from '../../graphql/products';
 import arrayToObject from '../../utils/arrayToObject';
 
-const useDefaultValues = (name: string, data?: ProductType) => {
-  return {
-    title: data?.title || '',
-    imageUrl: data?.imageUrl || '',
-    price: data?.price || 0,
-    description: data?.description || '',
-  }[name];
-};
-
 export default function ProductForm({
   data,
   onSubmit,
@@ -77,3 +68,12 @@ export default function ProductForm({
     </form>
   );
 }
+
+const useDefaultValues = (name: string, data?: ProductType) => {
+  return {
+    title: data?.title || '',
+    imageUrl: data?.imageUrl || '',
+    price: data?.price || 0,
+    description: data?.description || '',
+  }[name];
+};

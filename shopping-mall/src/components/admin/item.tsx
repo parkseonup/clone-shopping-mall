@@ -49,9 +49,7 @@ export default function AdminItem({
               </button>
               {product.createdAt ? (
                 <DeleteProductButton id={product.id} />
-              ) : (
-                <strong>삭제된 상품입니다.</strong>
-              )}
+              ) : null}
             </>
           }
         />
