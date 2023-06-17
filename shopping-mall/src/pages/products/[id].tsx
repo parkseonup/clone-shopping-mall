@@ -1,7 +1,7 @@
 import { useParams } from 'react-router-dom';
 import { useGetProduct } from '../../servies/queries/products';
 import ProductCard from '../../components/product/productCard';
-import ButtonToAddCart from '../../components/cart/buttons';
+import { ButtonToAddCart } from '../../components/cart/actions';
 
 export default function ProductDetailPage() {
   const { id } = useParams() as { id: string };

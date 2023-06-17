@@ -1,56 +1,65 @@
 import { CartItemType } from '../../graphql/cart';
-import { ForwardedRef, SyntheticEvent, forwardRef } from 'react';
-import ItemData from '../common/itemData';
-import { useDeleteCart, useUpdateCart } from '../../servies/mutations/cart';
+import { SyntheticEvent, useContext, useEffect, useRef, useState } from 'react';
+import ProductCard from '../product/productCard';
+import { ButtonToDeleteCart, InputToUpdateCartAmount } from './actions';
+import {
+  ProductsToPayContext,
+  ProductsToPayDispatchContext,
+} from '../../context/productsToPay';
 
-const CartItem = forwardRef(function CartItem(
-  { id, amount, product: { title, imageUrl, price, createdAt } }: CartItemType,
-  ref: ForwardedRef<HTMLInputElement>
-) {
-  const { mutate: updateCart } = useUpdateCart();
-  const { mutate: deleteCart } = useDeleteCart();
+export default function CartItem({ data: cartItem }: { data: CartItemType }) {
+  const { id, amount, product } = cartItem;
+  const checkboxRef = useRef(null);
+  const checkedItems = useContext(ProductsToPayContext);
+  const isChecked = !!checkedItems?.find(checkedItem => id === checkedItem.id);
+  const setCheckedItems = useContext(ProductsToPayDispatchContext);
 
-  const onChangeAmount = (e: SyntheticEvent) => {
-    const amount = +(e.target as HTMLInputElement).value;
-    updateCart({ id, amount });
+  if (!setCheckedItems)
+    throw new Error('Cannot find ProductsToPayDispatchContext');
+
+  const onChangeCheckbox = (e: SyntheticEvent) => {
+    setCheckedItems({
+      type: (e.target as HTMLInputElement).checked ? 'added' : 'deleted',
+      items: [cartItem],
+    });
   };
 
-  const onDeleteItem = () => {
-    deleteCart(id);
-  };
+  useEffect(() => {
+    if (!product.createdAt) {
+      setCheckedItems({
+        type: 'deleted',
+        items: [cartItem],
+      });
+    }
+  }, []);
 
   return (
     <li>
       <label>
         <input
           type="checkbox"
-          name={`cart-item__checkbox${id}`}
-          ref={ref}
-          disabled={!createdAt}
-          className="cart-item__checkbox"
+          ref={checkboxRef}
+          disabled={!product.createdAt}
+          onChange={onChangeCheckbox}
+          checked={isChecked}
         />
       </label>
 
-      <ItemData title={title} imageUrl={imageUrl} price={price} />
-
-      {createdAt ? (
-        <label>
-          개수:
-          <input
-            type="number"
-            defaultValue={amount}
-            onChange={onChangeAmount}
-            min={1}
-          />
-        </label>
-      ) : (
-        <strong>품절된 상품입니다.</strong>
-      )}
-      <button type="button" onClick={onDeleteItem}>
-        삭제
-      </button>
+      <ProductCard
+        data={{ ...product }}
+        controls={
+          <>
+            {product.createdAt ? (
+              <InputToUpdateCartAmount
+                id={id}
+                amount={amount}
+                labelText={'개수'}
+              />
+            ) : null}
+            <ButtonToDeleteCart id={id} />
+          </>
+        }
+      />
     </li>
   );
-});
-
-export default CartItem;
+}
