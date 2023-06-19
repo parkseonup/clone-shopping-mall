@@ -7,11 +7,7 @@ export default function useIntersect(
   ) => any,
   options?: { root?: HTMLElement; rootMargin?: string; threshold?: number }
 ) {
-  const [target, setTarget] = useState<any>();
-
-  const changeTarget = (target: HTMLElement) => {
-    setTarget(target);
-  };
+  const [target, setTarget] = useState<HTMLElement | null>(null);
 
   const checkIntersect = useCallback(
     ([entry]: IntersectionObserverEntry[], observer: IntersectionObserver) => {
@@ -32,5 +28,5 @@ export default function useIntersect(
     }
   }, [target, options, checkIntersect]);
 
-  return [target, changeTarget];
+  return [target, setTarget] as const;
 }
