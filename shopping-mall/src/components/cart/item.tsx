@@ -1,34 +1,27 @@
 import { CartItemType } from '../../graphql/cart';
-import { SyntheticEvent, useContext, useEffect, useRef, useState } from 'react';
+import { SyntheticEvent, useEffect, useRef } from 'react';
 import ProductCard from '../product/productCard';
-import { ButtonToDeleteCart, InputToUpdateCartAmount } from './actions';
-import {
-  ProductsToPayContext,
-  ProductsToPayDispatchContext,
-} from '../../context/productsToPay';
+import useCartIdsToPay from '../hooks/useCartIdsToPay';
+import { useDeleteCart, useUpdateCart } from '../../servies/mutations/cart';
 
 export default function CartItem({ data: cartItem }: { data: CartItemType }) {
   const { id, amount, product } = cartItem;
   const checkboxRef = useRef(null);
-  const checkedItems = useContext(ProductsToPayContext);
-  const isChecked = !!checkedItems?.find(checkedItem => id === checkedItem.id);
-  const setCheckedItems = useContext(ProductsToPayDispatchContext);
-
-  if (!setCheckedItems)
-    throw new Error('Cannot find ProductsToPayDispatchContext');
+  const [cartIdsToPay, setCartIdsToPay] = useCartIdsToPay();
+  const isChecked = cartIdsToPay.includes(id);
 
   const onChangeCheckbox = (e: SyntheticEvent) => {
-    setCheckedItems({
+    setCartIdsToPay({
       type: (e.target as HTMLInputElement).checked ? 'added' : 'deleted',
-      items: [cartItem],
+      ids: [id],
     });
   };
 
   useEffect(() => {
     if (!product.createdAt) {
-      setCheckedItems({
+      setCartIdsToPay({
         type: 'deleted',
-        items: [cartItem],
+        ids: [id],
       });
     }
   }, []);
@@ -50,16 +43,46 @@ export default function CartItem({ data: cartItem }: { data: CartItemType }) {
         controls={
           <>
             {product.createdAt ? (
-              <InputToUpdateCartAmount
-                id={id}
-                amount={amount}
-                labelText={'개수'}
-              />
+              <InputToUpdateCartAmount id={id} amount={amount} />
             ) : null}
             <ButtonToDeleteCart id={id} />
           </>
         }
       />
     </li>
+  );
+}
+
+export function InputToUpdateCartAmount({
+  id,
+  amount,
+}: Pick<CartItemType, 'id' | 'amount'>) {
+  const { mutate: updateCart } = useUpdateCart();
+
+  const onChangeAmount = (e: SyntheticEvent) => {
+    const amount = +(e.target as HTMLInputElement).value;
+    updateCart({ id, amount });
+  };
+
+  return (
+    <label>
+      개수:
+      <input
+        type="number"
+        defaultValue={amount}
+        onChange={onChangeAmount}
+        min={1}
+      />
+    </label>
+  );
+}
+
+export function ButtonToDeleteCart({ id }: { id: string }) {
+  const { mutate: deleteCart } = useDeleteCart();
+
+  return (
+    <button type="button" onClick={() => deleteCart(id)}>
+      삭제
+    </button>
   );
 }

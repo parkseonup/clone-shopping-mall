@@ -1,23 +1,30 @@
-import { useContext } from 'react';
-import { ProductsToPayContext } from '../../context/productsToPay';
-import ItemData from '../common/itemData';
+import { ReactNode } from 'react';
 import { styled } from 'styled-components';
+import { useGetCart } from '../../servies/queries/cart';
+import { CartType } from '../../graphql/cart';
+import ProductCard from '../product/productCard';
+import useCartIdsToPay from '../hooks/useCartIdsToPay';
 
-export default function PreviewPayment({
-  onClick,
-  buttonText,
-}: {
-  onClick: (ids?: string[]) => void;
-  buttonText: string;
-}) {
-  const paymentList = useContext(ProductsToPayContext);
+const useGetCartToPay = () => {
+  const { data: cart } = useGetCart();
+  const [cartIdsToPay] = useCartIdsToPay();
 
-  if (!paymentList) throw new Error('Cannot find ProductsToPayContext');
-  if (paymentList.length < 1) return null;
+  let cartToPay: CartType = [];
 
-  const ids = paymentList.map(paymentItem => paymentItem.id);
+  for (const id of cartIdsToPay) {
+    const foundCartItem = cart.find(cartItem => cartItem.id === id);
 
-  const totalAmount = paymentList.reduce(
+    if (!foundCartItem) continue;
+
+    cartToPay = [...cartToPay, foundCartItem];
+  }
+
+  return { cartToPay };
+};
+
+export default function PreviewPayment({ controls }: { controls?: ReactNode }) {
+  const { cartToPay } = useGetCartToPay();
+  const totalAmount = cartToPay.reduce(
     (result, { amount, product: { price, createdAt } }) => {
       if (createdAt) result += amount * price;
       return result;
@@ -26,33 +33,28 @@ export default function PreviewPayment({
   );
 
   return (
-    <PreviewWrapper>
-      <h3>결제 목록</h3>
-      <ul>
-        {paymentList.map(
-          ({ id, amount, product: { title, imageUrl, price, createdAt } }) => (
-            <li key={id}>
-              <ItemData title={title} imageUrl={imageUrl} price={price} />
+    <>
+      {cartToPay.length > 0 ? (
+        <PreviewWrapper>
+          <h3>결제 목록</h3>
 
-              {createdAt ? (
-                <>
-                  <p>개수: {amount}</p>
-                  <p>금액: {amount * price}원</p>
-                </>
-              ) : (
-                <strong>품절된 상품입니다.</strong>
-              )}
-            </li>
-          )
-        )}
-      </ul>
+          <ul>
+            {cartToPay.map(({ id, amount, product }) => (
+              <li key={id}>
+                <ProductCard data={{ ...product }} />
+                {product.createdAt ? (
+                  <p>금액: {amount * product.price}원</p>
+                ) : null}
+              </li>
+            ))}
+          </ul>
 
-      <p>총 금액: {totalAmount}원</p>
+          <p>총 금액: {totalAmount}원</p>
 
-      <button type="button" onClick={() => onClick(ids)}>
-        {buttonText}
-      </button>
-    </PreviewWrapper>
+          {controls}
+        </PreviewWrapper>
+      ) : null}
+    </>
   );
 }
 

@@ -3,8 +3,8 @@ import request from 'graphql-request';
 import { CartType, GET_CART } from '../../graphql/cart';
 import { useQuery } from '@tanstack/react-query';
 
-export const useGetCart = () =>
-  useQuery<{ cart: CartType }, ResponseError>({
+export const useGetCart = (): { data: CartType } => {
+  const { data } = useQuery<{ cart: CartType }, ResponseError>({
     queryKey: [QueryKeys.CART],
     queryFn: async () =>
       await request({
@@ -14,3 +14,6 @@ export const useGetCart = () =>
     staleTime: 1,
     cacheTime: 1,
   });
+
+  return data ? { data: data.cart } : { data: [] };
+};

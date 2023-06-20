@@ -1,21 +1,14 @@
-import { SyntheticEvent, useContext, useRef } from 'react';
-import { CartType } from '../../graphql/cart';
+import { SyntheticEvent, useRef } from 'react';
 import CartItem from './item';
-import {
-  ProductsToPayContext,
-  ProductsToPayDispatchContext,
-} from '../../context/productsToPay';
+import useCartIdsToPay from '../hooks/useCartIdsToPay';
+import { useGetCart } from '../../servies/queries/cart';
 
-export default function CartList({ cart }: { cart: CartType }) {
+export default function CartList() {
+  const { data: cart } = useGetCart();
   const formRef = useRef<HTMLFormElement>(null);
   const checkboxRef = useRef<HTMLInputElement>(null);
-  const checkedItems = useContext(ProductsToPayContext);
-  const setCheckedItems = useContext(ProductsToPayDispatchContext);
+  const [cartIdsToPay, setCartIdsToPay] = useCartIdsToPay();
   const existentCart = cart.filter(cartItem => cartItem.product.createdAt);
-
-  if (!checkedItems) throw new Error('Cannot find ProductsToPayContext');
-  if (!setCheckedItems)
-    throw new Error('Cannot find ProductsToPayDispatchContext');
 
   const onChangeCheckbox = (e: SyntheticEvent) => {
     if (!formRef.current) return;
@@ -23,11 +16,11 @@ export default function CartList({ cart }: { cart: CartType }) {
     const action = (e.target as HTMLInputElement).checked
       ? ({
           type: 'added',
-          items: existentCart,
+          ids: existentCart.map(({ id }) => id),
         } as const)
       : ({ type: 'deletedAll' } as const);
 
-    setCheckedItems(action);
+    setCartIdsToPay(action);
   };
 
   return (
@@ -41,7 +34,7 @@ export default function CartList({ cart }: { cart: CartType }) {
               onChange={onChangeCheckbox}
               disabled={existentCart.length < 1}
               checked={
-                checkedItems.length === existentCart.length &&
+                cartIdsToPay.length === existentCart.length &&
                 existentCart.length > 0
               }
             />
